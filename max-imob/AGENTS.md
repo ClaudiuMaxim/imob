@@ -219,6 +219,8 @@ Each spec is also part of bachelor thesis documentation and MUST include:
 - Client Components only when needed
 - Use Bootstrap classes and components for styling
 - Use semantic HTML structure
+- For forms, keep each input field in its own state variable instead of storing the whole form in one object state
+- Split large UI files into small readable components; keep page/container files focused on data flow and orchestration
 - Keep UI simple and reusable
 
 ---
