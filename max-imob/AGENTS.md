@@ -26,7 +26,6 @@ The system simulates a real-world property marketplace with:
 
 ### Database
 - PostgreSQL
-- Prisma ORM
 
 ---
 
@@ -208,7 +207,7 @@ Each spec is also part of bachelor thesis documentation and MUST include:
 - REST API only
 - Express.js with controllers + services (simple)
 - No business logic in controllers
-- Zod validation for inputs
+- Manual input validation without Zod
 - Centralized error handling
 
 ---
@@ -232,8 +231,8 @@ Entities:
 - leads
 
 Rules:
-- Prisma ORM only
-- Migrations required
+- PostgreSQL only
+- SQL migration files required
 - No manual DB changes
 - Explicit relationships required
 
@@ -271,7 +270,7 @@ Standard response:
 - JWT authentication (admin/agent only)
 - HTTP-only cookies for token storage
 - Role-based access control
-- Input validation (Zod)
+- Manual input validation
 - Environment variables for secrets
 
 ---
