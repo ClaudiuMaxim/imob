@@ -39,8 +39,10 @@ async function handleGetProperty(
   try {
     const { id } = await context.params;
     const session = getAuthSession(request);
+    const shouldReturnPublicProperty =
+      request.nextUrl.searchParams.get("publicata") === "1";
     const property =
-      session?.role === "agent"
+      session?.role === "agent" && !shouldReturnPublicProperty
         ? await getAgentPropertyById(session.userId, id)
         : await getPublicPropertyById(id);
 

@@ -27,6 +27,12 @@ export type UpdatePropertyInput = {
   area?: number;
 };
 
+export type PublicPropertyFilters = {
+  city?: string;
+  propertyType?: PropertyType;
+  bedrooms?: number;
+};
+
 type ValidationResult<T> =
   | {
       success: true;
@@ -222,6 +228,57 @@ export function validateUpdatePropertyInput(
   return {
     success: true,
     data,
+  };
+}
+
+export function validatePublicPropertyFilters(
+  input: unknown,
+): ValidationResult<PublicPropertyFilters> {
+  if (!isRecord(input)) {
+    return invalid("Filtre invalide.");
+  }
+
+  const filters: PublicPropertyFilters = {};
+
+  if ("city" in input) {
+    const city = getText(input.city);
+
+    if (city && city.length > 100) {
+      return invalid("Orasul trebuie sa aiba maximum 100 de caractere.");
+    }
+
+    if (city) {
+      filters.city = city;
+    }
+  }
+
+  if ("propertyType" in input) {
+    const propertyType = getPropertyType(input.propertyType);
+
+    if (input.propertyType && !propertyType) {
+      return invalid("Tipul proprietatii este invalid.");
+    }
+
+    if (propertyType) {
+      filters.propertyType = propertyType;
+    }
+  }
+
+  if ("bedrooms" in input) {
+    const bedrooms = getInteger(input.bedrooms);
+
+    if (input.bedrooms && (bedrooms === null || bedrooms < 0)) {
+      return invalid("Numarul de camere este invalid.");
+    }
+
+    if (bedrooms !== null) {
+      filters.bedrooms = bedrooms;
+    }
+  }
+
+  return {
+    success: true,
+    data: filters,
   };
 }
 

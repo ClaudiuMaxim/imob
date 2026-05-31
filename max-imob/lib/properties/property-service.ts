@@ -4,6 +4,7 @@ import { getPool } from "@/lib/db/pool";
 import type { SavedPropertyImage } from "@/lib/properties/image-storage";
 import type {
   CreatePropertyInput,
+  PublicPropertyFilters,
   PropertyStatus,
   PropertyType,
   UpdatePropertyInput,
@@ -74,14 +75,40 @@ export async function listAgentProperties(agentId: string) {
   return mapPropertyRows(result.rows);
 }
 
-export async function listPublicProperties() {
+export async function listPublicProperties(filters: PublicPropertyFilters = {}) {
+  const queryParts = [
+    "status = 'publicata'",
+    "is_active = true",
+  ];
+  const queryValues: Array<string | number> = [];
+
+  if (filters.city) {
+    queryValues.push(`%${filters.city}%`);
+    queryParts.push(`city ILIKE $${queryValues.length}`);
+  }
+
+  if (filters.propertyType) {
+    queryValues.push(filters.propertyType);
+    queryParts.push(`property_type = $${queryValues.length}`);
+  }
+
+  if (filters.bedrooms !== undefined) {
+    queryValues.push(filters.bedrooms);
+    queryParts.push(`bedrooms = $${queryValues.length}`);
+  }
+  // console.log(`SELECT *
+  //     FROM properties
+  //     WHERE ${queryParts.join(" AND ")}
+  //     ORDER BY created_at DESC`);
+
   const result = await getPool().query<PropertyRow>(
     `
       SELECT *
       FROM properties
-      WHERE status = 'publicata' AND is_active = true
+      WHERE ${queryParts.join(" AND ")}
       ORDER BY created_at DESC
     `,
+    queryValues,
   );
 
   return mapPropertyRows(result.rows);

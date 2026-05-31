@@ -10,7 +10,10 @@ import {
   savePropertyImages,
   validateImageFiles,
 } from "@/lib/properties/image-storage";
-import { validateCreatePropertyInput } from "@/lib/properties/validation";
+import {
+  validateCreatePropertyInput,
+  validatePublicPropertyFilters,
+} from "@/lib/properties/validation";
 
 const routes = {
   GET: handleGetProperties,
@@ -23,17 +26,33 @@ export const POST = routes.POST;
 async function handleGetProperties(request: NextRequest) {
   try {
     const session = getAuthSession(request);
+    const shouldReturnPublicList = request.nextUrl.searchParams.get("publicata") === "1";
 
-    if (session?.role === "agent") {
+    if (session?.role === "agent" && !shouldReturnPublicList) {
       const properties = await listAgentProperties(session.userId);
       return jsonOk({ properties });
     }
 
-    const properties = await listPublicProperties();
+    const filters = getPublicFiltersFromRequest(request);
+    const validation = validatePublicPropertyFilters(filters);
+
+    if (!validation.success) {
+      return jsonError(validation.error, 400);
+    }
+
+    const properties = await listPublicProperties(validation.data);
     return jsonOk({ properties });
   } catch (error) {
     return handleRouteError(error);
   }
+}
+
+function getPublicFiltersFromRequest(request: NextRequest) {
+  return {
+    city: request.nextUrl.searchParams.get("city") ?? "",
+    propertyType: request.nextUrl.searchParams.get("propertyType") ?? "",
+    bedrooms: request.nextUrl.searchParams.get("bedrooms") ?? "",
+  };
 }
 
 async function handleCreateProperty(request: NextRequest) {
