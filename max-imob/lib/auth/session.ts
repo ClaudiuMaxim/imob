@@ -29,6 +29,20 @@ export function requireAdmin(request: NextRequest): AuthSession {
   return session;
 }
 
+export function requireAgent(request: NextRequest): AuthSession {
+  const session = getAuthSession(request);
+
+  if (!session) {
+    throw new AuthError("Autentificare necesară.", 401);
+  }
+
+  if (session.role !== "agent") {
+    throw new AuthError("Acces interzis.", 403);
+  }
+
+  return session;
+}
+
 export function getAuthSession(request: NextRequest): AuthSession | null {
   const token = request.cookies.get(cookieName)?.value;
   const secret = process.env.JWT_SECRET;
