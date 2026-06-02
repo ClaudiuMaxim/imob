@@ -2,6 +2,7 @@
 
 import type { Property } from "../../lib/types";
 import ContactAgentModal from "./contact-agent-modal";
+import PropertyMap from "./property-map";
 
 type PropertyDetailsInfoProps = {
   property: Property;
@@ -22,7 +23,6 @@ export default function PropertyDetailsInfo({ property }: PropertyDetailsInfoPro
           </div>
         </div>
 
-
         <div className="mb-3">
           <ContactAgentModal propertyId={property.id} />
         </div>
@@ -37,7 +37,9 @@ export default function PropertyDetailsInfo({ property }: PropertyDetailsInfoPro
 
         <div className="border-top pt-3">
           <h2 className="h6 fw-bold">Adresa</h2>
-          <p className="mb-0 text-secondary">{property.address}</p>
+          <p className="mb-3 text-secondary">{property.address}</p>
+
+          <PropertyMap address={property.address} />
         </div>
       </div>
     </section>

@@ -19,7 +19,7 @@ export default function PropertyCard({ onOpen, property }: PropertyCardProps) {
   return (
     <article
       className="card h-100 border-0 shadow-sm"
-      onDoubleClick={() => onOpen(property)}
+      onClick={() => onOpen(property)}
       onKeyDown={handleKeyDown}
       role="button"
       tabIndex={0}
