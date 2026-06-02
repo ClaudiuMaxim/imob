@@ -1,4 +1,7 @@
+"use client";
+
 import type { Property } from "../../lib/types";
+import ContactAgentModal from "./contact-agent-modal";
 
 type PropertyDetailsInfoProps = {
   property: Property;
@@ -21,6 +24,10 @@ export default function PropertyDetailsInfo({ property }: PropertyDetailsInfoPro
 
         <p className="text-secondary">{property.description}</p>
 
+        <div className="mb-3">
+          <ContactAgentModal propertyId={property.id} />
+        </div>
+
         <div className="row g-3 mb-3">
           <InfoItem label="Tip" value={property.propertyType} />
           <InfoItem label="Dormitoare" value={String(property.bedrooms)} />
@@ -39,7 +46,7 @@ export default function PropertyDetailsInfo({ property }: PropertyDetailsInfoPro
 
 function InfoItem({ label, value }: { label: string; value: string }) {
   return (
-    <div className="col-6 col-md-3">
+    <div className="col-6 col-md-6">
       <div className="border rounded p-3 h-100">
         <div className="small text-secondary">{label}</div>
         <div className="fw-semibold">{value}</div>

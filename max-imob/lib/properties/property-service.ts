@@ -92,14 +92,14 @@ export async function listPublicProperties(filters: PublicPropertyFilters = {}) 
     queryParts.push(`property_type = $${queryValues.length}`);
   }
 
-  if (filters.bedrooms !== undefined) {
+  if (filters.bedrooms) {
     queryValues.push(filters.bedrooms);
     queryParts.push(`bedrooms = $${queryValues.length}`);
   }
-  // console.log(`SELECT *
-  //     FROM properties
-  //     WHERE ${queryParts.join(" AND ")}
-  //     ORDER BY created_at DESC`);
+  console.log(`SELECT *
+      FROM properties
+      WHERE ${queryParts.join(" AND ")}
+      ORDER BY created_at DESC`,queryValues);
 
   const result = await getPool().query<PropertyRow>(
     `
