@@ -25,8 +25,10 @@ type PropertyFormProps = {
   onPriceChange: (value: string) => void;
   onPropertyTypeChange: (value: string) => void;
   onStatusChange: (value: string) => void;
+  onOfferTypeChange: (value: string) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onTitleChange: (value: string) => void;
+  offerType: string;
   price: string;
   propertyType: string;
   selectedImageCount: number;
@@ -69,8 +71,10 @@ export default function PropertyForm({
   onPriceChange,
   onPropertyTypeChange,
   onStatusChange,
+  onOfferTypeChange,
   onSubmit,
   onTitleChange,
+  offerType,
   price,
   propertyType,
   selectedImageCount,
@@ -129,6 +133,16 @@ export default function PropertyForm({
             onChange={onPropertyTypeChange}
             options={propertyTypeOptions}
             value={propertyType}
+          />
+          <PropertySelect
+            label="Tip oferta"
+            name="offer-type"
+            onChange={onOfferTypeChange}
+            options={[
+              { label: "Vanzare", value: "vanzare" },
+              { label: "Inchiriere", value: "inchiriere" },
+            ]}
+            value={offerType}
           />
           <PropertySelect
             label="Status"

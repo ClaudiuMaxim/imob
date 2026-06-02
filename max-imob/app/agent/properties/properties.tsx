@@ -19,6 +19,7 @@ export default function AgentProperties() {
   const [imageInputKey, setImageInputKey] = useState(0);
   const [propertyType, setPropertyType] = useState("apartament");
   const [status, setStatus] = useState("ciorna");
+  const [offerType, setOfferType] = useState("vanzare");
   const [bedrooms, setBedrooms] = useState("0");
   const [bathrooms, setBathrooms] = useState("0");
   const [area, setArea] = useState("");
@@ -129,6 +130,7 @@ export default function AgentProperties() {
     setImageFiles([]);
     setImageInputKey((currentKey) => currentKey + 1);
     setPropertyType(property.propertyType);
+    setOfferType(property.offerType);
     setStatus(property.status);
     setBedrooms(String(property.bedrooms));
     setBathrooms(String(property.bathrooms));
@@ -145,6 +147,7 @@ export default function AgentProperties() {
     setImageFiles([]);
     setImageInputKey((currentKey) => currentKey + 1);
     setPropertyType("apartament");
+    setOfferType("vanzare");
     setStatus("ciorna");
     setBedrooms("0");
     setBathrooms("0");
@@ -160,6 +163,7 @@ export default function AgentProperties() {
     formData.append("city", city);
     formData.append("address", address);
     formData.append("propertyType", propertyType);
+    formData.append("offerType", offerType);
     formData.append("status", status);
     formData.append("bedrooms", bedrooms);
     formData.append("bathrooms", bathrooms);
@@ -193,11 +197,13 @@ export default function AgentProperties() {
           onCityChange={setCity}
           onDescriptionChange={setDescription}
           onImagesChange={setImageFiles}
+          onOfferTypeChange={setOfferType}
           onPriceChange={setPrice}
           onPropertyTypeChange={setPropertyType}
           onStatusChange={setStatus}
           onSubmit={handleSubmit}
           onTitleChange={setTitle}
+          offerType={offerType}
           price={price}
           propertyType={propertyType}
           selectedImageCount={imageFiles.length}

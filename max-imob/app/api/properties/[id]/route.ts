@@ -137,6 +137,7 @@ function getPropertyInputFromFormData(formData: FormData) {
     city: formData.get("city"),
     address: formData.get("address"),
     propertyType: formData.get("propertyType"),
+    offerType: formData.get("offerType"),
     status: formData.get("status"),
     bedrooms: formData.get("bedrooms"),
     bathrooms: formData.get("bathrooms"),

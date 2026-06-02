@@ -28,6 +28,7 @@ export default function PropertiesTable({
             <th>Poza</th>
             <th>Titlu</th>
             <th>Oras</th>
+            <th>Oferta</th>
             <th>Pret</th>
             <th>Status</th>
             <th>Activa</th>
@@ -40,6 +41,7 @@ export default function PropertiesTable({
               <td>{renderImage(property)}</td>
               <td className="fw-semibold">{property.title}</td>
               <td>{property.city}</td>
+              <td>{getOfferTypeLabel(property.offerType)}</td>
               <td>{property.price} EUR</td>
               <td>
                 <span className="badge text-bg-primary">{property.status}</span>
@@ -82,6 +84,10 @@ export default function PropertiesTable({
       </table>
     </div>
   );
+}
+
+function getOfferTypeLabel(offerType: Property["offerType"]) {
+  return offerType === "inchiriere" ? "Închiriere" : "Vânzare";
 }
 
 function renderImage(property: Property) {

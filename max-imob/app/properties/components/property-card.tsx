@@ -47,6 +47,7 @@ export default function PropertyCard({ onOpen, property }: PropertyCardProps) {
         <p className="text-secondary mb-3">{property.city}</p>
         <div className="d-flex flex-wrap gap-2">
           <span className="badge text-bg-light border">{property.propertyType}</span>
+          <span className="badge text-bg-light border">{getOfferTypeLabel(property.offerType)}</span>
           <span className="badge text-bg-light border">
             {property.bedrooms} camere
           </span>
@@ -56,4 +57,8 @@ export default function PropertyCard({ onOpen, property }: PropertyCardProps) {
       </div>
     </article>
   );
+}
+
+function getOfferTypeLabel(offerType: Property["offerType"]) {
+  return offerType === "inchiriere" ? "Închiriere" : "Vânzare";
 }

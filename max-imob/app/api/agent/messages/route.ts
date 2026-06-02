@@ -21,8 +21,12 @@ export async function GET(request: NextRequest) {
 }
 
 function handleRouteError(error: unknown) {
-  if (error instanceof Error && "status" in error && typeof (error as any).status === "number") {
-    return jsonError(error.message, (error as any).status as number);
+  if (
+    error instanceof Error &&
+    "status" in error &&
+    typeof (error as { status?: unknown }).status === "number"
+  ) {
+    return jsonError(error.message, error.status as number);
   }
 
   console.error("Agent messages route failed:", error);

@@ -17,6 +17,7 @@ export type Property = {
   address: string;
   propertyType: PropertyType;
   status: PropertyStatus;
+  offerType: "vanzare" | "inchiriere";
   bedrooms: number;
   bathrooms: number;
   area: number;

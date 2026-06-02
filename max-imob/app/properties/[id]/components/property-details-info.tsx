@@ -30,6 +30,7 @@ export default function PropertyDetailsInfo({ property }: PropertyDetailsInfoPro
 
         <div className="row g-3 mb-3">
           <InfoItem label="Tip" value={property.propertyType} />
+          <InfoItem label="Oferta" value={property.offerType} />
           <InfoItem label="Dormitoare" value={String(property.bedrooms)} />
           <InfoItem label="Bai" value={String(property.bathrooms)} />
           <InfoItem label="Suprafata" value={`${property.area} mp`} />

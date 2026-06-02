@@ -5,6 +5,7 @@ import type { SavedPropertyImage } from "@/lib/properties/image-storage";
 import type {
   CreatePropertyInput,
   PublicPropertyFilters,
+  PropertyOffer,
   PropertyStatus,
   PropertyType,
   UpdatePropertyInput,
@@ -27,6 +28,7 @@ export type Property = {
   address: string;
   propertyType: PropertyType;
   status: PropertyStatus;
+  offerType: PropertyOffer;
   bedrooms: number;
   bathrooms: number;
   area: number;
@@ -46,6 +48,7 @@ type PropertyRow = {
   address: string;
   property_type: PropertyType;
   status: PropertyStatus;
+  offer_type: PropertyOffer;
   bedrooms: number;
   bathrooms: number;
   area: string;
@@ -137,13 +140,14 @@ export async function createProperty(
           address,
           property_type,
           status,
+          offer_type,
           bedrooms,
           bathrooms,
           area,
           is_active,
           updated_at
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, true, CURRENT_TIMESTAMP)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, true, CURRENT_TIMESTAMP)
         RETURNING *
       `,
       [
@@ -156,6 +160,7 @@ export async function createProperty(
         input.address,
         input.propertyType,
         input.status,
+        input.offerType,
         input.bedrooms,
         input.bathrooms,
         input.area,
@@ -222,6 +227,7 @@ export async function updateProperty(
     address: input.address ?? currentProperty.address,
     propertyType: input.propertyType ?? currentProperty.propertyType,
     status: input.status ?? currentProperty.status,
+    offerType: input.offerType ?? currentProperty.offerType,
     bedrooms: input.bedrooms ?? currentProperty.bedrooms,
     bathrooms: input.bathrooms ?? currentProperty.bathrooms,
     area: input.area ?? currentProperty.area,
@@ -242,9 +248,10 @@ export async function updateProperty(
             address = $7,
             property_type = $8,
             status = $9,
-            bedrooms = $10,
-            bathrooms = $11,
-            area = $12,
+            offer_type = $10,
+            bedrooms = $11,
+            bathrooms = $12,
+            area = $13,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = $1 AND agent_id = $2
         RETURNING *
@@ -259,6 +266,7 @@ export async function updateProperty(
         nextProperty.address,
         nextProperty.propertyType,
         nextProperty.status,
+        nextProperty.offerType,
         nextProperty.bedrooms,
         nextProperty.bathrooms,
         nextProperty.area,
@@ -379,6 +387,7 @@ function mapPropertyRow(row: PropertyRow, images: PropertyImage[]): Property {
     address: row.address,
     propertyType: row.property_type,
     status: row.status,
+    offerType: row.offer_type,
     bedrooms: row.bedrooms,
     bathrooms: row.bathrooms,
     area: Number(row.area),

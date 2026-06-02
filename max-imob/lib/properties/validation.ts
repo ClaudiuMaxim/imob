@@ -1,5 +1,6 @@
 export type PropertyType = "apartament" | "casa" | "teren" | "comercial";
 export type PropertyStatus = "ciorna" | "publicata" | "vanduta" | "inchiriata";
+export type PropertyOffer = "vanzare" | "inchiriere";
 
 export type CreatePropertyInput = {
   title: string;
@@ -9,6 +10,7 @@ export type CreatePropertyInput = {
   address: string;
   propertyType: PropertyType;
   status: PropertyStatus;
+  offerType: PropertyOffer;
   bedrooms: number;
   bathrooms: number;
   area: number;
@@ -22,6 +24,7 @@ export type UpdatePropertyInput = {
   address?: string;
   propertyType?: PropertyType;
   status?: PropertyStatus;
+  offerType?: PropertyOffer;
   bedrooms?: number;
   bathrooms?: number;
   area?: number;
@@ -57,6 +60,7 @@ export function validateCreatePropertyInput(
   const address = getText(input.address);
   const propertyType = getPropertyType(input.propertyType);
   const status = getPropertyStatus(input.status);
+  const offerType = getPropertyOffer(input.offerType);
   const bedrooms = getInteger(input.bedrooms);
   const bathrooms = getInteger(input.bathrooms);
   const area = getNumber(input.area);
@@ -83,6 +87,10 @@ export function validateCreatePropertyInput(
     return invalid("Statusul proprietății este invalid.");
   }
 
+  if (!offerType) {
+    return invalid("Tipul ofertei este invalid.");
+  }
+
   if (bedrooms === null || bedrooms < 0) {
     return invalid("Numărul de dormitoare este invalid.");
   }
@@ -105,6 +113,7 @@ export function validateCreatePropertyInput(
       address,
       propertyType,
       status,
+      offerType,
       bedrooms,
       bathrooms,
       area,
@@ -189,6 +198,16 @@ export function validateUpdatePropertyInput(
     }
 
     data.status = status;
+  }
+
+  if ("offerType" in input) {
+    const offerType = getPropertyOffer(input.offerType);
+
+    if (!offerType) {
+      return invalid("Tipul ofertei este invalid.");
+    }
+
+    data.offerType = offerType;
   }
 
   if ("bedrooms" in input) {
@@ -345,6 +364,14 @@ function getPropertyStatus(value: unknown): PropertyStatus | null {
     value === "vanduta" ||
     value === "inchiriata"
   ) {
+    return value;
+  }
+
+  return null;
+}
+
+function getPropertyOffer(value: unknown): PropertyOffer | null {
+  if (value === "vanzare" || value === "inchiriere") {
     return value;
   }
 
