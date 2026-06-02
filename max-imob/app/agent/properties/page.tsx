@@ -10,13 +10,20 @@ export default function AgentPropertiesPage() {
   return (
     <main className="bg-light min-vh-100">
       <nav className="navbar bg-white border-bottom">
-        <div className="container py-2">
-          <Link className="navbar-brand fw-bold text-primary" href="/">
-            Max Imob Agent
-          </Link>
-          <Link className="btn btn-outline-secondary" href="/">
-            Înapoi la site
-          </Link>
+        <div className="container py-2 d-flex justify-content-between align-items-center">
+          <div>
+            <Link className="navbar-brand fw-bold text-primary" href="/">
+              Max Imob Agent
+            </Link>
+          </div>
+          <div className="d-flex gap-2">
+            <Link className="btn btn-outline-primary btn-sm" href="/agent/messages">
+              Mesaje
+            </Link>
+            <Link className="btn btn-outline-secondary btn-sm" href="/">
+              Înapoi la site
+            </Link>
+          </div>
         </div>
       </nav>
 

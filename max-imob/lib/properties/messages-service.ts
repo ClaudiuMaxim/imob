@@ -5,6 +5,7 @@ import type { Message, CreateMessageInput } from "@/lib/properties/messages-vali
 type MessageRow = {
   id: string;
   property_id: string;
+  property_title: string;
   agent_id: string;
   contact_name: string;
   contact_email: string;
@@ -19,6 +20,7 @@ function mapMessageRow(row: MessageRow): Message {
   return {
     id: row.id,
     propertyId: row.property_id,
+    propertyTitle: row.property_title,
     agentId: row.agent_id,
     contactName: row.contact_name,
     contactEmail: row.contact_email,
@@ -73,7 +75,19 @@ export async function saveMessage(
     throw new Error("Eroare la salvarea mesajului");
   }
 
-  return mapMessageRow(result.rows[0]);
+  const propertyResult = await getPool().query(
+    `
+      SELECT title
+      FROM properties
+      WHERE id = $1
+    `,
+    [propertyId],
+  );
+
+  const row = result.rows[0] as MessageRow & { property_title: string };
+  row.property_title = propertyResult.rows[0]?.title ?? "";
+
+  return mapMessageRow(row);
 }
 
 export async function getPropertyById(propertyId: string) {
@@ -92,10 +106,13 @@ export async function getPropertyById(propertyId: string) {
 export async function getMessagesByPropertyId(propertyId: string) {
   const result = await getPool().query<MessageRow>(
     `
-      SELECT *
+      SELECT
+        messages.*,
+        properties.title AS property_title
       FROM messages
-      WHERE property_id = $1
-      ORDER BY created_at DESC
+      JOIN properties ON properties.id = messages.property_id
+      WHERE messages.property_id = $1
+      ORDER BY messages.created_at DESC
     `,
     [propertyId],
   );
@@ -106,10 +123,13 @@ export async function getMessagesByPropertyId(propertyId: string) {
 export async function getMessagesByAgentId(agentId: string) {
   const result = await getPool().query<MessageRow>(
     `
-      SELECT *
+      SELECT
+        messages.*,
+        properties.title AS property_title
       FROM messages
-      WHERE agent_id = $1
-      ORDER BY created_at DESC
+      JOIN properties ON properties.id = messages.property_id
+      WHERE messages.agent_id = $1
+      ORDER BY messages.created_at DESC
     `,
     [agentId],
   );
@@ -134,5 +154,17 @@ export async function markMessageAsRead(messageId: string): Promise<Message> {
     throw new Error("Mesajul nu a fost găsit");
   }
 
-  return mapMessageRow(result.rows[0]);
+  const row = result.rows[0] as MessageRow;
+  const propertyResult = await getPool().query(
+    `
+      SELECT title
+      FROM properties
+      WHERE id = $1
+    `,
+    [row.property_id],
+  );
+
+  (row as MessageRow & { property_title: string }).property_title = propertyResult.rows[0]?.title ?? "";
+
+  return mapMessageRow(row as MessageRow & { property_title: string });
 }
