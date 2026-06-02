@@ -33,6 +33,7 @@ export type UpdatePropertyInput = {
 export type PublicPropertyFilters = {
   city?: string;
   propertyType?: PropertyType;
+  offerType?: PropertyOffer;
   bedrooms?: number;
 };
 
@@ -280,6 +281,18 @@ export function validatePublicPropertyFilters(
 
     if (propertyType) {
       filters.propertyType = propertyType;
+    }
+  }
+
+  if ("offerType" in input) {
+    const offerType = getPropertyOffer(input.offerType);
+
+    if (input.offerType && !offerType) {
+      return invalid("Tipul ofertei este invalid.");
+    }
+
+    if (offerType) {
+      filters.offerType = offerType;
     }
   }
 

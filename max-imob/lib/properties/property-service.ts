@@ -95,6 +95,11 @@ export async function listPublicProperties(filters: PublicPropertyFilters = {}) 
     queryParts.push(`property_type = $${queryValues.length}`);
   }
 
+  if (filters.offerType) {
+    queryValues.push(filters.offerType);
+    queryParts.push(`offer_type = $${queryValues.length}`);
+  }
+
   if (filters.bedrooms) {
     queryValues.push(filters.bedrooms);
     queryParts.push(`bedrooms = $${queryValues.length}`);

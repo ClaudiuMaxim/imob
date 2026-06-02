@@ -2,7 +2,7 @@
 
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import PropertyFilters from "./property-filters";
 import PropertyGrid from "./property-grid";
 import {
@@ -14,9 +14,11 @@ import type { Property } from "../lib/types";
 
 export default function PropertiesBrowser() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [properties, setProperties] = useState<Property[]>([]);
   const [city, setCity] = useState("");
   const [propertyType, setPropertyType] = useState("");
+  const [offerType, setOfferType] = useState("");
   const [bedrooms, setBedrooms] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -26,8 +28,24 @@ export default function PropertiesBrowser() {
       setIsLoading(true);
       setError("");
 
+      const initialCity = searchParams.get("city") ?? "";
+      const initialPropertyType = searchParams.get("propertyType") ?? "";
+      const initialOfferType = searchParams.get("offerType") ?? "";
+      const initialBedrooms = searchParams.get("bedrooms") ?? "";
+
+      setCity(initialCity);
+      setPropertyType(initialPropertyType);
+      setOfferType(initialOfferType);
+      setBedrooms(initialBedrooms);
+
       try {
-        const payload = await requestPublicProperties("/api/properties?publicata=1");
+        const url = createPropertiesUrl({
+          city: initialCity,
+          propertyType: initialPropertyType,
+          offerType: initialOfferType,
+          bedrooms: initialBedrooms,
+        });
+        const payload = await requestPublicProperties(url);
         setProperties(payload.data?.properties ?? []);
       } catch (requestError) {
         setError(getErrorMessage(requestError));
@@ -37,14 +55,14 @@ export default function PropertiesBrowser() {
     }
 
     void loadInitialProperties();
-  }, []);
+  }, [searchParams]);
 
   async function loadPropertiesWithCurrentFilters() {
     setIsLoading(true);
     setError("");
 
     try {
-      const url = createPropertiesUrl({ city, propertyType, bedrooms });
+      const url = createPropertiesUrl({ city, propertyType, offerType, bedrooms });
       const payload = await requestPublicProperties(url);
       setProperties(payload.data?.properties ?? []);
     } catch (requestError) {
@@ -62,6 +80,7 @@ export default function PropertiesBrowser() {
   function resetFilters() {
     setCity("");
     setPropertyType("");
+    setOfferType("");
     setBedrooms("");
     void loadPropertiesWithoutFilters();
   }
@@ -98,9 +117,11 @@ export default function PropertiesBrowser() {
           <PropertyFilters
             bedrooms={bedrooms}
             city={city}
+            offerType={offerType}
             isLoading={isLoading}
             onBedroomsChange={setBedrooms}
             onCityChange={setCity}
+            onOfferTypeChange={setOfferType}
             onPropertyTypeChange={setPropertyType}
             onReset={resetFilters}
             onSubmit={handleSubmit}

@@ -37,5 +37,6 @@ export type PropertiesResponse = {
 export type PropertyFilters = {
   city: string;
   propertyType: string;
+  offerType: string;
   bedrooms: string;
 };

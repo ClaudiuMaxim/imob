@@ -23,6 +23,10 @@ export function createPropertiesUrl(filters: PropertyFilters) {
     searchParams.set("propertyType", filters.propertyType);
   }
 
+  if (filters.offerType) {
+    searchParams.set("offerType", filters.offerType);
+  }
+
   if (filters.bedrooms) {
     searchParams.set("bedrooms", filters.bedrooms);
   }

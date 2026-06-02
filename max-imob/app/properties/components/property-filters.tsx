@@ -3,9 +3,11 @@ import type { FormEvent } from "react";
 type PropertyFiltersProps = {
   bedrooms: string;
   city: string;
+  offerType: string;
   isLoading: boolean;
   onBedroomsChange: (value: string) => void;
   onCityChange: (value: string) => void;
+  onOfferTypeChange: (value: string) => void;
   onPropertyTypeChange: (value: string) => void;
   onReset: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
@@ -26,9 +28,11 @@ export default function PropertyFilters({
   isLoading,
   onBedroomsChange,
   onCityChange,
+  onOfferTypeChange,
   onPropertyTypeChange,
   onReset,
   onSubmit,
+  offerType,
   propertyType,
 }: PropertyFiltersProps) {
   return (
@@ -60,6 +64,21 @@ export default function PropertyFilters({
               {option.label}
             </option>
           ))}
+        </select>
+      </div>
+      <div className="col-md-2">
+        <label className="form-label" htmlFor="offer-type">
+          Oferta
+        </label>
+        <select
+          className="form-select"
+          id="offer-type"
+          onChange={(event) => onOfferTypeChange(event.target.value)}
+          value={offerType}
+        >
+          <option value="">Toate</option>
+          <option value="vanzare">Vânzare</option>
+          <option value="inchiriere">Închiriere</option>
         </select>
       </div>
       <div className="col-md-2">

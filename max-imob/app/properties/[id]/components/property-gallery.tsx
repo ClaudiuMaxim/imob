@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import type { PropertyImage } from "../../lib/types";
 
@@ -7,10 +10,9 @@ type PropertyGalleryProps = {
 };
 
 export default function PropertyGallery({ images, title }: PropertyGalleryProps) {
-  const mainImage = images[0];
-  const secondaryImages = images.slice(1);
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  if (!mainImage) {
+  if (images.length === 0) {
     return (
       <div className="rounded bg-light p-5 text-center text-secondary">
         Proprietatea nu are poze.
@@ -18,35 +20,67 @@ export default function PropertyGallery({ images, title }: PropertyGalleryProps)
     );
   }
 
+  function goToIndex(index: number) {
+    const nextIndex = (index + images.length) % images.length;
+    setActiveIndex(nextIndex);
+  }
+
+  function goPrevious() {
+    goToIndex(activeIndex - 1);
+  }
+
+  function goNext() {
+    goToIndex(activeIndex + 1);
+  }
+
   return (
-    <div>
-      <div className="ratio ratio-16x9 bg-light rounded overflow-hidden mb-3">
-        <Image
-          alt={title}
-          className="object-fit-cover"
-          fill
-          priority
-          sizes="100vw"
-          src={mainImage.imageUrl}
-        />
-      </div>
-      {secondaryImages.length > 0 ? (
-        <div className="row g-3">
-          {secondaryImages.map((image) => (
-            <div className="col-6 col-md-4" key={image.id}>
-              <div className="ratio ratio-4x3 bg-light rounded overflow-hidden">
-                <Image
-                  alt={title}
-                  className="object-fit-cover"
-                  fill
-                  sizes="(max-width: 768px) 50vw, 25vw"
-                  src={image.imageUrl}
-                />
-              </div>
-            </div>
+    <div className="carousel slide mb-3">
+      {images.length > 1 ? (
+        <div className="carousel-indicators mb-3">
+          {images.map((image, index) => (
+            <button
+              key={image.id}
+              type="button"
+              className={index === activeIndex ? "active" : ""}
+              aria-current={index === activeIndex ? "true" : undefined}
+              aria-label={`Slide ${index + 1}`}
+              onClick={() => setActiveIndex(index)}
+            />
           ))}
         </div>
       ) : null}
+
+      <div className="carousel-inner rounded overflow-hidden bg-light" style={{ minHeight: 360 }}>
+        {images.map((image, index) => (
+          <div
+            key={image.id}
+            className={`carousel-item ${index === activeIndex ? "active" : ""}`}
+          >
+            <div className="ratio ratio-16x9 bg-light">
+              <Image
+                alt={`${title} - imagine ${index + 1}`}
+                className="object-fit-cover"
+                fill
+                priority={index === 0}
+                sizes="100vw"
+                src={image.imageUrl}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {images.length > 1 ? (
+        <div className="d-flex justify-content-between mt-3">
+          <button className="btn btn-outline-primary btn-sm" type="button" onClick={goPrevious}>
+            Poza anterioară
+          </button>
+          <button className="btn btn-outline-primary btn-sm" type="button" onClick={goNext}>
+            Următoarea poza
+          </button>
+        </div>
+      ) : null}
+        
     </div>
   );
 }

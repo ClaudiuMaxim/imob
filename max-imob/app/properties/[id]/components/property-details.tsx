@@ -63,6 +63,9 @@ export default function PropertyDetails({ propertyId }: PropertyDetailsProps) {
       <div className="row g-4">
         <div className="col-lg-7">
           <PropertyGallery images={property.images} title={property.title} />
+          {property.description && (
+            <p className="text-secondary">{property.description}</p>
+          )}
         </div>
         <div className="col-lg-5">
           <PropertyDetailsInfo property={property} />

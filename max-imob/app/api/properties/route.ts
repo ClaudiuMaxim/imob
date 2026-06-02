@@ -52,6 +52,7 @@ function getPublicFiltersFromRequest(request: NextRequest) {
     city: request.nextUrl.searchParams.get("city") ?? "",
     propertyType: request.nextUrl.searchParams.get("propertyType") ?? "",
     bedrooms: request.nextUrl.searchParams.get("bedrooms") ?? "",
+    offerType: request.nextUrl.searchParams.get("offerType") ?? "",
   };
 }
 

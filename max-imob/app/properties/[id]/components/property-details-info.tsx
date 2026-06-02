@@ -22,7 +22,6 @@ export default function PropertyDetailsInfo({ property }: PropertyDetailsInfoPro
           </div>
         </div>
 
-        <p className="text-secondary">{property.description}</p>
 
         <div className="mb-3">
           <ContactAgentModal propertyId={property.id} />
