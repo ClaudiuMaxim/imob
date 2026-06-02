@@ -12,14 +12,14 @@ export default function PropertyDetailsInfo({ property }: PropertyDetailsInfoPro
   return (
     <section className="card border-0 shadow-sm">
       <div className="card-body">
-        <div className="d-flex justify-content-between gap-3 mb-3">
+        <div className="d-flex justify-content-between gap-2 mb-3">
           <div>
             <h1 className="h2 fw-bold mb-2">{property.title}</h1>
-            <p className="text-secondary mb-0">{property.city}</p>
+            <p className="text-secondary mb-0">{property.city}  <span className="badge text-bg-success">{property.status}</span></p>
           </div>
           <div className="text-end">
-            <div className="h4 fw-bold text-primary mb-0">{property.price} EUR</div>
-            <span className="badge text-bg-success">{property.status}</span>
+            <div className="h4 fw-bold text-primary mb-0">{property.price}<sup style={{fontSize: '0.575em'}}>EUR</sup></div>
+           
           </div>
         </div>
 
