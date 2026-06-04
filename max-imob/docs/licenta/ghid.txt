@@ -1,0 +1,55 @@
+Universitatea Transilvania din Braşov 
+Facultatea de Matematică şi Informatică 
+Ghid de evaluare 
+Lucrări de licență - domeniul INFORMATICĂ 
+I. Lucrarea scrisă 
+Structură și conținut:          
+Minim 50 de pagini (font 12 UT Sans sau Calibri la un rând), dintre care minim 40 de pagini text fără a 
+lua în calcul secvențe de cod și imagini. Lucrarea poate să fie elaborată în LaTeX sau Word. 
+Titlul trebuie să fie în concordanță cu structura și conținutul lucrării. 
+Capitole  
+Introducere (motivație alegere temă în contextul actual, studiu comparativ cu aplicațiile existente, 
+prezentare succintă a capitolelor şi a aplicației, enumerarea părților originale etc.) 
+Secțiuni de prezentare a noțiunilor teoretice şi a tehnologiilor folosite în concordanță cu tema 
+aleasă (calitate și corectitudine în exprimare, originalitate) 
+Contribuții personale care trebuie să evidențieze în mod clar și structurat aportul propriu al 
+autorului, incluzând soluții originale, analize detaliate și rezultatele complexe care reflectă atât 
+inovația, cât și aprofundarea temei studiate. 
+Concluzii şi perspective de dezvoltare 
+Lucrarea poate include și alte capitole relevante, în funcție de cerințele și particularitățile lucrării. 
+Bibliografia trebuie să fie relevantă și bine structurată, acoperind în mod cuprinzător tema aleasă. 
+Aceasta trebuie să includă atât surse recente și actualizate, cât și o varietate de tipuri de resurse, 
+precum articole științifice, cărți, lucrări de specialitate, alături de resurse web, pentru a asigura o 
+fundamentare solidă și diversificată a lucrării. 
+Notă: pentru programul de studii Informatica Aplicată în limba germană  (IAG): 
+1. Lucrarea va fi scrisă în limba germană sau engleză 
+2. Cuprinsul, Introducerea, Concluziile și Perspectivele de dezvoltare vor fi scrise  în limba germană sau 
+engleza si română. 
+Prezentare:          
+Calitatea prezentării va fi evaluată pe baza conținutului slide-urilor, coerenței și cursivității discursului, 
+precum și corectitudinii exprimării. Se recomandă evitarea citirii directe de pe slide-uri și respectarea 
+timpului alocat. 
+La PS Informatica Aplicată în limba germană prezentarea se va face în limba germană sau engleză. 
+II. Aplicația practică 
+Complexitate și calitate aplicație soft        
+Menționare domeniu de aplicabilitate, utilizare 
+Analiză și proiectare 
+1 
+Securitate (unde este cazul) 
+Medii și limbaje de programare (principii respectate, calitatea codului) 
+Tehnologii actuale (în concordanță cu tema aleasă, motivarea alegerii lor) 
+Testare şi validare 
+Interfață intuitivă (user friendly) 
+Contribuții personale (orginalitate) 
+Demo aplicație (flux operațional, scenarii, relevanță teste, stabilitate aplicație)   
+III. Răspunsurile la întrebările comisiei (minim 2 întrebări)      
+Întrebări din partea teoretică a lucrării 
+Întrebări din aplicație, cod sursă 
+Note: 
+1. Pentru existența unor premii (locul 1, 2, 3 sau mențiune la concursuri de informatică la nivel național 
+sau internațional, sesiuni studențeşti, AFCO) sau publicații ştiințifice ale studentului în calitate de 
+(co)autor în reviste sau proceedings / volum conferințe de specialitate se acordă maxim 1 punct 
+suplimentar (fără a depăşi punctajul maxim total de 10 puncte). 
+2. Lucrările de licență sunt supuse analizei de similitudini prin aplicația Turnitin. Procentul maxim de 
+similitudine acceptat pentru lucrări este de 15%, respectiv 5% dintr-o sursă (conform HS/24.04.2024). 
+2 

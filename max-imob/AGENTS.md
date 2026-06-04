@@ -341,3 +341,28 @@ Author: Claudiu Ștefan
 ## Golden Rule
 
 Keep everything simple, readable, and easy to explain in a bachelor thesis defense.
+
+
+
+
+##Generate license.
+- start from 0.
+- For each chapter you need to generate a text document(separate files foreach chapter).
+- the document will created under docs/licenta.
+- don't generate the entire document.I will ask you what chapter to work.
+- where you think you need to add pictures just add a placeholder
+- if you have a lot of information for a chapter generated, try to aim for the maximum number of pages 
+- if you don;t have a lot of information aim to minum page whitout adding irrelevant information.
+ - always check ghid.txt
+ - formatul fisierelor txt.
+This is the strcuture of the license:
+ Chapter         
+1 – Introducere 2-3 pages
+2 – Analiza cerințelor 6-8 pages
+3 – Tehnologii utilizate8-10 pages
+4 – Proiectarea sistemului10-12 pages
+5 – Implementarea aplicației12-15 pages
+6 – Testare 4-5 pages
+7 – Concluzii 2-3 pages
+Bibliografie + Anexe2-4
+Total46-60
