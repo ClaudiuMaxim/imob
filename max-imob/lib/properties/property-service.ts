@@ -104,10 +104,6 @@ export async function listPublicProperties(filters: PublicPropertyFilters = {}) 
     queryValues.push(filters.bedrooms);
     queryParts.push(`bedrooms = $${queryValues.length}`);
   }
-  console.log(`SELECT *
-      FROM properties
-      WHERE ${queryParts.join(" AND ")}
-      ORDER BY created_at DESC`,queryValues);
 
   const result = await getPool().query<PropertyRow>(
     `

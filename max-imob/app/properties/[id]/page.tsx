@@ -1,6 +1,7 @@
 import Link from "next/link";
 import PropertyDetails from "./components/property-details";
 import Header from "@/app/components/Header";
+import Footer from "@/app/components/Footer";
 
 type PropertyDetailsPageProps = {
   params: Promise<{
@@ -17,6 +18,7 @@ export default async function PropertyDetailsPage({
     <main className="bg-light min-vh-100">
      <Header />
       <PropertyDetails propertyId={id} />
+      <Footer />
     </main>
   );
 }
