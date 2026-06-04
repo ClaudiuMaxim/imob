@@ -115,6 +115,7 @@ export async function listPublicProperties(filters: PublicPropertyFilters = {}) 
       FROM properties
       WHERE ${queryParts.join(" AND ")}
       ORDER BY created_at DESC
+      LIMIT 6
     `,
     queryValues,
   );

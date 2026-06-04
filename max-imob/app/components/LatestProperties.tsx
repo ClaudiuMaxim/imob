@@ -5,8 +5,7 @@ import Link from "next/link";
 import { listPublicProperties } from "@/lib/properties/property-service";
 
 export default async function LatestProperties() {
-  const properties = await listPublicProperties({});
-  const latest = properties.slice(0, 5);
+  const latest = await listPublicProperties({});
 
   return (
     <div className="row g-4">
