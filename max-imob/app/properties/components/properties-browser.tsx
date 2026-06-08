@@ -8,15 +8,17 @@ import PropertyGrid from "./property-grid";
 import {
   createPropertiesUrl,
   getErrorMessage,
+  requestCities,
   requestPublicProperties,
 } from "../lib/api";
-import type { Property } from "../lib/types";
+import type { City, Property } from "../lib/types";
 
 export default function PropertiesBrowser() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [cities, setCities] = useState<City[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
-  const [city, setCity] = useState("");
+  const [cityId, setCityId] = useState("");
   const [propertyType, setPropertyType] = useState("");
   const [offerType, setOfferType] = useState("");
   const [bedrooms, setBedrooms] = useState("");
@@ -28,25 +30,29 @@ export default function PropertiesBrowser() {
       setIsLoading(true);
       setError("");
 
-      const initialCity = searchParams.get("city") ?? "";
+      const initialCityId = searchParams.get("cityId") ?? "";
       const initialPropertyType = searchParams.get("propertyType") ?? "";
       const initialOfferType = searchParams.get("offerType") ?? "";
       const initialBedrooms = searchParams.get("bedrooms") ?? "";
 
-      setCity(initialCity);
+      setCityId(initialCityId);
       setPropertyType(initialPropertyType);
       setOfferType(initialOfferType);
       setBedrooms(initialBedrooms);
 
       try {
         const url = createPropertiesUrl({
-          city: initialCity,
+          cityId: initialCityId,
           propertyType: initialPropertyType,
           offerType: initialOfferType,
           bedrooms: initialBedrooms,
         });
-        const payload = await requestPublicProperties(url);
-        setProperties(payload.data?.properties ?? []);
+        const [citiesPayload, propertiesPayload] = await Promise.all([
+          requestCities(),
+          requestPublicProperties(url),
+        ]);
+        setCities(citiesPayload.data?.cities ?? []);
+        setProperties(propertiesPayload.data?.properties ?? []);
       } catch (requestError) {
         setError(getErrorMessage(requestError));
       } finally {
@@ -62,7 +68,7 @@ export default function PropertiesBrowser() {
     setError("");
 
     try {
-      const url = createPropertiesUrl({ city, propertyType, offerType, bedrooms });
+      const url = createPropertiesUrl({ cityId, propertyType, offerType, bedrooms });
       const payload = await requestPublicProperties(url);
       setProperties(payload.data?.properties ?? []);
     } catch (requestError) {
@@ -78,7 +84,7 @@ export default function PropertiesBrowser() {
   }
 
   function resetFilters() {
-    setCity("");
+    setCityId("");
     setPropertyType("");
     setOfferType("");
     setBedrooms("");
@@ -116,11 +122,12 @@ export default function PropertiesBrowser() {
         <div className="card-body">
           <PropertyFilters
             bedrooms={bedrooms}
-            city={city}
+            cities={cities}
+            cityId={cityId}
             offerType={offerType}
             isLoading={isLoading}
             onBedroomsChange={setBedrooms}
-            onCityChange={setCity}
+            onCityIdChange={setCityId}
             onOfferTypeChange={setOfferType}
             onPropertyTypeChange={setPropertyType}
             onReset={resetFilters}

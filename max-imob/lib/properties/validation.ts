@@ -1,4 +1,4 @@
-export type PropertyType = "apartament" | "casa" | "teren" | "comercial";
+﻿export type PropertyType = "apartament" | "casa" | "teren" | "comercial";
 export type PropertyStatus = "ciorna" | "publicata" | "vanduta" | "inchiriata";
 export type PropertyOffer = "vanzare" | "inchiriere";
 
@@ -6,7 +6,7 @@ export type CreatePropertyInput = {
   title: string;
   description: string;
   price: number;
-  city: string;
+  cityId: string;
   address: string;
   propertyType: PropertyType;
   status: PropertyStatus;
@@ -20,7 +20,7 @@ export type UpdatePropertyInput = {
   title?: string;
   description?: string;
   price?: number;
-  city?: string;
+  cityId?: string;
   address?: string;
   propertyType?: PropertyType;
   status?: PropertyStatus;
@@ -31,7 +31,7 @@ export type UpdatePropertyInput = {
 };
 
 export type PublicPropertyFilters = {
-  city?: string;
+  cityId?: string;
   propertyType?: PropertyType;
   offerType?: PropertyOffer;
   bedrooms?: number;
@@ -57,7 +57,7 @@ export function validateCreatePropertyInput(
   const title = getText(input.title);
   const description = getText(input.description);
   const price = getNumber(input.price);
-  const city = getText(input.city);
+  const cityId = getText(input.cityId);
   const address = getText(input.address);
   const propertyType = getPropertyType(input.propertyType);
   const status = getPropertyStatus(input.status);
@@ -66,26 +66,26 @@ export function validateCreatePropertyInput(
   const bathrooms = getInteger(input.bathrooms);
   const area = getNumber(input.area);
 
-  const basicError = validateBasicFields(title, description, city, address);
+  const basicError = validateBasicFields(title, description, cityId, address);
 
   if (basicError) {
     return invalid(basicError);
   }
 
-  if (!title || !description || !city || !address) {
-    return invalid("Datele proprietății sunt incomplete.");
+  if (!title || !description || !cityId || !address) {
+    return invalid("Datele proprietÄƒÈ›ii sunt incomplete.");
   }
 
   if (price === null || price < 0) {
-    return invalid("Prețul trebuie să fie un număr mai mare sau egal cu 0.");
+    return invalid("PreÈ›ul trebuie sÄƒ fie un numÄƒr mai mare sau egal cu 0.");
   }
 
   if (!propertyType) {
-    return invalid("Tipul proprietății este invalid.");
+    return invalid("Tipul proprietÄƒÈ›ii este invalid.");
   }
 
   if (!status) {
-    return invalid("Statusul proprietății este invalid.");
+    return invalid("Statusul proprietÄƒÈ›ii este invalid.");
   }
 
   if (!offerType) {
@@ -93,15 +93,15 @@ export function validateCreatePropertyInput(
   }
 
   if (bedrooms === null || bedrooms < 0) {
-    return invalid("Numărul de dormitoare este invalid.");
+    return invalid("NumÄƒrul de dormitoare este invalid.");
   }
 
   if (bathrooms === null || bathrooms < 0) {
-    return invalid("Numărul de băi este invalid.");
+    return invalid("NumÄƒrul de bÄƒi este invalid.");
   }
 
   if (area === null || area <= 0) {
-    return invalid("Suprafața trebuie să fie mai mare decât 0.");
+    return invalid("SuprafaÈ›a trebuie sÄƒ fie mai mare decÃ¢t 0.");
   }
 
   return {
@@ -110,7 +110,7 @@ export function validateCreatePropertyInput(
       title,
       description,
       price,
-      city,
+      cityId,
       address,
       propertyType,
       status,
@@ -126,7 +126,7 @@ export function validateUpdatePropertyInput(
   input: unknown,
 ): ValidationResult<UpdatePropertyInput> {
   if (!isRecord(input)) {
-    return invalid("Date invalide pentru actualizarea proprietății.");
+    return invalid("Date invalide pentru actualizarea proprietÄƒÈ›ii.");
   }
 
   const data: UpdatePropertyInput = {};
@@ -135,7 +135,7 @@ export function validateUpdatePropertyInput(
     const title = getText(input.title);
 
     if (!title || title.length < 3 || title.length > 150) {
-      return invalid("Titlul trebuie să aibă între 3 și 150 de caractere.");
+      return invalid("Titlul trebuie sÄƒ aibÄƒ Ã®ntre 3 È™i 150 de caractere.");
     }
 
     data.title = title;
@@ -145,7 +145,7 @@ export function validateUpdatePropertyInput(
     const description = getText(input.description);
 
     if (!description || description.length > 2000) {
-      return invalid("Descrierea este obligatorie și are maximum 2000 de caractere.");
+      return invalid("Descrierea este obligatorie È™i are maximum 2000 de caractere.");
     }
 
     data.description = description;
@@ -155,27 +155,28 @@ export function validateUpdatePropertyInput(
     const price = getNumber(input.price);
 
     if (price === null || price < 0) {
-      return invalid("Prețul trebuie să fie un număr mai mare sau egal cu 0.");
+      return invalid("PreÈ›ul trebuie sÄƒ fie un numÄƒr mai mare sau egal cu 0.");
     }
 
     data.price = price;
   }
 
-  if ("city" in input) {
-    const city = getText(input.city);
 
-    if (!city || city.length < 2 || city.length > 100) {
-      return invalid("Orașul trebuie să aibă între 2 și 100 de caractere.");
+  if ("cityId" in input) {
+    const cityId = getText(input.cityId);
+
+    if (!cityId) {
+      return invalid("Orasul este invalid.");
     }
 
-    data.city = city;
+    data.cityId = cityId;
   }
 
   if ("address" in input) {
     const address = getText(input.address);
 
     if (!address || address.length < 5 || address.length > 200) {
-      return invalid("Adresa trebuie să aibă între 5 și 200 de caractere.");
+      return invalid("Adresa trebuie sÄƒ aibÄƒ Ã®ntre 5 È™i 200 de caractere.");
     }
 
     data.address = address;
@@ -185,7 +186,7 @@ export function validateUpdatePropertyInput(
     const propertyType = getPropertyType(input.propertyType);
 
     if (!propertyType) {
-      return invalid("Tipul proprietății este invalid.");
+      return invalid("Tipul proprietÄƒÈ›ii este invalid.");
     }
 
     data.propertyType = propertyType;
@@ -195,7 +196,7 @@ export function validateUpdatePropertyInput(
     const status = getPropertyStatus(input.status);
 
     if (!status) {
-      return invalid("Statusul proprietății este invalid.");
+      return invalid("Statusul proprietÄƒÈ›ii este invalid.");
     }
 
     data.status = status;
@@ -215,7 +216,7 @@ export function validateUpdatePropertyInput(
     const bedrooms = getInteger(input.bedrooms);
 
     if (bedrooms === null || bedrooms < 0) {
-      return invalid("Numărul de dormitoare este invalid.");
+      return invalid("NumÄƒrul de dormitoare este invalid.");
     }
 
     data.bedrooms = bedrooms;
@@ -225,7 +226,7 @@ export function validateUpdatePropertyInput(
     const bathrooms = getInteger(input.bathrooms);
 
     if (bathrooms === null || bathrooms < 0) {
-      return invalid("Numărul de băi este invalid.");
+      return invalid("NumÄƒrul de bÄƒi este invalid.");
     }
 
     data.bathrooms = bathrooms;
@@ -235,14 +236,14 @@ export function validateUpdatePropertyInput(
     const area = getNumber(input.area);
 
     if (area === null || area <= 0) {
-      return invalid("Suprafața trebuie să fie mai mare decât 0.");
+      return invalid("SuprafaÈ›a trebuie sÄƒ fie mai mare decÃ¢t 0.");
     }
 
     data.area = area;
   }
 
   if (Object.keys(data).length === 0) {
-    return invalid("Nu există date de actualizat.");
+    return invalid("Nu existÄƒ date de actualizat.");
   }
 
   return {
@@ -260,15 +261,11 @@ export function validatePublicPropertyFilters(
 
   const filters: PublicPropertyFilters = {};
 
-  if ("city" in input) {
-    const city = getText(input.city);
+  if ("cityId" in input) {
+    const cityId = getText(input.cityId);
 
-    if (city && city.length > 100) {
-      return invalid("Orasul trebuie sa aiba maximum 100 de caractere.");
-    }
-
-    if (city) {
-      filters.city = city;
+    if (cityId) {
+      filters.cityId = cityId;
     }
   }
 
@@ -321,19 +318,19 @@ function validateBasicFields(
   address: string | null,
 ) {
   if (!title || title.length < 3 || title.length > 150) {
-    return "Titlul trebuie să aibă între 3 și 150 de caractere.";
+    return "Titlul trebuie sÄƒ aibÄƒ Ã®ntre 3 È™i 150 de caractere.";
   }
 
   if (!description || description.length > 2000) {
-    return "Descrierea este obligatorie și are maximum 2000 de caractere.";
+    return "Descrierea este obligatorie È™i are maximum 2000 de caractere.";
   }
 
   if (!city || city.length < 2 || city.length > 100) {
-    return "Orașul trebuie să aibă între 2 și 100 de caractere.";
+    return "OraÈ™ul trebuie sÄƒ aibÄƒ Ã®ntre 2 È™i 100 de caractere.";
   }
 
   if (!address || address.length < 5 || address.length > 200) {
-    return "Adresa trebuie să aibă între 5 și 200 de caractere.";
+    return "Adresa trebuie sÄƒ aibÄƒ Ã®ntre 5 È™i 200 de caractere.";
   }
 
   return null;
@@ -397,3 +394,4 @@ function invalid<T>(error: string): ValidationResult<T> {
     error,
   };
 }
+

@@ -1,0 +1,490 @@
+@startuml
+title Max Imob - Diagrama claselor de domeniu
+
+enum UserRole {
+  admin
+  agent
+}
+
+enum PropertyType {
+  apartament
+  casa
+  teren
+  comercial
+}
+
+enum PropertyStatus {
+  ciorna
+  publicata
+  vanduta
+  inchiriata
+}
+
+enum PropertyOffer {
+  vanzare
+  inchiriere
+}
+
+enum MessageStatus {
+  unread
+  read
+  archived
+}
+
+class User {
+  +id: string
+  +email: string
+  -passwordHash: string
+  +role: UserRole
+  +name: string
+  +phone: string
+  +isActive: boolean
+  +createdAt: Date
+  +updatedAt: Date
+  +isAdmin(): boolean
+  +isAgent(): boolean
+  +canAuthenticate(): boolean
+}
+
+class Admin {
+  +listAgents(): Agent[]
+  +createAgent(): Agent
+  +updateAgent(): Agent
+  +deactivateAgent(): Agent
+}
+
+class Agent {
+  +createProperty(): Property
+  +updateProperty(): Property
+  +deactivateProperty(): Property
+  +viewMessages(): Message[]
+}
+
+class Property {
+  +id: string
+  +agentId: string
+  +title: string
+  +description: string
+  +price: number
+  +city: string
+  +address: string
+  +propertyType: PropertyType
+  +status: PropertyStatus
+  +offerType: PropertyOffer
+  +bedrooms: number
+  +bathrooms: number
+  +area: number
+  +isActive: boolean
+  +createdAt: string
+  +updatedAt: string
+  +publish(): void
+  +activate(): void
+  +deactivate(): void
+  +addImage(): void
+}
+
+class PropertyImage {
+  +id: string
+  +propertyId: string
+  +imageUrl: string
+  +fileName: string
+  +sortOrder: number
+  +createdAt: Date
+}
+
+class Message {
+  +id: string
+  +propertyId: string
+  +agentId: string
+  +contactName: string
+  +contactEmail: string
+  +contactPhone: string
+  +messageContent: string
+  +status: MessageStatus
+  +createdAt: string
+  +updatedAt: string
+  +markAsRead(): void
+  +archive(): void
+}
+
+User <|-- Admin
+User <|-- Agent
+Agent "1" -- "0..*" Property : detine
+Property "1" -- "0..*" PropertyImage : are
+Property "1" -- "0..*" Message : primeste
+Agent "1" -- "0..*" Message : gestioneaza
+
+User --> UserRole
+Property --> PropertyType
+Property --> PropertyStatus
+Property --> PropertyOffer
+Message --> MessageStatus
+
+@enduml
+
+
+@startuml
+title Max Imob - Diagrama claselor de servicii
+
+class DatabasePool {
+  +getPool(): Pool
+}
+
+class AuthService {
+  +loginUser(input: LoginInput): LoginResult
+  -findUserByEmail(email: string): StoredUser
+  -createAuthToken(userId: string, role: UserRole): string
+  -invalidCredentials(): LoginResult
+}
+
+class SessionService {
+  +getAuthSession(request: NextRequest): AuthSession
+  +requireAdmin(request: NextRequest): AuthSession
+  +requireAgent(request: NextRequest): AuthSession
+}
+
+class AgentService {
+  +listAgents(status: AgentStatusFilter): Agent[]
+  +createAgent(input: CreateAgentInput): Agent
+  +getAgentById(id: string): Agent
+  +updateAgent(id: string, input: UpdateAgentInput): Agent
+  +deactivateAgent(id: string): Agent
+  +isUniqueViolation(error: unknown): boolean
+}
+
+class PropertyService {
+  +listAgentProperties(agentId: string): Property[]
+  +listPublicProperties(filters: PublicPropertyFilters): Property[]
+  +createProperty(agentId: string, input: CreatePropertyInput, images: SavedPropertyImage[]): Property
+  +getAgentPropertyById(agentId: string, propertyId: string): Property
+  +getPublicPropertyById(propertyId: string): Property
+  +updateProperty(agentId: string, propertyId: string, input: UpdatePropertyInput, images: SavedPropertyImage[]): Property
+  +deactivateProperty(agentId: string, propertyId: string): Property
+  +activateProperty(agentId: string, propertyId: string): Property
+}
+
+class MessageService {
+  +saveMessage(propertyId: string, agentId: string, input: CreateMessageInput): Message
+  +getPropertyById(propertyId: string): PropertyReference
+  +getMessagesByPropertyId(propertyId: string): Message[]
+  +getMessagesByAgentId(agentId: string): Message[]
+  +markMessageAsRead(messageId: string): Message
+}
+
+class AuthError {
+  +message: string
+  +status: 401 | 403
+}
+
+AuthService --> DatabasePool
+AgentService --> DatabasePool
+PropertyService --> DatabasePool
+MessageService --> DatabasePool
+SessionService --> AuthError
+AuthService ..> User
+AgentService ..> Agent
+PropertyService ..> Property
+PropertyService ..> PropertyImage
+MessageService ..> Message
+
+@enduml
+
+
+@startuml
+title Max Imob - Validatoare si rute API
+
+class LoginValidator {
+  +validateLoginInput(input: unknown): LoginValidationResult
+}
+
+class AgentValidator {
+  +validateCreateAgentInput(input: unknown): ValidationResult
+  +validateUpdateAgentInput(input: unknown): ValidationResult
+  +validateAgentStatusFilter(status: string): AgentStatusFilter
+}
+
+class PropertyValidator {
+  +validateCreatePropertyInput(input: unknown): ValidationResult
+  +validateUpdatePropertyInput(input: unknown): ValidationResult
+  +validatePublicPropertyFilters(input: unknown): ValidationResult
+}
+
+class MessageValidator {
+  +validateCreateMessageInput(input: unknown): ValidationResult
+}
+
+class AuthLoginRoute {
+  +POST(request: NextRequest): NextResponse
+}
+
+class AgentsRoute {
+  +GET(request: NextRequest): NextResponse
+  +POST(request: NextRequest): NextResponse
+}
+
+class AgentByIdRoute {
+  +GET(request: NextRequest): NextResponse
+  +PATCH(request: NextRequest): NextResponse
+  +DELETE(request: NextRequest): NextResponse
+}
+
+class PropertiesRoute {
+  +GET(request: NextRequest): NextResponse
+  +POST(request: NextRequest): NextResponse
+}
+
+class PropertyByIdRoute {
+  +GET(request: NextRequest): NextResponse
+  +PATCH(request: NextRequest): NextResponse
+  +DELETE(request: NextRequest): NextResponse
+}
+
+class PropertyMessagesRoute {
+  +POST(request: NextRequest): NextResponse
+}
+
+class AgentMessagesRoute {
+  +GET(request: NextRequest): NextResponse
+}
+
+AuthLoginRoute --> LoginValidator
+AuthLoginRoute --> AuthService
+
+AgentsRoute --> AgentValidator
+AgentsRoute --> AgentService
+AgentsRoute --> SessionService
+
+AgentByIdRoute --> AgentValidator
+AgentByIdRoute --> AgentService
+AgentByIdRoute --> SessionService
+
+PropertiesRoute --> PropertyValidator
+PropertiesRoute --> PropertyService
+PropertiesRoute --> SessionService
+
+PropertyByIdRoute --> PropertyValidator
+PropertyByIdRoute --> PropertyService
+PropertyByIdRoute --> SessionService
+
+PropertyMessagesRoute --> MessageValidator
+PropertyMessagesRoute --> MessageService
+
+AgentMessagesRoute --> MessageService
+AgentMessagesRoute --> SessionService
+
+@enduml
+
+
+@startuml
+title Max Imob - Diagrama cazurilor de utilizare
+
+left to right direction
+
+actor "Vizitator public" as PublicUser
+actor "Agent imobiliar" as Agent
+actor "Administrator" as Admin
+
+rectangle "Max Imob" {
+  usecase "Vizualizare proprietati" as UC1
+  usecase "Filtrare proprietati" as UC2
+  usecase "Vizualizare detalii proprietate" as UC3
+  usecase "Trimitere mesaj catre agent" as UC4
+
+  usecase "Autentificare" as UC5
+  usecase "Gestionare proprietati proprii" as UC6
+  usecase "Adaugare proprietate" as UC7
+  usecase "Editare proprietate" as UC8
+  usecase "Activare/dezactivare proprietate" as UC9
+  usecase "Vizualizare mesaje primite" as UC10
+
+  usecase "Gestionare agenti" as UC11
+  usecase "Creare agent" as UC12
+  usecase "Editare agent" as UC13
+  usecase "Activare/dezactivare agent" as UC14
+}
+
+PublicUser --> UC1
+PublicUser --> UC2
+PublicUser --> UC3
+PublicUser --> UC4
+
+Agent --> UC5
+Agent --> UC6
+Agent --> UC10
+UC6 .> UC7 : include
+UC6 .> UC8 : include
+UC6 .> UC9 : include
+
+Admin --> UC5
+Admin --> UC11
+UC11 .> UC12 : include
+UC11 .> UC13 : include
+UC11 .> UC14 : include
+
+@enduml
+
+
+@startuml
+title Max Imob - Secventa autentificare
+
+actor "Admin/Agent" as User
+participant "Pagina Login" as LoginPage
+participant "POST /api/auth/login" as LoginRoute
+participant "LoginValidator" as Validator
+participant "AuthService" as AuthService
+database "PostgreSQL" as DB
+participant "JWT + Cookie HTTP-only" as Cookie
+
+User -> LoginPage : introduce email si parola
+LoginPage -> LoginRoute : trimite cerere POST
+LoginRoute -> Validator : valideaza input
+
+alt date invalide
+  Validator --> LoginRoute : eroare validare
+  LoginRoute --> LoginPage : raspuns 400
+else date valide
+  Validator --> LoginRoute : input normalizat
+  LoginRoute -> AuthService : loginUser(input)
+  AuthService -> DB : cauta utilizator dupa email
+  DB --> AuthService : user sau null
+
+  alt credentiale incorecte sau cont inactiv
+    AuthService --> LoginRoute : rezultat invalid
+    LoginRoute --> LoginPage : raspuns 401
+  else credentiale valide
+    AuthService -> AuthService : verifica parola bcrypt
+    AuthService -> AuthService : genereaza JWT
+    AuthService --> LoginRoute : token si redirectUrl
+    LoginRoute -> Cookie : seteaza auth_token
+    LoginRoute --> LoginPage : raspuns 200
+    LoginPage --> User : redirect catre /admin sau /agent
+  end
+end
+
+@enduml
+
+
+@startuml
+title Max Imob - Secventa trimitere mesaj public
+
+actor "Vizitator public" as Visitor
+participant "Pagina detalii proprietate" as PropertyPage
+participant "POST /api/properties/[id]/messages" as MessageRoute
+participant "MessageValidator" as Validator
+participant "MessageService" as MessageService
+database "PostgreSQL" as DB
+
+Visitor -> PropertyPage : completeaza formularul de contact
+PropertyPage -> MessageRoute : trimite cerere POST
+MessageRoute -> Validator : valideaza datele mesajului
+
+alt date invalide
+  Validator --> MessageRoute : lista erori
+  MessageRoute --> PropertyPage : raspuns 400
+  PropertyPage --> Visitor : afiseaza mesaj de eroare
+else date valide
+  Validator --> MessageRoute : input valid
+  MessageRoute -> MessageService : getPropertyById(propertyId)
+  MessageService -> DB : cauta proprietatea
+  DB --> MessageService : proprietate si agentId
+
+  alt proprietate inexistenta
+    MessageService --> MessageRoute : nu exista proprietate
+    MessageRoute --> PropertyPage : raspuns 404
+  else proprietate existenta
+    MessageRoute -> MessageService : saveMessage(propertyId, agentId, input)
+    MessageService -> DB : insereaza mesajul
+    DB --> MessageService : mesaj creat
+    MessageService --> MessageRoute : mesaj salvat
+    MessageRoute --> PropertyPage : raspuns 201
+    PropertyPage --> Visitor : confirmare trimitere
+  end
+end
+
+@enduml
+
+
+@startuml
+title Max Imob - Activitate creare proprietate
+
+start
+:Agentul acceseaza formularul de adaugare proprietate;
+:Completeaza datele proprietatii;
+:Trimite formularul catre API;
+
+if (Agent autentificat?) then (da)
+  :SessionService returneaza sesiunea;
+else (nu)
+  :API returneaza 401;
+  stop
+endif
+
+if (Rolul este agent?) then (da)
+  :Se continua procesarea;
+else (nu)
+  :API returneaza 403;
+  stop
+endif
+
+:PropertyValidator verifica inputul;
+
+if (Date valide?) then (da)
+  :Se proceseaza imaginile incarcate;
+  :PropertyService porneste tranzactia;
+  :Se insereaza proprietatea;
+  :Se insereaza imaginile asociate;
+  :Se confirma tranzactia;
+  :API returneaza proprietatea creata;
+else (nu)
+  :API returneaza 400 cu erori de validare;
+endif
+
+stop
+@enduml
+
+
+@startuml
+title Max Imob - Diagrama componentelor
+
+package "Client web" {
+  component "Pagini publice" as PublicPages
+  component "Pagina login" as LoginPage
+  component "Dashboard agent" as AgentDashboard
+  component "Panou admin" as AdminPanel
+}
+
+package "Next.js App Router" {
+  component "Route handlers API" as ApiRoutes
+  component "Middleware / SessionService" as SessionService
+}
+
+package "Logica aplicatiei" {
+  component "AuthService" as AuthService
+  component "AgentService" as AgentService
+  component "PropertyService" as PropertyService
+  component "MessageService" as MessageService
+  component "Validatoare input" as Validators
+}
+
+database "PostgreSQL" as DB
+folder "public/uploads" as Uploads
+
+PublicPages --> ApiRoutes : cereri publice
+LoginPage --> ApiRoutes : login
+AgentDashboard --> ApiRoutes : cereri agent
+AdminPanel --> ApiRoutes : cereri admin
+
+ApiRoutes --> Validators : validare input
+ApiRoutes --> SessionService : autentificare/autorizare
+ApiRoutes --> AuthService
+ApiRoutes --> AgentService
+ApiRoutes --> PropertyService
+ApiRoutes --> MessageService
+
+AuthService --> DB
+AgentService --> DB
+PropertyService --> DB
+MessageService --> DB
+PropertyService --> Uploads : imagini proprietati
+
+@enduml

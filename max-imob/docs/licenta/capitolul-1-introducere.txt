@@ -1,0 +1,84 @@
+CAPITOLUL 1
+INTRODUCERE
+
+1.1. Contextul lucrarii
+
+In ultimii ani, digitalizarea serviciilor a influentat in mod direct modul in care utilizatorii cauta, compara si aleg produse sau servicii. Domeniul imobiliar este unul dintre domeniile in care aceasta schimbare este foarte vizibila, deoarece procesul traditional de cautare a unei locuinte presupunea consultarea unor anunturi fragmentate, discutii telefonice repetate, deplasari si verificari manuale ale informatiilor. In prezent, utilizatorii se asteapta ca informatiile despre proprietati sa fie disponibile online, usor de filtrat, clare si insotite de modalitati rapide de contact.
+
+O platforma imobiliara moderna trebuie sa raspunda atat nevoilor utilizatorilor publici, cat si nevoilor persoanelor care administreaza proprietatile. Din perspectiva unui utilizator public, aplicatia trebuie sa ofere acces rapid la lista proprietatilor, detalii relevante despre fiecare anunt si o modalitate simpla de transmitere a unei cereri de contact. Din perspectiva unui agent imobiliar, sistemul trebuie sa permita administrarea proprietatilor proprii si vizualizarea mesajelor primite de la potentialii clienti. Din perspectiva administratorului, platforma trebuie sa ofere control asupra conturilor de agenti, fara a amesteca responsabilitatile administrative cu cele operationale legate de proprietati.
+
+Lucrarea de fata prezinta proiectarea si implementarea unei platforme web pentru administrarea si consultarea anunturilor imobiliare. Aplicatia propusa simuleaza un sistem real de tip marketplace imobiliar, avand trei categorii principale de utilizare: acces public pentru vizitatori, panou de lucru pentru agenti si panou administrativ pentru gestionarea agentilor. Prin aceasta separare clara a rolurilor, sistemul urmareste sa fie usor de inteles, usor de folosit si usor de prezentat din punct de vedere tehnic.
+
+[PLACEHOLDER FIGURA 1.1 - Captura de ecran sau schema generala a platformei Max Imob, evidentiind zona publica, zona agentului si zona administratorului.]
+
+1.2. Motivatia alegerii temei
+
+Alegerea temei a fost determinata de caracterul practic al domeniului imobiliar si de posibilitatea de a integra intr-o singura aplicatie mai multe concepte importante studiate in cadrul domeniului Informatica. O platforma imobiliara nu reprezinta doar o lista de anunturi, ci un sistem complet care implica proiectarea interfetei, gestionarea datelor, autentificare, autorizare, validarea informatiilor, comunicarea dintre componente si organizarea clara a functionalitatilor.
+
+Tema permite construirea unei aplicatii full-stack, in care partea de client si partea de server trebuie sa colaboreze coerent. Interfata publica trebuie sa fie simpla si accesibila, deoarece vizitatorii nu trebuie sa fie obligati sa isi creeze cont pentru a consulta proprietati sau pentru a trimite un mesaj. In acelasi timp, agentii si administratorii au nevoie de autentificare, deoarece actiunile lor modifica datele sistemului si trebuie protejate. Aceasta diferenta intre accesul public si accesul autentificat reprezinta un aspect important al proiectarii aplicatiilor web reale.
+
+Un alt motiv pentru alegerea temei este faptul ca sistemul poate fi explicat usor in cadrul unei lucrari de licenta. Entitatile principale, respectiv utilizatori, proprietati si cereri de contact, sunt intuitive, iar relatiile dintre ele sunt clare. Fiecare proprietate apartine unui agent, iar fiecare cerere de contact este asociata atat unei proprietati, cat si agentului responsabil. Aceasta structura ofera un cadru potrivit pentru demonstrarea proiectarii unei baze de date relationale si pentru implementarea unor reguli de business simple, dar relevante.
+
+De asemenea, tema are un caracter aplicativ puternic. Rezultatul final nu este doar un exercitiu tehnic, ci o aplicatie care poate fi folosita pentru scenarii apropiate de realitate: un vizitator cauta o proprietate, acceseaza pagina de detalii, completeaza formularul de contact, iar agentul responsabil vede mesajul in panoul sau. Administratorul poate gestiona conturile agentilor si poate dezactiva accesul unui agent atunci cand este necesar. Aceste fluxuri ofera o baza buna pentru testare, validare si prezentare.
+
+1.3. Studiu comparativ cu aplicatii existente
+
+Pe piata exista mai multe platforme imobiliare cunoscute, precum portaluri de anunturi, site-uri ale agentiilor imobiliare sau aplicatii interne de tip CRM pentru administrarea clientilor. Platformele publice de anunturi pun accent in special pe vizibilitatea proprietatilor, filtre complexe, imagini si promovarea ofertelor. Acestea sunt utile pentru utilizatori, insa pot include functionalitati extinse care nu sunt necesare intr-un proiect academic de dimensiune controlata.
+
+Aplicatiile interne folosite de agentii imobiliare sunt orientate mai mult spre administrare, urmarirea clientilor si organizarea activitatii agentilor. Aceste sisteme pot include module de raportare, contracte, programari, integrare cu servicii externe sau instrumente de marketing. Desi aceste functionalitati sunt utile intr-un context comercial, ele pot complica arhitectura si pot indeparta atentia de la obiectivul principal al lucrarii: proiectarea si implementarea clara a unei aplicatii web functionale.
+
+Aplicatia dezvoltata in aceasta lucrare se pozitioneaza intre aceste doua tipuri de sisteme. Ea include o zona publica pentru vizualizarea proprietatilor, dar si zone protejate pentru agenti si administrator. Spre deosebire de platformele foarte mari, aplicatia nu urmareste acoperirea tuturor cazurilor posibile din piata imobiliara, ci implementarea unui set coerent de functionalitati esentiale. Aceasta abordare permite mentinerea unei arhitecturi simple, usor de verificat si potrivite pentru scopul unei lucrari de licenta.
+
+Un element important al aplicatiei este separarea responsabilitatilor. Utilizatorii publici nu au conturi si nu se autentifica, ceea ce simplifica experienta de cautare. Agentii se autentifica pentru a administra propriile proprietati si pentru a vizualiza mesajele primite. Administratorul se autentifica pentru a gestiona agentii, dar nu intervine in administrarea proprietatilor. Aceasta delimitare este importanta deoarece reduce riscul de confuzie intre roluri si permite aplicarea unor reguli clare de autorizare.
+
+1.4. Prezentarea generala a aplicatiei
+
+Aplicatia propusa, denumita Max Imob, este o platforma web pentru publicarea, consultarea si administrarea proprietatilor imobiliare. Sistemul este construit in jurul a trei fluxuri principale: fluxul public, fluxul agentului si fluxul administratorului.
+
+Fluxul public permite vizitatorilor sa acceseze pagina principala, sa consulte lista proprietatilor, sa foloseasca mecanisme de cautare sau filtrare si sa deschida pagina de detalii a unei proprietati. Pe pagina de detalii, utilizatorul poate vedea informatii precum titlul, descrierea, pretul, localizarea, tipul proprietatii si starea acesteia. Daca este interesat, utilizatorul poate trimite un mesaj prin formularul de contact. Acest mesaj este inregistrat ca lead si este asociat proprietatii si agentului responsabil.
+
+Fluxul agentului este destinat utilizatorilor autentificati cu rol de agent. Un agent poate administra doar proprietatile care ii apartin. Acesta poate crea anunturi noi, poate modifica informatiile existente, poate sterge proprietati atunci cand este cazul si poate actualiza statusul unei proprietati. De asemenea, agentul poate vizualiza mesajele primite de la utilizatorii publici, ceea ce permite urmarirea interesului pentru proprietatile publicate.
+
+Fluxul administratorului este destinat gestionarii agentilor. Administratorul poate crea conturi pentru agenti si poate activa sau dezactiva accesul acestora. Rolul administratorului este limitat la administrarea utilizatorilor interni ai sistemului, fara a gestiona direct proprietatile. Aceasta decizie de proiectare pastreaza sistemul simplu si respecta principiul separarii responsabilitatilor.
+
+Autentificarea este folosita doar pentru administrator si agenti. Procesul presupune introducerea adresei de email si a parolei, verificarea datelor de autentificare si generarea unui token JWT stocat intr-un cookie HTTP-only. Aceasta abordare contribuie la protejarea sesiunilor utilizatorilor autentificati si reduce expunerea tokenului in partea de client. Parolele sunt protejate prin hashing, iar accesul la rutele private este controlat in functie de rol.
+
+1.5. Obiectivele lucrarii
+
+Obiectivul principal al lucrarii este proiectarea si implementarea unei aplicatii web full-stack pentru gestionarea anunturilor imobiliare, cu functionalitati diferentiate pentru utilizatori publici, agenti si administrator. Aplicatia trebuie sa fie suficient de completa pentru a demonstra un flux real de utilizare, dar suficient de simpla pentru a ramane clara, mentenabila si usor de explicat.
+
+Un prim obiectiv secundar este realizarea unei interfete publice intuitive, prin care utilizatorii pot consulta proprietatile fara autentificare. Aceasta decizie este importanta deoarece in scenariile reale majoritatea vizitatorilor doresc acces rapid la informatie, fara pasi suplimentari precum crearea unui cont.
+
+Un al doilea obiectiv este implementarea unui mecanism de autentificare si autorizare pentru rolurile interne. Sistemul trebuie sa permita diferentierea clara intre administrator si agent, astfel incat fiecare utilizator autentificat sa aiba acces doar la functionalitatile corespunzatoare rolului sau.
+
+Un al treilea obiectiv este proiectarea unei structuri de date relationale care sa sustina corect regulile de business. Proprietatile trebuie sa fie asociate agentilor, iar cererile de contact trebuie sa fie asociate atat proprietatilor, cat si agentilor. Aceasta organizare permite pastrarea trasabilitatii mesajelor si simplifica afisarea informatiilor in panourile de lucru.
+
+Un alt obiectiv este mentinerea unei arhitecturi simple. Lucrarea nu urmareste utilizarea unor modele arhitecturale complexe, ci aplicarea corecta a unor principii de baza: separarea responsabilitatilor, validarea datelor, controlul accesului, reutilizarea componentelor si organizarea codului in module usor de inteles.
+
+1.6. Contributii personale
+
+Contributia personala consta in proiectarea si implementarea unei platforme complete, adaptate unui scenariu imobiliar concret. Sistemul include modelarea rolurilor, definirea fluxurilor de utilizare, proiectarea bazei de date, implementarea interfetei si realizarea mecanismelor de autentificare si autorizare.
+
+O contributie importanta este separarea clara a celor trei tipuri de utilizatori: public, agent si administrator. Aceasta separare se reflecta in rutele aplicatiei, in regulile de acces si in functionalitatile disponibile. Utilizatorul public are o experienta simpla, fara autentificare. Agentul are acces la instrumente operationale pentru proprietatile proprii. Administratorul controleaza conturile agentilor, fara a prelua sarcinile acestora.
+
+O alta contributie este definirea unui flux complet pentru generarea lead-urilor. Mesajele trimise de vizitatori nu sunt tratate ca simple formulare izolate, ci sunt integrate in logica aplicatiei prin asocierea cu proprietatea si agentul responsabil. Astfel, sistemul poate sustine o interactiune realista intre potentialii clienti si agentii imobiliari.
+
+De asemenea, aplicatia pune accent pe simplitate si claritate. Codul si structura proiectului sunt gandite astfel incat sa poata fi explicate in cadrul sustinerii lucrarii. Functionalitatile sunt alese in concordanta cu scopul proiectului si evita extinderea inutila a domeniului. Aceasta abordare ajuta la obtinerea unei aplicatii stabile si coerente, in care fiecare componenta are un rol bine definit.
+
+1.7. Organizarea lucrarii
+
+Lucrarea este structurata in sapte capitole principale, urmate de bibliografie si anexe. Primul capitol introduce tema, prezinta motivatia alegerii acesteia, pozitioneaza aplicatia in raport cu sisteme existente si descrie pe scurt obiectivele si contributiile personale.
+
+Capitolul al doilea este dedicat analizei cerintelor. In acest capitol sunt prezentate rolurile utilizatorilor, cerintele functionale si nefunctionale, regulile de business si scenariile principale de utilizare. Scopul capitolului este de a clarifica ce trebuie sa faca sistemul inainte de descrierea tehnologiilor si a solutiei tehnice.
+
+Capitolul al treilea prezinta tehnologiile utilizate. Sunt analizate tehnologiile folosite pentru partea de frontend, backend si baza de date, precum si motivele alegerii acestora. Capitolul evidentiaza rolul tehnologiilor precum Next.js, React, TypeScript, Bootstrap, Node.js, PostgreSQL, JWT si bcrypt in dezvoltarea aplicatiei.
+
+Capitolul al patrulea descrie proiectarea sistemului. Acesta include arhitectura generala, organizarea modulelor, proiectarea bazei de date, rutele principale, fluxurile de date si regulile de securitate. Capitolul are rolul de a arata cum a fost gandita aplicatia inainte de implementarea efectiva.
+
+Capitolul al cincilea prezinta implementarea aplicatiei. In acest capitol sunt descrise functionalitatile realizate, modul in care sunt implementate paginile publice, panourile pentru agent si administrator, autentificarea, validarea datelor si interactiunea cu baza de date.
+
+Capitolul al saselea este dedicat testarii. Sunt prezentate scenarii de testare pentru fluxurile principale, validarea formularelor, verificarea autorizarii si comportamentul aplicatiei in situatii de eroare. Testarea are rolul de a demonstra ca aplicatia functioneaza conform cerintelor stabilite.
+
+Capitolul al saptelea contine concluziile lucrarii si posibile directii de dezvoltare. Sunt evidentiate rezultatele obtinute, limitarile aplicatiei si functionalitatile care ar putea fi adaugate ulterior, precum programari pentru vizionari, notificari, statistici pentru agenti sau integrarea unor servicii externe.
+
+Prin structura si continutul sau, lucrarea urmareste sa demonstreze parcurgerea completa a etapelor necesare dezvoltarii unei aplicatii web: analiza, proiectare, implementare, testare si evaluare. Aplicatia Max Imob reprezinta astfel un proiect practic, coerent si adaptat cerintelor unei lucrari de licenta in domeniul Informatica.

@@ -1,4 +1,4 @@
-import type { PropertiesResponse, PropertyFilters } from "./types";
+import type { CitiesResponse, PropertiesResponse, PropertyFilters } from "./types";
 
 export async function requestPublicProperties(path: string) {
   const response = await fetch(path);
@@ -11,12 +11,23 @@ export async function requestPublicProperties(path: string) {
   return payload;
 }
 
+export async function requestCities() {
+  const response = await fetch("/api/cities");
+  const payload = (await response.json()) as CitiesResponse;
+
+  if (!response.ok || !payload.success) {
+    throw new Error(payload.error ?? "Lista oraselor nu a putut fi incarcata.");
+  }
+
+  return payload;
+}
+
 export function createPropertiesUrl(filters: PropertyFilters) {
   const searchParams = new URLSearchParams();
   searchParams.set("publicata", "1");
 
-  if (filters.city.trim()) {
-    searchParams.set("city", filters.city.trim());
+  if (filters.cityId) {
+    searchParams.set("cityId", filters.cityId);
   }
 
   if (filters.propertyType) {

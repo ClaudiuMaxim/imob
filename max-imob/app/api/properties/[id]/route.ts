@@ -5,6 +5,7 @@ import {
   deactivateProperty,
   getAgentPropertyById,
   getPublicPropertyById,
+  PropertyInputError,
   updateProperty,
 } from "@/lib/properties/property-service";
 import {
@@ -134,7 +135,7 @@ function getPropertyInputFromFormData(formData: FormData) {
     title: formData.get("title"),
     description: formData.get("description"),
     price: formData.get("price"),
-    city: formData.get("city"),
+    cityId: formData.get("cityId"),
     address: formData.get("address"),
     propertyType: formData.get("propertyType"),
     offerType: formData.get("offerType"),
@@ -147,6 +148,10 @@ function getPropertyInputFromFormData(formData: FormData) {
 
 function handleRouteError(error: unknown) {
   if (error instanceof AuthError) {
+    return jsonError(error.message, error.status);
+  }
+
+  if (error instanceof PropertyInputError) {
     return jsonError(error.message, error.status);
   }
 

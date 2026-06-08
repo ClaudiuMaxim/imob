@@ -4,8 +4,8 @@ import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 import PropertyForm from "./components/property-form";
 import PropertiesListPanel from "./components/properties-list-panel";
-import { getErrorMessage, requestProperties } from "./lib/api";
-import type { Property } from "./lib/types";
+import { getErrorMessage, requestCities, requestProperties } from "./lib/api";
+import type { City, Property } from "./lib/types";
 
 export default function AgentProperties() {
   const [properties, setProperties] = useState<Property[]>([]);
@@ -13,7 +13,8 @@ export default function AgentProperties() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
-  const [city, setCity] = useState("");
+  const [cities, setCities] = useState<City[]>([]);
+  const [cityId, setCityId] = useState("");
   const [address, setAddress] = useState("");
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imageInputKey, setImageInputKey] = useState(0);
@@ -29,8 +30,26 @@ export default function AgentProperties() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    void loadProperties();
+    void loadInitialData();
   }, []);
+
+  async function loadInitialData() {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const [citiesPayload, propertiesPayload] = await Promise.all([
+        requestCities(),
+        requestProperties("/api/properties"),
+      ]);
+      setCities(citiesPayload.data?.cities ?? []);
+      setProperties(propertiesPayload.data?.properties ?? []);
+    } catch (requestError) {
+      setError(getErrorMessage(requestError));
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   async function loadProperties() {
     setIsLoading(true);
@@ -125,7 +144,7 @@ export default function AgentProperties() {
     setTitle(property.title);
     setDescription(property.description);
     setPrice(String(property.price));
-    setCity(property.city);
+    setCityId(property.cityId);
     setAddress(property.address);
     setImageFiles([]);
     setImageInputKey((currentKey) => currentKey + 1);
@@ -142,7 +161,7 @@ export default function AgentProperties() {
     setTitle("");
     setDescription("");
     setPrice("");
-    setCity("");
+    setCityId("");
     setAddress("");
     setImageFiles([]);
     setImageInputKey((currentKey) => currentKey + 1);
@@ -160,7 +179,7 @@ export default function AgentProperties() {
     formData.append("title", title);
     formData.append("description", description);
     formData.append("price", price);
-    formData.append("city", city);
+    formData.append("cityId", cityId);
     formData.append("address", address);
     formData.append("propertyType", propertyType);
     formData.append("offerType", offerType);
@@ -184,7 +203,8 @@ export default function AgentProperties() {
           area={area}
           bathrooms={bathrooms}
           bedrooms={bedrooms}
-          city={city}
+          cities={cities}
+          cityId={cityId}
           description={description}
           imageInputKey={imageInputKey}
           isEditing={Boolean(editPropertyId)}
@@ -194,7 +214,7 @@ export default function AgentProperties() {
           onBathroomsChange={setBathrooms}
           onBedroomsChange={setBedrooms}
           onCancel={resetForm}
-          onCityChange={setCity}
+          onCityIdChange={setCityId}
           onDescriptionChange={setDescription}
           onImagesChange={setImageFiles}
           onOfferTypeChange={setOfferType}

@@ -1,0 +1,118 @@
+CAPITOLUL 4
+PROIECTAREA SISTEMULUI - REZUMAT
+
+4.1. Rolul proiectării sistemului
+
+Proiectarea sistemului reprezintă etapa în care cerințele aplicației sunt transformate într-o soluție tehnică organizată. În cazul platformei Max Imob, această etapă stabilește modul în care sunt împărțite responsabilitățile între interfața web, rutele server-side, logica aplicației și baza de date.
+
+Aplicația este construită pentru a simula o platformă imobiliară reală, dar cu o structură potrivită pentru o lucrare de licență. Sistemul permite vizitatorilor să consulte proprietăți fără cont, agenților să își administreze propriile anunțuri și mesajele primite, iar administratorului să gestioneze conturile agenților.
+
+Un obiectiv important al proiectării a fost păstrarea unei arhitecturi clare. Soluția nu folosește microservicii sau mecanisme complexe, deoarece scopul proiectului este realizarea unei aplicații complete, ușor de înțeles și ușor de explicat. Din acest motiv, Max Imob este proiectată ca o aplicație web full-stack, în care partea de prezentare, rutele API și logica server-side sunt organizate în același proiect.
+
+[PLACEHOLDER FIGURA 4.1 - Schema generală a sistemului Max Imob: utilizator, interfață Next.js, rute API, servicii, PostgreSQL.]
+
+4.2. Principii de proiectare
+
+Proiectarea aplicației urmărește câteva principii simple. Primul principiu este separarea responsabilităților. Interfața are rolul de a afișa informații și de a colecta date de la utilizator, rutele API primesc cererile și returnează răspunsuri JSON, serviciile conțin logica principală, iar baza de date păstrează informațiile persistente.
+
+Al doilea principiu este controlul accesului în funcție de rol. Aplicația are trei categorii de utilizatori: vizitator public, agent și administrator. Vizitatorul public nu se autentifică și poate doar să consulte proprietăți sau să trimită mesaje. Agentul se autentifică și lucrează doar cu propriile proprietăți și lead-uri. Administratorul se autentifică și gestionează conturile agenților.
+
+Al treilea principiu este validarea datelor pe server. Orice informație primită prin formulare trebuie verificată înainte de salvare. Această regulă este necesară deoarece validarea din interfață poate fi ocolită. Validarea server-side contribuie la corectitudinea datelor, la securitate și la stabilitatea aplicației.
+
+Al patrulea principiu este simplitatea. Fiecare modul are un rol concret, iar fișierele sunt păstrate cât mai ușor de urmărit. Această abordare reduce riscul de erori și face proiectul mai potrivit pentru prezentarea în cadrul unei lucrări de licență.
+
+4.3. Arhitectura aplicației
+
+Arhitectura aplicației poate fi privită ca o structură pe mai multe straturi. Primul strat este stratul de prezentare, realizat cu Next.js și React. Acesta include paginile publice, pagina de autentificare, panoul agentului și panoul administratorului.
+
+Al doilea strat este format din rutele API. Acestea asigură comunicarea dintre interfață și partea server-side. Prin rutele API se realizează autentificarea, gestionarea agenților, gestionarea proprietăților și trimiterea sau citirea mesajelor.
+
+Al treilea strat este stratul de servicii. Serviciile conțin regulile principale ale aplicației: verificarea utilizatorului, crearea agenților, salvarea proprietăților, filtrarea proprietăților și gestionarea mesajelor. Prin mutarea logicii în servicii, rutele API rămân mai simple și mai ușor de citit.
+
+Ultimul strat este baza de date PostgreSQL. Aceasta stochează utilizatorii interni, proprietățile, imaginile asociate și mesajele trimise de vizitatori. Structura bazei de date este definită prin fișiere de migrare SQL, ceea ce permite refacerea schemei și urmărirea modificărilor.
+
+[PLACEHOLDER FIGURA 4.2 - Arhitectura pe straturi: prezentare, API, servicii, acces la date, bază de date.]
+
+4.4. Organizarea funcțională a aplicației
+
+Aplicația este împărțită în trei zone principale: zona publică, zona agentului și zona administratorului.
+
+Zona publică include pagina principală, lista proprietăților și pagina de detalii pentru o proprietate. Aceste pagini nu necesită autentificare. Utilizatorul poate vedea proprietăți disponibile, poate folosi filtre de căutare și poate trimite un mesaj agentului responsabil.
+
+Zona agentului este privată. Agentul poate crea, modifica, dezactiva sau șterge proprietățile proprii. De asemenea, agentul poate vedea mesajele primite pentru proprietățile sale. O regulă importantă este că un agent nu poate administra proprietățile altui agent.
+
+Zona administratorului este destinată gestionării agenților. Administratorul poate crea conturi de agent, poate modifica datele acestora și poate activa sau dezactiva accesul. Administratorul nu gestionează proprietăți, deoarece această responsabilitate aparține exclusiv agenților.
+
+Această împărțire face aplicația mai clară. Fiecare rol are o zonă proprie, iar funcționalitățile sunt separate în funcție de responsabilitățile reale dintr-o agenție imobiliară.
+
+4.5. Proiectarea rutelor și a fluxurilor principale
+
+Rutele publice sunt proiectate pentru acces rapid la informații. Ruta principală prezintă platforma și direcționează vizitatorul spre proprietăți. Ruta pentru lista proprietăților afișează anunțurile disponibile, iar ruta de detalii prezintă informații complete despre o singură proprietate.
+
+Rutele private sunt protejate prin autentificare. După login, utilizatorul este redirecționat în funcție de rol. Administratorul ajunge în zona de administrare a agenților, iar agentul ajunge în zona sa de lucru. Această separare reduce confuzia și limitează accesul la funcționalitățile permise.
+
+Fluxul de autentificare începe cu introducerea emailului și parolei. Serverul verifică datele, compară parola cu hash-ul salvat și generează un token JWT dacă autentificarea este validă. Tokenul este stocat într-un cookie HTTP-only, ceea ce oferă un nivel suplimentar de protecție față de stocarea directă în browser.
+
+Fluxul de creare a unei proprietăți începe în panoul agentului. Agentul completează formularul, iar datele sunt trimise către API. Serverul verifică rolul utilizatorului, validează câmpurile și salvează proprietatea cu agentul autentificat ca proprietar.
+
+Fluxul de trimitere a unui mesaj pornește din pagina publică de detalii. Vizitatorul completează formularul de contact, iar sistemul verifică existența proprietății și identifică agentul asociat. Mesajul este salvat ca lead și devine vizibil în panoul agentului.
+
+[PLACEHOLDER FIGURA 4.3 - Fluxul unui mesaj trimis de un vizitator către agent.]
+
+4.6. Proiectarea bazei de date
+
+Baza de date este proiectată relațional, deoarece datele aplicației au legături clare între ele. Tabelele principale sunt users, properties, property_images și messages.
+
+Tabela users stochează conturile interne ale sistemului. Aceasta include administratorii și agenții. Fiecare utilizator are email, parolă salvată sub formă de hash, rol și status activ sau inactiv. Rolul stabilește ce acțiuni poate realiza utilizatorul în aplicație.
+
+Tabela properties stochează proprietățile introduse de agenți. Fiecare proprietate este asociată unui agent printr-o relație directă. Această relație este esențială pentru securitate, deoarece permite sistemului să verifice proprietarul înainte de orice modificare.
+
+Tabela property_images păstrează imaginile asociate proprietăților. Separarea imaginilor într-o tabelă proprie permite asocierea mai multor imagini cu aceeași proprietate și păstrarea unei ordini de afișare.
+
+Tabela messages stochează mesajele trimise de vizitatori. Fiecare mesaj este asociat atât unei proprietăți, cât și agentului responsabil. Astfel, sistemul poate afișa în panoul agentului doar lead-urile care îi aparțin.
+
+[PLACEHOLDER TABEL 4.1 - Tabelele principale, câmpurile importante și relațiile dintre ele.]
+
+4.7. Proiectarea interfeței
+
+Interfața este proiectată pentru claritate și utilizare rapidă. În zona publică, accentul cade pe proprietăți: imagine, preț, localizare, tipul ofertei și acțiunea de contact. Utilizatorul trebuie să poată înțelege rapid dacă o proprietate este relevantă pentru el.
+
+În zona agentului, interfața are caracter administrativ. Tabelele și formularele sunt mai importante decât elementele decorative. Agentul trebuie să poată vedea lista proprietăților, statusul acestora și mesajele primite fără pași inutili.
+
+În zona administratorului, interfața este concentrată pe conturile agenților. Administratorul trebuie să poată adăuga rapid un agent, să modifice datele existente și să activeze sau să dezactiveze accesul.
+
+Aplicația folosește Bootstrap pentru o structură vizuală coerentă și responsive. Paginile sunt gândite mobile-first, astfel încât principalele acțiuni să rămână accesibile și pe ecrane mici.
+
+4.8. Proiectarea securității
+
+Securitatea este integrată în proiectarea aplicației prin autentificare, autorizare, protejarea parolelor și validarea datelor. Deoarece doar administratorii și agenții au conturi, mecanismele de securitate se concentrează pe zonele private.
+
+Parolele nu sunt salvate în text clar. La crearea unui cont, parola este transformată într-un hash. La autentificare, parola introdusă este comparată cu acest hash. Această metodă protejează utilizatorii interni chiar și în cazul unui acces neautorizat la baza de date.
+
+Autentificarea folosește JWT, iar tokenul este păstrat într-un cookie HTTP-only. Această alegere limitează accesul codului JavaScript la token și reduce riscurile asociate stocării în localStorage.
+
+Autorizarea se face pe baza rolului și a apartenenței datelor. Administratorul poate lucra cu agenți, dar nu cu proprietăți. Agentul poate lucra cu proprietăți și mesaje, dar numai dacă acestea îi aparțin. Utilizatorul public nu are acces la funcții administrative.
+
+Datele venite din formulare sunt validate pe server. Această regulă se aplică la login, la conturile de agent, la proprietăți și la mesajele trimise de vizitatori. Validarea reduce riscul de date incomplete, incorecte sau intenționat abuzive.
+
+4.9. Tratarea erorilor și menținerea aplicației
+
+Aplicația trebuie să trateze erorile într-un mod previzibil. Dacă datele sunt invalide, sistemul trebuie să returneze un mesaj clar. Dacă utilizatorul nu este autentificat, accesul la zona privată trebuie refuzat. Dacă utilizatorul este autentificat, dar nu are dreptul pentru o acțiune, sistemul trebuie să returneze o eroare de autorizare.
+
+Pentru resurse inexistente, cum ar fi o proprietate ștearsă sau un agent inexistent, aplicația trebuie să răspundă explicit. Nu este recomandată afișarea unor pagini incomplete sau a unor mesaje tehnice. Utilizatorul trebuie să primească o explicație simplă, iar detaliile tehnice trebuie păstrate pentru dezvoltare.
+
+Mentenabilitatea este susținută prin organizarea codului pe domenii funcționale. Logica de autentificare, logica pentru agenți, logica pentru proprietăți și logica pentru mesaje sunt separate. Această structură permite modificarea unei zone fără a afecta inutil restul aplicației.
+
+Un alt element important este folosirea migrărilor SQL. Prin migrări, structura bazei de date poate fi recreată și verificată. Acest lucru este util atât în dezvoltare, cât și în explicarea evoluției proiectului.
+
+4.10. Concluzii
+
+Proiectarea sistemului Max Imob urmărește realizarea unei aplicații web clare, funcționale și ușor de susținut în cadrul unei lucrări de licență. Sistemul este împărțit în zone distincte pentru public, agent și administrator, iar fiecare zonă are reguli proprii de acces și responsabilități bine definite.
+
+Arhitectura pe straturi simplifică dezvoltarea și explicarea aplicației. Interfața gestionează interacțiunea cu utilizatorul, rutele API asigură comunicarea cu serverul, serviciile conțin logica principală, iar baza de date PostgreSQL păstrează informațiile aplicației.
+
+Prin relațiile dintre utilizatori, proprietăți, imagini și mesaje, sistemul reflectă un flux imobiliar realist: agentul publică proprietăți, vizitatorul le consultă și trimite mesaje, iar agentul primește lead-urile în panoul său. Administratorul are rolul de a controla accesul agenților, fără a interveni în administrarea proprietăților.
+
+Securitatea este susținută prin parole hash-uite, JWT, cookie HTTP-only, verificarea rolurilor și validarea datelor pe server. În același timp, proiectarea rămâne simplă, pentru ca aplicația să fie ușor de înțeles, extins și prezentat.
+
+Această variantă de proiectare oferă o vedere concentrată asupra sistemului, păstrând ideile esențiale fără a încărca excesiv capitolul cu detalii de implementare.

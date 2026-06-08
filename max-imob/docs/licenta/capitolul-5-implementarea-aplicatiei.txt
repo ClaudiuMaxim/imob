@@ -1,0 +1,530 @@
+CAPITOLUL 5
+IMPLEMENTAREA APLICATIEI
+
+5.1. Introducere
+
+Implementarea aplicatiei Max Imob reprezinta etapa in care proiectarea descrisa anterior este transformata intr-un sistem functional. Dupa stabilirea cerintelor si a arhitecturii, dezvoltarea efectiva a presupus crearea paginilor, componentelor, rutelor API, serviciilor, validarilor si migratiilor bazei de date. Scopul implementarii a fost obtinerea unei platforme web coerente, in care utilizatorii publici pot consulta proprietati, agentii pot administra propriile anunturi si mesaje, iar administratorul poate gestiona conturile agentilor.
+
+Aplicatia este implementata folosind Next.js cu App Router, React, TypeScript, Bootstrap, PostgreSQL si biblioteci pentru autentificare si securitate. Proiectul este organizat astfel incat fiecare functionalitate sa fie usor de localizat. Paginile si componentele se afla in directorul app, logica reutilizabila in directorul lib, iar structura bazei de date in directorul db/migrations.
+
+Un obiectiv important al implementarii a fost pastrarea simplitatii. Codul este impartit pe domenii functionale, iar serviciile sunt separate de rutele API. Rutele API primesc cereri, valideaza contextul si apeleaza functiile potrivite, in timp ce serviciile realizeaza interogarile si aplica logica de business. Aceasta separare ajuta la intelegerea aplicatiei si la explicarea ei in cadrul sustinerii lucrarii.
+
+Capitolul prezinta implementarea pe componente principale: configurarea proiectului, baza de date, autentificarea, administrarea agentilor, administrarea proprietatilor, zona publica, formularul de contact, mesajele agentului, validarea datelor, gestionarea imaginilor si tratarea erorilor. Sunt mentionate si deciziile practice care au aparut in timpul dezvoltarii.
+
+[PLACEHOLDER FIGURA 5.1 - Captura cu pagina principala Max Imob.]
+
+5.2. Structura generala a proiectului
+
+Proiectul este organizat in mai multe directoare principale, fiecare avand un rol bine definit. Directorul app contine rutele aplicatiei, paginile, componentele vizuale si rutele API. Directorul lib contine servicii, functii de validare, logica de autentificare si accesul la baza de date. Directorul db contine migratiile SQL prin care este definita structura bazei de date. Directorul docs/licenta contine documentatia lucrarii.
+
+In directorul app se observa separarea intre zonele aplicatiei. Rutele publice sunt reprezentate de pagina principala, lista proprietatilor si pagina de detalii. Zona de autentificare este plasata in app/login. Zona administratorului este in app/admin, iar zona agentului in app/agent. Rutele API sunt grupate in app/api, ceea ce face diferenta clara intre interfata si endpoint-urile folosite pentru operatii.
+
+In directorul lib, fisierele sunt grupate dupa domeniul functional. lib/auth contine logica de autentificare si sesiune. lib/agents contine serviciile si validarile pentru administrarea agentilor. lib/properties contine logica pentru proprietati, imagini si mesaje. lib/db contine configurarea pool-ului de conexiuni la PostgreSQL.
+
+Aceasta structura ajuta la evitarea duplicarii si la mentinerea unui cod usor de citit. De exemplu, daca trebuie modificata validarea proprietatilor, dezvoltatorul poate merge direct in lib/properties/validation.ts. Daca trebuie modificata autentificarea, fisierele relevante sunt in lib/auth. Organizarea pe domenii este importanta pentru mentenabilitate.
+
+Aplicatia foloseste TypeScript, ceea ce permite definirea tipurilor pentru agenti, proprietati, imagini, mesaje si sesiuni. Tipurile ajuta la prevenirea erorilor si fac codul mai clar. In plus, proiectul foloseste ESLint pentru verificarea calitatii codului.
+
+5.3. Configurarea aplicatiei Next.js
+
+Aplicatia foloseste Next.js cu App Router. Layout-ul principal este definit in app/layout.tsx si stabileste structura comuna pentru toate paginile. In acest fisier este setata limba documentului la romana, sunt definite metadatele aplicatiei si sunt importate stilurile globale.
+
+In layout sunt importate fonturile Geist si Geist Mono, stilurile Bootstrap si fisierul globals.css. Importul Bootstrap la nivel global permite folosirea claselor Bootstrap in toate paginile aplicatiei. Acest lucru simplifica implementarea interfetei si asigura o baza vizuala consecventa.
+
+Metadatele includ titlul "Max Imob" si o descriere a platformei. Aceste informatii sunt importante pentru identificarea aplicatiei in browser si pentru coerenta documentului HTML generat. Chiar daca metadatele nu reprezinta o functionalitate complexa, ele contribuie la aspectul profesional al aplicatiei.
+
+Pagina principala este definita in app/page.tsx. Aceasta foloseste componente reutilizabile precum Header, Hero, LatestProperties si Footer. Prin aceasta organizare, pagina ramane scurta si usor de citit, iar fiecare sectiune poate fi modificata separat.
+
+Rutele dinamice sunt implementate folosind conventiile Next.js. De exemplu, pagina de detalii pentru o proprietate se afla in app/properties/[id]/page.tsx, iar ruta API pentru o proprietate specifica se afla in app/api/properties/[id]/route.ts. Folderul [id] indica faptul ca segmentul din URL este dinamic.
+
+5.4. Implementarea bazei de date
+
+Baza de date este implementata in PostgreSQL, iar structura este definita prin migratii SQL. Fisierele de migrare sunt plasate in db/migrations si sunt numerotate pentru a pastra ordinea aplicarii. Aceasta abordare permite urmarirea evolutiei bazei de date si refacerea structurii intr-un mediu nou.
+
+Prima migrare creeaza extensia pgcrypto, tipul enumerat user_role si tabela users. Tabela users stocheaza utilizatorii interni ai aplicatiei, adica administratorii si agentii. Campurile principale sunt id, email, password_hash, role, is_active, created_at si updated_at. Emailul este unic, iar rolul poate fi admin sau agent.
+
+In aceeasi migrare este introdus si un utilizator administrator initial. Acesta permite accesul la zona administrativa dupa configurarea bazei de date. Parola administratorului este salvata folosind functia crypt din PostgreSQL, ceea ce arata intentia de a nu stoca parole in text clar.
+
+A doua migrare adauga campuri de profil pentru agenti, precum nume si telefon. Aceste campuri sunt utile pentru afisarea si administrarea agentilor in panoul administratorului. Desi tabela users contine si administratorul, campurile respective sunt relevante in special pentru utilizatorii cu rol agent.
+
+A treia migrare creeaza tipurile property_type si property_status, apoi tabela properties. Aceasta tabela contine informatiile despre proprietati: agent_id, titlu, descriere, pret, oras, adresa, tip, status, numar de dormitoare, numar de bai, suprafata si starea activa. Cheia straina agent_id leaga proprietatea de agentul responsabil.
+
+A patra migrare creeaza tabela property_images. Aceasta permite asocierea mai multor imagini cu aceeasi proprietate. Campurile includ URL-ul imaginii, numele fisierului si ordinea de afisare. Relatia cu proprietatea foloseste ON DELETE CASCADE, astfel incat imaginile sa fie eliminate daca proprietatea este stearsa.
+
+A cincea migrare creeaza tabela messages. Aceasta stocheaza mesajele trimise de utilizatorii publici prin formularul de contact. Fiecare mesaj este asociat cu o proprietate si cu agentul responsabil. Campurile includ numele persoanei, emailul, telefonul, continutul mesajului si statusul.
+
+A sasea migrare adauga tipul property_offer si campul offer_type in tabela properties. Acest camp permite diferentierea intre proprietatile pentru vanzare si cele pentru inchiriere. Aceasta functionalitate imbunatateste filtrarea si claritatea ofertelor.
+
+[PLACEHOLDER FIGURA 5.2 - Captura sau diagrama cu migratiile bazei de date.]
+
+5.5. Conectarea la PostgreSQL
+
+Conectarea la baza de date este centralizata in lib/db/pool.ts. Acest fisier defineste pool-ul de conexiuni PostgreSQL, folosind biblioteca pg. Centralizarea conexiunii este importanta deoarece serviciile pot folosi acelasi mecanism de acces, fara a repeta configurarea in fiecare fisier.
+
+Pool-ul de conexiuni permite reutilizarea conexiunilor la baza de date. In loc ca fiecare cerere sa creeze o conexiune noua, aplicatia poate folosi conexiuni existente din pool. Aceasta abordare este mai eficienta si mai potrivita pentru o aplicatie web.
+
+Datele de conectare sunt obtinute din variabile de mediu. Astfel, informatiile sensibile nu sunt incluse direct in cod. Configurarea prin .env permite rularea proiectului local si adaptarea lui pentru alte medii fara modificarea fisierelor sursa.
+
+Serviciile din lib/agents, lib/properties si lib/auth folosesc getPool pentru executarea interogarilor SQL. Aceasta functie reprezinta punctul comun de acces la baza de date. Daca modul de conectare trebuie modificat, schimbarea poate fi facuta intr-un singur loc.
+
+Interogarile folosesc parametri, de exemplu $1, $2 si liste de valori transmise separat. Aceasta practica reduce riscul de injectie SQL si face codul mai sigur. In loc sa concateneze valorile introduse de utilizatori in stringuri SQL, aplicatia le transmite ca parametri.
+
+5.6. Implementarea autentificarii
+
+Autentificarea este implementata in lib/auth si in ruta API app/api/auth/login/route.ts. Aceasta functionalitate este disponibila doar pentru administrator si agenti. Utilizatorii publici nu au conturi si nu se autentifica.
+
+Formularul de login este implementat in app/login/login-form.tsx. Fiind un formular interactiv, componenta este de tip client component. Ea pastreaza local valorile pentru email si parola, trimite cererea catre API si afiseaza mesaje de eroare atunci cand autentificarea nu reuseste.
+
+Ruta API /api/auth/login primeste cereri POST. Primul pas este citirea corpului cererii si validarea datelor folosind validateLoginInput. Daca datele lipsesc sau au format invalid, ruta returneaza un raspuns cu status 401 si un mesaj de eroare.
+
+Daca validarea reuseste, ruta apeleaza functia loginUser din auth-service.ts. Aceasta cauta utilizatorul dupa email in tabela users. Daca utilizatorul nu exista sau nu este activ, autentificarea este respinsa. Daca utilizatorul exista, parola introdusa este comparata cu hash-ul salvat folosind bcrypt.compare.
+
+Dupa verificarea parolei, serviciul confirma ca rolul este admin sau agent. Aceasta verificare este necesara pentru a evita autentificarea unor conturi cu roluri neasteptate. Daca toate verificarile sunt corecte, se genereaza un token JWT.
+
+Tokenul JWT contine userId si role. Aceste informatii sunt suficiente pentru identificarea utilizatorului si pentru autorizare. Tokenul este semnat cu secretul JWT din variabilele de mediu si are durata de expirare de o zi.
+
+Ruta de login seteaza tokenul intr-un cookie numit auth_token. Cookie-ul este HTTP-only, are sameSite setat la lax, path la / si maxAge de 24 de ore. In productie, cookie-ul este marcat secure. Aceste setari contribuie la protejarea sesiunii.
+
+Raspunsul de login include utilizatorul autentificat si ruta catre care trebuie redirectionat. Daca rolul este admin, utilizatorul este redirectionat catre /admin. Daca rolul este agent, redirectionarea este catre /agent. Aceasta decizie este implementata in serviciul de autentificare.
+
+[PLACEHOLDER FIGURA 5.3 - Captura cu formularul de login.]
+
+5.7. Implementarea sesiunii si autorizarii
+
+Sesiunea este gestionata in lib/auth/session.ts. Acest fisier contine functii pentru citirea tokenului din cookie, verificarea lui si impunerea accesului in functie de rol. Functiile principale sunt getAuthSession, requireAdmin si requireAgent.
+
+Functia getAuthSession primeste request-ul, citeste cookie-ul auth_token si verifica existenta secretului JWT. Daca tokenul sau secretul lipsesc, functia returneaza null. Daca tokenul exista, acesta este verificat cu jwt.verify. Payload-ul trebuie sa contina userId de tip string si role valid.
+
+Functiile requireAdmin si requireAgent folosesc getAuthSession. Daca sesiunea lipseste, este aruncata o eroare AuthError cu status 401. Daca rolul nu corespunde, este aruncata o eroare cu status 403. Acest mecanism permite rutelor API sa trateze uniform lipsa autentificarii si lipsa autorizarii.
+
+Clasa AuthError contine mesajul si statusul. Rutele API pot verifica daca eroarea este AuthError si pot returna raspunsul potrivit. Astfel, codul pentru autorizare nu trebuie duplicat in fiecare ruta.
+
+Autorizarea este folosita in rutele pentru agenti, proprietati si mesaje. De exemplu, ruta de creare a proprietatii foloseste requireAgent, iar rutele de administrare a agentilor folosesc requireAdmin. In plus, pentru proprietati se verifica si apartenenta la agentul autentificat.
+
+Aceasta implementare respecta regula ca un agent nu poate administra proprietatile altui agent. Chiar daca cineva incearca sa trimita manual o cerere catre o proprietate cu alt id, serviciul verifica agent_id in baza de date si refuza accesul daca proprietatea nu apartine agentului curent.
+
+5.8. Implementarea administrarii agentilor
+
+Administrarea agentilor este disponibila in zona administratorului. Interfata se afla in app/admin/agents, iar logica server-side in app/api/agents si lib/agents. Aceasta functionalitate permite listarea, crearea, editarea, activarea si dezactivarea agentilor.
+
+Componenta principala pentru interfata este agents-admin.tsx. Aceasta este o componenta client, deoarece gestioneaza stare locala, formulare si cereri catre API. Ea pastreaza listele de agenti, valorile campurilor pentru creare si editare, starea de incarcare, starea de salvare, mesajele de succes si erorile.
+
+Pentru crearea unui agent, componenta pastreaza separat campurile createName, createEmail, createPhone si createPassword. Aceasta abordare respecta regula proiectului privind formularele, conform careia fiecare input este tinut in propria variabila de stare. La trimiterea formularului, datele sunt trimise prin POST catre /api/agents.
+
+Pentru editare, componenta foloseste campuri separate precum editAgentId, editName, editPhone si editIsActive. Atunci cand administratorul selecteaza un agent pentru editare, valorile existente sunt copiate in aceste stari. Dupa salvare, formularul este resetat si lista agentilor este reincarcata.
+
+Componenta include si functia toggleAgentStatus. Daca agentul este activ, se trimite o cerere DELETE catre /api/agents/[id], care dezactiveaza agentul. Daca agentul este inactiv, se trimite o cerere PUT cu isActive true. Astfel, administratorul poate suspenda si reactiva accesul agentilor.
+
+Interfata este impartita in componente mai mici: CreateAgentForm, EditAgentForm, AgentsListPanel, AgentsTable si TextInput. Aceasta separare reduce dimensiunea fisierului principal si face codul mai usor de inteles.
+
+Serviciul agent-service.ts contine functiile listAgents, createAgent, getAgentById, updateAgent si deactivateAgent. Functia listAgents poate filtra agentii dupa status activ sau inactiv. Functia createAgent genereaza un id cu randomUUID, creeaza hash-ul parolei cu bcrypt.hash si insereaza agentul in tabela users cu rolul agent.
+
+Functia updateAgent verifica mai intai daca agentul exista. Daca agentul nu exista, returneaza null. Daca exista, calculeaza valorile noi, pastrand valorile curente atunci cand anumite campuri nu sunt trimise. Apoi executa UPDATE in baza de date si returneaza agentul mapat.
+
+Functia isUniqueViolation verifica daca o eroare de baza de date are codul 23505, specific pentru incalcarea unei constrangeri unique in PostgreSQL. Aceasta este folosita pentru tratarea cazului in care administratorul incearca sa creeze un agent cu un email deja existent.
+
+[PLACEHOLDER FIGURA 5.4 - Captura cu panoul administratorului si lista agentilor.]
+
+5.9. Implementarea rutelor API pentru agenti
+
+Rutele API pentru agenti sunt definite in app/api/agents/route.ts si app/api/agents/[id]/route.ts. Acestea returneaza raspunsuri JSON standardizate, cu success, data si error.
+
+Ruta /api/agents poate raspunde la GET si POST. Pentru GET, se verifica rolul administratorului si se returneaza lista agentilor. Pentru POST, se valideaza datele primite, se creeaza agentul si se returneaza obiectul creat. Daca datele sunt invalide, se returneaza status 400. Daca utilizatorul nu este administrator, se returneaza 401 sau 403, in functie de situatie.
+
+Ruta /api/agents/[id] este folosita pentru modificarea sau dezactivarea unui agent specific. Id-ul este preluat din segmentul dinamic al rutei. Pentru PUT, serverul valideaza datele si apeleaza updateAgent. Pentru DELETE, serverul apeleaza deactivateAgent. Daca agentul nu exista, raspunsul este 404.
+
+Aceste rute nu includ logica de hashing sau interogari SQL direct in handler, ci apeleaza serviciile. Astfel, responsabilitatea rutei ramane limitata la HTTP, autentificare, validare si raspuns. Logica de business se afla in lib/agents.
+
+Raspunsurile API nu expun password_hash. Agentii returnati catre interfata includ doar id, nume, email, telefon, status si date de creare/actualizare. Aceasta este o masura importanta pentru protectia datelor sensibile.
+
+Implementarea acestor rute permite administratorului sa controleze accesul agentilor fara a interactiona direct cu baza de date. Toate actiunile sunt validate si executate prin API.
+
+5.10. Implementarea administrarii proprietatilor
+
+Administrarea proprietatilor este disponibila agentilor autentificati in ruta /agent/properties. Componenta principala este app/agent/properties/properties.tsx. Aceasta gestioneaza lista proprietatilor, formularul de creare/editare, mesajele de stare si actiunile de activare sau dezactivare.
+
+Componenta foloseste stari separate pentru fiecare camp al formularului: title, description, price, city, address, propertyType, offerType, status, bedrooms, bathrooms, area si imageFiles. Aceasta implementare face formularul explicit si usor de urmarit. Fiecare input are propria valoare si propria functie de actualizare.
+
+La incarcarea paginii, useEffect apeleaza loadProperties. Aceasta functie trimite o cerere catre /api/properties. Daca utilizatorul este agent autentificat, API-ul returneaza proprietatile agentului. Rezultatul este salvat in starea properties si afisat prin componentele din panou.
+
+Formularul poate functiona in doua moduri: creare sau editare. Daca editPropertyId este gol, trimiterea formularului creeaza o proprietate noua. Daca editPropertyId are valoare, formularul actualizeaza proprietatea selectata. Aceasta decizie permite folosirea aceluiasi formular pentru doua actiuni apropiate.
+
+Functia getPropertyFormData construieste un obiect FormData. Aceasta alegere este necesara deoarece formularul poate include imagini. Campurile text si numerice sunt adaugate in FormData, iar fisierele sunt adaugate sub cheia images. API-ul poate apoi citi atat datele proprietatii, cat si fisierele.
+
+Pentru crearea unei proprietati, componenta trimite POST catre /api/properties. Pentru actualizare, trimite PUT catre /api/properties/[id]. Pentru dezactivare, trimite DELETE catre /api/properties/[id]. Pentru reactivare, trimite PATCH catre aceeasi ruta. Dupa fiecare actiune reusita, lista proprietatilor este reincarcata.
+
+Componentele auxiliare, precum PropertyForm, PropertiesListPanel, PropertiesTable, PropertyImagesInput, PropertySelect, PropertyTextInput si PropertyDescription, impart interfata in parti mai mici. Aceasta structura face ca pagina sa fie mai usor de mentinut si de explicat.
+
+[PLACEHOLDER FIGURA 5.5 - Captura cu panoul agentului pentru administrarea proprietatilor.]
+
+5.11. Implementarea serviciului pentru proprietati
+
+Serviciul principal pentru proprietati este lib/properties/property-service.ts. Acesta contine functii pentru listarea proprietatilor publice, listarea proprietatilor unui agent, crearea, citirea, actualizarea, activarea si dezactivarea proprietatilor.
+
+Functia listAgentProperties primeste agentId si returneaza proprietatile asociate agentului. Interogarea SQL selecteaza proprietatile unde agent_id este egal cu id-ul agentului si le ordoneaza descrescator dupa data crearii. Aceasta functie este folosita in panoul agentului.
+
+Functia listPublicProperties primeste filtre publice optionale. Lista publica include doar proprietatile cu status publicata si is_active true. Filtrele pot include orasul, tipul proprietatii, tipul ofertei si numarul de dormitoare. Pentru oras se foloseste ILIKE, ceea ce permite cautare partiala fara diferentiere stricta intre litere mari si mici.
+
+Functia createProperty primeste agentId, datele validate ale proprietatii si imaginile salvate. Aceasta foloseste o tranzactie SQL. Mai intai se deschide o conexiune din pool, apoi se executa BEGIN. Proprietatea este inserata in tabela properties, iar imaginile sunt inserate in tabela property_images. Daca totul reuseste, se executa COMMIT. Daca apare o eroare, se executa ROLLBACK.
+
+Folosirea tranzactiei este importanta deoarece proprietatea si imaginile trebuie salvate coerent. Daca proprietatea ar fi salvata, dar inserarea imaginilor ar esua, baza de date ar ramane intr-o stare incompleta. Prin tranzactie, toate operatiile reusesc impreuna sau sunt anulate impreuna.
+
+Functia getAgentPropertyById cauta o proprietate dupa id si agent_id. Aceasta este folosita pentru a asigura ca agentul poate accesa doar proprietatile proprii. Functia getPublicPropertyById cauta o proprietate publicata si activa, fiind folosita pentru zona publica.
+
+Functia updateProperty actualizeaza o proprietate existenta a agentului autentificat. Inainte de update, proprietatea este cautata dupa id si agent_id. Daca nu exista, se returneaza null. Daca exista, campurile sunt actualizate, iar imaginile noi pot fi adaugate. Si aceasta operatie foloseste tranzactii atunci cand implica mai multe modificari.
+
+Functiile activateProperty si deactivateProperty modifica starea activa a proprietatii. Dezactivarea nu sterge fizic inregistrarea din baza de date, ci seteaza is_active la false. Aceasta abordare este mai sigura deoarece pastreaza datele pentru evidenta si reduce riscul pierderii accidentale.
+
+Serviciul include si functii de mapare a randurilor SQL in obiecte TypeScript. De exemplu, valorile price si area sunt citite ca stringuri din PostgreSQL pentru tipul numeric, apoi sunt transformate in number. Datele sunt convertite in string ISO pentru a putea fi transmise usor catre frontend.
+
+5.12. Implementarea rutelor API pentru proprietati
+
+Rutele API pentru proprietati sunt definite in app/api/properties/route.ts si app/api/properties/[id]/route.ts. Acestea gestioneaza atat accesul public, cat si accesul agentului autentificat.
+
+Ruta /api/properties raspunde la GET si POST. Pentru GET, ruta verifica sesiunea. Daca utilizatorul este agent si nu se cere explicit lista publica, API-ul returneaza proprietatile agentului. In caz contrar, se citesc filtrele publice din query string, se valideaza si se returneaza proprietatile publicate.
+
+Parametrul publicata=1 este folosit pentru a forta obtinerea listei publice. Aceasta este utila deoarece aceeasi ruta poate fi accesata atat din zona publica, cat si din zona agentului. Prin acest parametru, aplicatia poate decide clar ce tip de lista doreste.
+
+Pentru POST, ruta cere autentificare de agent prin requireAgent. Apoi citeste FormData, extrage fisierele de imagine, valideaza imaginile si datele proprietatii. Daca validarea reuseste, imaginile sunt salvate si se apeleaza createProperty. Raspunsul returneaza proprietatea creata cu status 201.
+
+Ruta /api/properties/[id] raspunde la GET, PUT, PATCH si DELETE. Pentru GET, ruta poate returna fie proprietatea agentului, fie proprietatea publica, in functie de sesiune si de parametrul publicata. Aceasta implementare permite folosirea aceluiasi endpoint pentru doua contexte, cu reguli clare.
+
+Pentru PUT, ruta cere autentificare de agent, citeste FormData, valideaza imaginile si datele, salveaza imaginile noi si apeleaza updateProperty. Daca proprietatea nu apartine agentului sau nu exista, raspunsul este 404.
+
+Pentru PATCH, ruta activeaza proprietatea. Pentru DELETE, ruta dezactiveaza proprietatea. Chiar daca metoda DELETE sugereaza stergere, in implementare se foloseste dezactivare logica. Aceasta decizie pastreaza datele si este mai potrivita pentru un sistem in care proprietatile pot avea mesaje asociate.
+
+Rutele folosesc functii helper jsonOk si jsonError pentru raspunsuri standardizate. Erorile de autentificare sunt tratate separat prin AuthError, iar erorile generale sunt inregistrate in consola si returnate utilizatorului ca mesaj generic.
+
+5.13. Implementarea imaginilor pentru proprietati
+
+Gestionarea imaginilor este implementata prin componenta PropertyImagesInput si prin serviciul lib/properties/image-storage.ts. Din punct de vedere al interfetei, agentul poate selecta imagini atunci cand creeaza sau actualizeaza o proprietate.
+
+Pentru transmiterea imaginilor catre server se foloseste FormData. Aceasta este forma potrivita atunci cand cererea contine fisiere. Componenta agentului adauga fiecare fisier in FormData sub cheia images.
+
+Pe server, ruta API foloseste getImageFiles pentru extragerea fisierelor din FormData. Apoi se foloseste validateImageFiles pentru verificarea fisierelor. La crearea unei proprietati, imaginile pot fi obligatorii, iar la actualizare pot fi optionale, in functie de parametrul transmis functiei de validare.
+
+Functia savePropertyImages salveaza imaginile si returneaza informatii despre acestea, precum URL-ul, numele fisierului si ordinea. Aceste informatii sunt apoi salvate in tabela property_images impreuna cu id-ul proprietatii.
+
+Separarea imaginilor intr-o tabela proprie permite afisarea unei galerii pentru fiecare proprietate. In zona publica, componenta property-gallery poate folosi lista imaginilor pentru a prezenta vizual proprietatea. In zona agentului, imaginile sunt parte din formularul de administrare.
+
+Aceasta implementare este simpla, dar extensibila. In viitor, sistemul poate fi extins cu stergere individuala de imagini, imagine principala, compresie sau upload intr-un serviciu extern, fara a schimba complet structura bazei de date.
+
+5.14. Implementarea zonei publice
+
+Zona publica a aplicatiei este destinata utilizatorilor neautentificati. Ea include pagina principala, lista proprietatilor si pagina de detalii. Scopul acestei zone este consultarea rapida a ofertelor si contactarea agentului responsabil.
+
+Pagina principala foloseste componente precum Header, Hero, LatestProperties si Footer. Header-ul ofera navigatie, Hero-ul prezinta aplicatia, LatestProperties poate afisa cele mai recente proprietati publicate, iar Footer-ul completeaza structura paginii. Aceasta organizare face pagina usor de citit si de modificat.
+
+Pagina /properties foloseste componenta PropertiesBrowser. Aceasta este o componenta client deoarece gestioneaza filtre, stare de incarcare, erori si navigare catre detalii. La incarcarea initiala, componenta citeste parametrii din URL si solicita proprietatile publice prin API.
+
+Filtrele sunt gestionate prin stari separate: city, propertyType, offerType si bedrooms. La trimiterea formularului de filtrare, componenta construieste URL-ul potrivit si apeleaza API-ul. Rezultatul este salvat in starea properties si afisat prin PropertyGrid.
+
+Componenta PropertyFilters contine formularul de filtrare. Componenta PropertyGrid este responsabila pentru aranjarea proprietatilor. Componenta PropertyCard afiseaza informatiile principale pentru o proprietate. Aceasta separare pastreaza codul clar.
+
+Deschiderea unei proprietati se face prin router.push catre /properties/${property.id}. In implementarea curenta, textul interfetei indica deschiderea prin dublu click, iar functia openProperty realizeaza navigarea. Pagina de detalii incarca informatiile proprietatii si afiseaza componentele dedicate.
+
+[PLACEHOLDER FIGURA 5.6 - Captura cu lista publica de proprietati si filtrele.]
+
+5.15. Implementarea paginii de detalii a proprietatii
+
+Pagina de detalii a unei proprietati se afla in app/properties/[id]/page.tsx. Aceasta primeste id-ul proprietatii din ruta dinamica si afiseaza informatii complete despre proprietate. Pentru utilizatorul public, aceasta pagina este importanta deoarece contine detaliile necesare inainte de contactarea agentului.
+
+Componenta property-details coordoneaza afisarea detaliilor. Galeria de imagini este separata in property-gallery, informatiile principale sunt afisate prin property-details-info, iar localizarea poate fi prezentata prin property-map. Aceasta impartire permite modificarea unei sectiuni fara rescrierea intregii pagini.
+
+Pagina include si componentele contact-agent-modal si contact-agent-form. Acestea permit utilizatorului sa trimita un mesaj catre agent. Modalul este util pentru a pastra pagina curata, iar formularul poate fi deschis atunci cand utilizatorul decide sa contacteze agentul.
+
+Pentru incarcarea datelor, pagina sau componentele sale folosesc API-ul public al proprietatii. Proprietatea este returnata doar daca are status publicata si este activa. Astfel, utilizatorul public nu poate accesa proprietati aflate in ciorna sau dezactivate.
+
+Daca proprietatea nu este gasita, pagina trebuie sa afiseze o stare corespunzatoare. Aceasta situatie poate aparea daca id-ul este gresit, proprietatea a fost dezactivata sau nu este publicata. Tratarea explicita a acestui caz este importanta pentru o experienta clara.
+
+[PLACEHOLDER FIGURA 5.7 - Captura cu pagina de detalii a unei proprietati.]
+
+5.16. Implementarea formularului de contact
+
+Formularul de contact este disponibil pe pagina de detalii a proprietatii. Acesta permite utilizatorului public sa trimita un mesaj catre agentul responsabil. Deoarece utilizatorul public nu are cont, formularul trebuie sa colecteze toate datele necesare pentru contact.
+
+Datele principale sunt numele persoanei, emailul, telefonul si continutul mesajului. Formularul pastreaza local valorile campurilor si trimite o cerere POST catre /api/properties/[id]/messages. Id-ul proprietatii este transmis prin ruta.
+
+Ruta API pentru mesaje citeste corpul cererii, extrage id-ul proprietatii si valideaza datele folosind validateCreateMessageInput. Daca lipseste id-ul proprietatii sau datele sunt invalide, serverul returneaza raspuns de eroare.
+
+Dupa validare, serverul verifica existenta proprietatii prin getPropertyById. Daca proprietatea nu exista, raspunsul este 404. Daca proprietatea nu are status publicata, mesajul este respins. Aceasta verificare impiedica trimiterea de mesaje pentru proprietati care nu sunt disponibile public.
+
+Daca proprietatea este valida, serverul apeleaza saveMessage. Mesajul este salvat in tabela messages cu status initial unread. Agentul este determinat din agent_id al proprietatii, astfel incat mesajul este asociat automat agentului responsabil.
+
+Raspunsul de succes returneaza mesajul creat cu status 201. Frontend-ul poate afisa apoi un mesaj de confirmare. Aceasta functionalitate inchide fluxul public principal: utilizatorul cauta o proprietate, o analizeaza si trimite o cerere de contact.
+
+5.17. Implementarea serviciului pentru mesaje
+
+Serviciul pentru mesaje este implementat in lib/properties/messages-service.ts. Acesta contine functii pentru salvarea mesajelor, citirea proprietatii, listarea mesajelor si marcarea unui mesaj ca citit.
+
+Functia saveMessage primeste propertyId, agentId si datele validate ale mesajului. Ea genereaza un id cu randomUUID si insereaza mesajul in tabela messages. Campurile salvate includ property_id, agent_id, contact_name, contact_email, contact_phone, message_content, status, created_at si updated_at.
+
+Dupa inserare, functia cauta titlul proprietatii pentru a completa raspunsul returnat catre frontend. Acest lucru permite afisarea mesajului impreuna cu proprietatea asociata. Functia mapMessageRow transforma randul SQL intr-un obiect TypeScript cu denumiri potrivite pentru frontend.
+
+Functia getPropertyById este folosita pentru verificarea existentei proprietatii inainte de salvarea unui mesaj. Ea returneaza id, agent_id si status. Aceste informatii sunt suficiente pentru a decide daca mesajul poate fi salvat.
+
+Functia getMessagesByAgentId returneaza mesajele unui agent. Ea face JOIN intre messages si properties pentru a include titlul proprietatii. Mesajele sunt ordonate descrescator dupa data crearii, astfel incat cele mai noi sa apara primele.
+
+Functia markMessageAsRead actualizeaza statusul unui mesaj la read. Chiar daca aceasta functionalitate poate fi extinsa in interfata, existenta ei in serviciu arata ca sistemul este pregatit pentru gestionarea starii mesajelor.
+
+5.18. Implementarea panoului de mesaje pentru agent
+
+Panoul de mesaje al agentului este disponibil in /agent/messages. Pagina foloseste componente si functii dedicate pentru a afisa lead-urile asociate agentului autentificat.
+
+Ruta API /api/agent/messages verifica autentificarea prin requireAgent. Daca utilizatorul nu este agent, accesul este refuzat. Daca sesiunea este valida, se apeleaza getMessagesByAgentId cu id-ul agentului din token. Astfel, agentul primeste doar mesajele sale.
+
+Componenta messages-list afiseaza mesajele in interfata. Pentru fiecare mesaj pot fi prezentate numele persoanei, datele de contact, continutul mesajului, statusul, data si titlul proprietatii. Aceasta informatie permite agentului sa raspunda in mod eficient.
+
+Implementarea separa clar fluxul de creare a mesajelor de fluxul de vizualizare. Utilizatorul public creeaza mesajul printr-o ruta publica, iar agentul il vizualizeaza printr-o ruta privata. Aceasta separare reflecta rolurile diferite ale actorilor.
+
+Statusul unread este util pentru identificarea mesajelor noi. In viitor, interfata poate include actiuni pentru marcarea mesajelor ca citite sau arhivate. Baza de date si serviciul contin deja campul si functia necesare pentru aceasta extindere.
+
+[PLACEHOLDER FIGURA 5.8 - Captura cu lista mesajelor primite de agent.]
+
+5.19. Implementarea validarii datelor
+
+Validarea datelor este implementata manual, prin fisiere dedicate. Exista validari pentru autentificare, agenti, proprietati si mesaje. Aceasta abordare respecta regula proiectului de a folosi validare manuala, fara biblioteci suplimentare precum Zod.
+
+Validarea autentificarii se afla in lib/auth/validation.ts. Aceasta verifica daca body-ul cererii este un obiect si daca emailul si parola sunt prezente si au format acceptabil. Daca validarea reuseste, se returneaza un obiect cu success true si datele normalizate. Daca nu, se returneaza success false si mesajul de eroare.
+
+Validarea agentilor se afla in lib/agents/validation.ts. Pentru crearea unui agent, se verifica numele, emailul, telefonul si parola. Pentru actualizare, se permit doar campurile relevante. Validarea separata pentru creare si actualizare este necesara deoarece la creare parola este obligatorie, iar la actualizare poate lipsi.
+
+Validarea proprietatilor se afla in lib/properties/validation.ts. Aceasta gestioneaza valori precum titlu, descriere, pret, oras, adresa, tip proprietate, tip oferta, status, dormitoare, bai si suprafata. Datele primite din FormData sunt initial de tip necunoscut sau string, deci trebuie convertite si verificate.
+
+Pentru tipurile enumerate, validarea verifica daca valorile primite se afla in lista acceptata. De exemplu, propertyType trebuie sa fie apartament, casa, teren sau comercial. Statusul trebuie sa fie ciorna, publicata, vanduta sau inchiriata. OfferType trebuie sa fie vanzare sau inchiriere.
+
+Validarea mesajelor se afla in lib/properties/messages-validation.ts. Aceasta verifica numele, emailul, telefonul si continutul mesajului. Deoarece formularul este public, aceste reguli sunt foarte importante. Datele invalide sunt respinse inainte de inserarea in baza de date.
+
+Prin returnarea unui rezultat explicit de validare, rutele API pot trata simplu cazurile. Daca validation.success este false, se returneaza jsonError cu status 400. Daca este true, datele validate sunt transmise serviciului.
+
+5.20. Implementarea raspunsurilor API
+
+Raspunsurile API sunt implementate intr-un format standard. In fiecare ruta se folosesc functii helper precum jsonOk si jsonError. jsonOk returneaza success true, data si error null. jsonError returneaza success false, data null si mesajul de eroare.
+
+Aceasta standardizare simplifica partea de frontend. Componentele pot verifica acelasi camp success indiferent de ruta apelata. Daca apare o eroare, frontend-ul poate extrage mesajul din error si il poate afisa utilizatorului.
+
+Statusurile HTTP sunt folosite pentru a diferentia tipurile de raspuns. Crearea unei resurse poate returna 201. Datele invalide returneaza 400. Autentificarea nereusita returneaza 401. Accesul interzis returneaza 403. Resursele inexistente returneaza 404. Erorile interne returneaza 500.
+
+In caz de eroare interna, aplicatia inregistreaza detalii in consola, dar returneaza utilizatorului un mesaj general. Aceasta abordare impiedica expunerea informatiilor tehnice si pastreaza interfata mai clara.
+
+Raspunsurile nu includ date sensibile. De exemplu, dupa login nu se returneaza tokenul in corpul raspunsului, ci acesta este stocat in cookie. De asemenea, API-ul pentru agenti nu returneaza password_hash.
+
+5.21. Implementarea interfetei cu Bootstrap
+
+Interfata aplicatiei foloseste Bootstrap pentru layout, spatiere, formulare, butoane, carduri si tabele. Importul Bootstrap este realizat in layout-ul principal, astfel incat toate paginile pot folosi clasele framework-ului.
+
+Pagina publica foloseste clase Bootstrap pentru containere, spatiere si carduri. Lista proprietatilor este organizata astfel incat sa fie usor de parcurs. Cardurile afiseaza informatii relevante si permit accesul la detalii.
+
+Formularele folosesc clase Bootstrap pentru campuri, etichete si butoane. Aceasta ajuta la obtinerea unui aspect consecvent intre login, creare agent, creare proprietate si contact. Mesajele de eroare sunt afisate prin alerte, ceea ce le face vizibile.
+
+Panourile administrative folosesc structuri de tip row si col, astfel incat formularele si listele sa poata fi asezate pe coloane pe ecrane mari si pe verticala pe ecrane mici. Aceasta implementare sprijina regula mobile-first.
+
+Bootstrap a fost folosit pentru a evita scrierea excesiva de CSS personalizat. Totusi, aplicatia include si globals.css pentru ajustari generale. Aceasta combinatie permite obtinerea unei interfete simple si curate.
+
+5.22. Implementarea componentelor client si server
+
+Next.js permite folosirea componentelor server si client. In implementarea Max Imob, componentele server sunt folosite implicit acolo unde nu este necesara interactivitate in browser, iar componentele client sunt marcate cu "use client" atunci cand folosesc stare, efecte sau evenimente.
+
+Componente precum PropertiesBrowser, AgentProperties si AgentsAdmin sunt client components. Ele folosesc useState, useEffect, evenimente de formular si cereri fetch. Aceste functionalitati necesita executie in browser.
+
+Paginile simple si layout-ul pot ramane server components. Acestea nu au nevoie de stare locala si pot fi randate pe server. Aceasta separare reduce cantitatea de JavaScript trimisa catre client si respecta principiile Next.js.
+
+In formulare, fiecare input este conectat la propria stare. De exemplu, in AgentProperties exista stari separate pentru title, description, price, city si restul campurilor. In AgentsAdmin exista stari separate pentru creare si editare. Aceasta implementare este explicita si usor de urmarit.
+
+Componentele mici primesc date si callback-uri prin props. De exemplu, PropertyFilters primeste valorile filtrelor si functiile de schimbare, iar PropertyGrid primeste lista de proprietati si functia de deschidere. Aceasta abordare pastreaza componenta principala responsabila de stare, iar componentele copil responsabile de afisare.
+
+5.23. Implementarea filtrarii proprietatilor
+
+Filtrarea proprietatilor este implementata in zona publica prin componenta PropertiesBrowser si prin serviciul listPublicProperties. Utilizatorul poate filtra dupa oras, tip de proprietate, tip de oferta si numar de dormitoare.
+
+In frontend, valorile filtrelor sunt pastrate in stari separate. La trimiterea formularului, se construieste URL-ul cu query parameters. Cererea este trimisa catre /api/properties cu parametrul publicata=1 si filtrele selectate.
+
+In backend, ruta /api/properties citeste filtrele din request.nextUrl.searchParams. Acestea sunt validate prin validatePublicPropertyFilters. Daca valorile sunt valide, sunt transmise catre listPublicProperties.
+
+Serviciul construieste interogarea SQL din conditii. Conditiile de baza sunt status = 'publicata' si is_active = true. Daca exista filtru de oras, se adauga conditia city ILIKE. Daca exista tip de proprietate, tip de oferta sau numar de dormitoare, se adauga conditii corespunzatoare.
+
+Valorile filtrelor sunt transmise ca parametri SQL. Acest lucru este important pentru securitate si pentru evitarea injectiei SQL. Rezultatele sunt ordonate descrescator dupa created_at, astfel incat proprietatile mai noi apar primele.
+
+5.24. Implementarea statusurilor si activarii proprietatilor
+
+Proprietatile au doua mecanisme pentru controlul vizibilitatii si starii: status si is_active. Statusul descrie starea de business, iar is_active indica daca proprietatea este activa in sistem.
+
+Statusurile posibile sunt ciorna, publicata, vanduta si inchiriata. Agentul poate alege statusul in formular. Proprietatile cu status publicata pot aparea in zona publica, daca sunt si active. Proprietatile in ciorna sunt pastrate in panoul agentului, dar nu sunt afisate public.
+
+Campul is_active permite dezactivarea unei proprietati fara stergere fizica. Atunci cand agentul alege dezactivarea, ruta DELETE apeleaza deactivateProperty. Aceasta operatie seteaza is_active la false. Reactivarea se face prin PATCH, care apeleaza activateProperty.
+
+Aceasta implementare este utila deoarece pastreaza istoricul proprietatii si relatiile cu mesajele. Daca proprietatea ar fi stearsa complet, s-ar putea pierde contextul lead-urilor. Dezactivarea logica este o solutie mai prudenta.
+
+In zona publica, listPublicProperties si getPublicPropertyById filtreaza proprietatile dupa status publicata si is_active true. Astfel, utilizatorul public vede doar continutul potrivit.
+
+5.25. Implementarea maparii datelor
+
+Datele returnate de PostgreSQL folosesc denumiri de coloane in stil snake_case, precum agent_id, property_type, created_at si is_active. In frontend, obiectele TypeScript folosesc denumiri in stil camelCase, precum agentId, propertyType, createdAt si isActive.
+
+Pentru aceasta transformare, serviciile includ functii de mapare. De exemplu, mapAgentRow transforma un rand din tabela users intr-un obiect Agent. mapPropertyRow transforma un rand din tabela properties intr-un obiect Property. mapMessageRow transforma un rand din tabela messages intr-un obiect Message.
+
+Aceasta mapare imbunatateste claritatea codului frontend. Componentele React pot lucra cu denumiri specifice TypeScript si JavaScript, fara a depinde direct de formatul bazei de date.
+
+Maparea gestioneaza si conversii de tipuri. Valorile NUMERIC din PostgreSQL pot fi returnate ca stringuri de biblioteca pg. Serviciul le transforma in number pentru campuri precum price si area. Datele de tip Date sunt convertite in string ISO pentru transmitere prin JSON.
+
+Separarea maparii intr-o functie dedicata reduce duplicarea. Daca structura unui obiect trebuie schimbata, modificarea poate fi facuta intr-un singur loc.
+
+5.26. Implementarea tratarii erorilor in frontend
+
+Frontend-ul trateaza erorile prin stari locale precum error si message. In componentele client, inainte de trimiterea unei cereri, se reseteaza mesajele vechi. Daca cererea reuseste, se afiseaza un mesaj de succes. Daca esueaza, se afiseaza eroarea returnata de API.
+
+Functiile helper getErrorMessage si requestAgents sau requestProperties sunt folosite pentru cereri API. Acestea centralizeaza modul in care se citesc raspunsurile si se extrag mesajele de eroare. Astfel, componentele nu trebuie sa repete aceeasi logica pentru fiecare fetch.
+
+Starea isLoading este folosita pentru incarcarea initiala a listelor. De exemplu, lista proprietatilor sau lista agentilor afiseaza o stare de incarcare pana cand cererea se finalizeaza. Starea isSaving este folosita pentru operatiile de salvare, astfel incat butoanele pot fi dezactivate sau textul poate indica procesarea.
+
+Mesajele de eroare sunt afisate folosind componente vizuale Bootstrap, de exemplu alert alert-danger. Mesajele de succes pot fi afisate prin alert alert-success sau text informativ. Aceasta abordare face feedback-ul vizibil pentru utilizator.
+
+Tratarea erorilor in frontend este importanta deoarece aplicatia nu trebuie sa para blocata atunci cand apare o problema. Utilizatorul trebuie sa inteleaga daca datele sunt invalide, daca o operatie a esuat sau daca trebuie sa incerce din nou.
+
+5.27. Implementarea tratarii erorilor in backend
+
+Backend-ul trateaza erorile in rutele API prin blocuri try/catch. In interiorul try se valideaza datele, se verifica autentificarea si se apeleaza serviciile. In catch, erorile sunt transformate in raspunsuri JSON.
+
+Erorile de autentificare si autorizare sunt reprezentate prin AuthError. Daca o ruta prinde o astfel de eroare, returneaza mesajul si statusul corespunzator. Astfel, lipsa autentificarii si accesul interzis sunt tratate diferit.
+
+Erorile de validare sunt tratate inainte de apelarea serviciilor. Daca validarea esueaza, ruta returneaza status 400. Aceasta abordare evita executarea interogarilor SQL cu date incorecte.
+
+Erorile de resursa inexistenta sunt tratate prin returnarea statusului 404. De exemplu, daca updateProperty returneaza null, ruta returneaza "Proprietatea nu a fost gasita.". La fel, daca getAgentById nu gaseste agentul, ruta poate returna 404.
+
+Erorile interne sunt inregistrate in consola si returnate ca mesaj generic. Aceasta practica este importanta pentru securitate, deoarece utilizatorul nu trebuie sa vada detalii despre interogari SQL, structura serverului sau stack trace.
+
+5.28. Implementarea securitatii
+
+Securitatea este implementata prin mai multe masuri complementare. Prima masura este hashing-ul parolelor cu bcryptjs. La crearea agentilor, parola este transformata in hash inainte de salvarea in baza de date. La login, parola introdusa este comparata cu hash-ul.
+
+A doua masura este folosirea JWT pentru sesiune. Tokenul contine userId si role, este semnat cu un secret din variabile de mediu si expira dupa o zi. Tokenul permite identificarea utilizatorului fara a trimite parola la fiecare cerere.
+
+A treia masura este stocarea tokenului in cookie HTTP-only. Aceasta reduce riscul ca tokenul sa fie citit de scripturi din browser. Cookie-ul foloseste sameSite lax si secure in productie.
+
+A patra masura este autorizarea pe rol. requireAdmin protejeaza rutele administratorului, iar requireAgent protejeaza rutele agentului. Pe langa rol, serviciile verifica apartenenta resurselor. Agentul poate modifica doar proprietatile unde agent_id este id-ul sau.
+
+A cincea masura este validarea inputului. Toate datele venite din formulare sunt verificate pe server. Aceasta include login, agenti, proprietati, filtre si mesaje. Validarea reduce riscul de date invalide si contribuie la protectia aplicatiei.
+
+A sasea masura este folosirea parametrilor SQL. Interogarile trimit valorile separat de textul SQL, ceea ce reduce riscul de injectie SQL. Aceasta practica este folosita in serviciile care acceseaza baza de date.
+
+5.29. Implementarea paginilor protejate
+
+Paginile protejate sunt /admin si /agent, impreuna cu subrutele lor. Aceste pagini sunt destinate utilizatorilor autentificati. Desi interfata poate directiona utilizatorul corect dupa login, protectia reala trebuie aplicata si la nivel de API.
+
+Zona administratorului foloseste API-uri protejate prin requireAdmin. Chiar daca un agent ar incerca sa apeleze manual /api/agents, cererea ar fi respinsa. Astfel, securitatea nu depinde doar de ascunderea linkurilor din interfata.
+
+Zona agentului foloseste API-uri protejate prin requireAgent. Proprietatile si mesajele sunt returnate in functie de userId din token. Agentul nu trimite propriul agentId in cererile principale, ceea ce reduce riscul manipularii.
+
+In implementarea actuala, rutele API sunt elementul central al protectiei. Paginile pot fi accesate vizual, dar datele si actiunile importante sunt blocate daca API-ul nu primeste o sesiune valida. Aceasta abordare este importanta in aplicatiile web moderne.
+
+Pentru o versiune viitoare, protectia paginilor poate fi extinsa cu middleware Next.js, astfel incat utilizatorii neautentificati sa fie redirectionati inainte de incarcarea paginii. Totusi, protectia API ramane esentiala si este implementata.
+
+5.30. Implementarea experientei mobile
+
+Aplicatia foloseste Bootstrap pentru a sustine interfata responsive. Clasele container, row, col si spacing permit adaptarea continutului la dimensiuni diferite de ecran. Aceasta este important deoarece utilizatorii pot consulta proprietati de pe telefon.
+
+In zona publica, lista proprietatilor poate fi afisata pe mai multe coloane pe desktop si pe o coloana pe ecrane mici. Cardurile trebuie sa pastreze informatiile clare si sa permita accesul la detalii fara aglomerare.
+
+Formularele sunt construite cu elemente Bootstrap care se adapteaza bine pe mobil. Campurile ocupa latimea potrivita, iar butoanele sunt usor de accesat. Aceasta este important in formularul de contact, unde utilizatorul poate trimite mesaj direct de pe telefon.
+
+In panourile admin si agent, structura row/col permite asezarea formularelor si listelor pe coloane pe desktop, dar vertical pe mobil. Astfel, aplicatia ramane utilizabila chiar si pe ecrane mai mici.
+
+Implementarea mobile-first nu inseamna adaugarea unor efecte vizuale complexe, ci pastrarea unei interfete clare si functionale. Pentru proiectul Max Imob, simplitatea este mai importanta decat decorarea excesiva.
+
+5.31. Implementarea tipurilor TypeScript
+
+Tipurile TypeScript sunt folosite pentru a descrie structurile principale ale aplicatiei. In servicii si componente apar tipuri precum Agent, Property, PropertyImage, Message, AuthSession si UserRole. Aceste tipuri contribuie la claritatea codului.
+
+Tipul UserRole limiteaza valorile posibile la admin si agent. Aceasta este important pentru autentificare si autorizare. Daca in cod se incearca folosirea unui alt rol, TypeScript poate semnala problema.
+
+Tipul Property descrie proprietatile cu toate campurile necesare: id, agentId, title, description, price, city, address, propertyType, status, offerType, bedrooms, bathrooms, area, isActive, images, createdAt si updatedAt. Componentele care afiseaza proprietati primesc acest tip, ceea ce reduce riscul accesarii unor campuri inexistente.
+
+Tipul Message descrie mesajele trimise de utilizatori publici. El include datele de contact, continutul mesajului, statusul si proprietatea asociata. Acest tip este folosit in panoul agentului.
+
+Folosirea tipurilor este utila mai ales la maparea datelor din baza de date. Randurile SQL au o structura, iar obiectele returnate catre frontend au alta structura. TypeScript ajuta la definirea clara a ambelor forme.
+
+5.32. Implementarea migratiilor si evolutia schemei
+
+Migratiile SQL sunt folosite pentru a descrie evolutia bazei de date. Fiecare fisier adauga o modificare specifica. Numerotarea fisierelor ajuta la aplicarea lor in ordine.
+
+Aceasta abordare este preferabila modificarilor manuale necontrolate, deoarece fiecare schimbare este documentata. Daca un alt mediu trebuie configurat, migratiile pot fi aplicate in aceeasi ordine pentru a obtine aceeasi structura.
+
+Faptul ca offer_type este adaugat printr-o migrare separata arata evolutia aplicatiei. Initial, tabela properties continea informatii de baza, iar ulterior s-a introdus diferentierea intre vanzare si inchiriere. Aceasta schimbare este documentata in 006_add_property_offer_type.sql.
+
+Migratiile contin si indecsi. De exemplu, properties_agent_id_idx ajuta la interogarile pentru proprietatile unui agent, iar messages_agent_id_idx ajuta la obtinerea mesajelor unui agent. Indecsii sunt importanti pentru performanta, chiar daca proiectul are dimensiune academica.
+
+Prin folosirea migratiilor, baza de date devine parte documentata a proiectului, nu doar o configurare externa. Acest lucru este important pentru lucrarea de licenta si pentru reproducerea aplicatiei.
+
+5.33. Implementarea fluxului complet public-agent
+
+Unul dintre cele mai importante fluxuri implementate este fluxul public-agent. Acesta incepe cu agentul care creeaza o proprietate si se termina cu primirea unui mesaj de la un utilizator public.
+
+Mai intai, agentul se autentifica si acceseaza panoul de proprietati. Completeaza formularul, adauga imagini si seteaza statusul proprietatii la publicata. Cererea este trimisa catre API, datele sunt validate, proprietatea este salvata si imaginile sunt asociate.
+
+Dupa salvare, proprietatea apare in lista agentului. Daca este activa si publicata, ea apare si in zona publica. Utilizatorul public intra pe /properties, aplica filtre daca doreste si deschide pagina de detalii.
+
+Pe pagina de detalii, utilizatorul analizeaza informatiile si imaginile. Daca este interesat, deschide formularul de contact si trimite mesajul. Serverul valideaza mesajul, verifica proprietatea si salveaza lead-ul cu agent_id corespunzator.
+
+Agentul acceseaza /agent/messages si vede mesajul primit. Astfel, aplicatia implementeaza un flux real de comunicare intre oferta publicata de agent si interesul exprimat de utilizatorul public.
+
+[PLACEHOLDER FIGURA 5.9 - Diagrama sau captura compusa pentru fluxul agent -> proprietate publica -> mesaj.]
+
+5.34. Implementarea fluxului administrator-agent
+
+Al doilea flux important este fluxul administrator-agent. Acesta incepe cu administratorul care creeaza un cont de agent si continua cu agentul care foloseste contul pentru administrarea proprietatilor.
+
+Administratorul se autentifica prin formularul de login. Dupa autentificare, este redirectionat catre zona /admin. Acceseaza gestionarea agentilor si completeaza formularul de creare cu nume, email, telefon si parola.
+
+API-ul valideaza datele, verifica unicitatea emailului si creeaza hash-ul parolei. Agentul este salvat in tabela users cu rol agent si is_active true. Lista agentilor este reincarcata si noul agent apare in interfata.
+
+Agentul foloseste emailul si parola pentru autentificare. Dupa login, este redirectionat catre /agent. De aici poate gestiona proprietatile si mesajele. Daca administratorul dezactiveaza agentul, login-ul acestuia nu mai reuseste deoarece serviciul loginUser verifica isActive.
+
+Acest flux demonstreaza separarea rolurilor si controlul accesului. Administratorul nu gestioneaza proprietati, dar controleaza cine poate avea rol operational in sistem.
+
+5.35. Implementarea operatiilor asincrone
+
+Aplicatia foloseste operatii asincrone pentru interactiunea cu API-ul si baza de date. In frontend, functiile async sunt folosite pentru incarcarea datelor, trimiterea formularelor si actualizarea listelor. In backend, async/await este folosit pentru interogari SQL si operatii de autentificare.
+
+In componentele client, operatiile asincrone sunt insotite de stari de incarcare. De exemplu, isLoading indica incarcarea listelor, iar isSaving indica trimiterea unei operatii de salvare. Aceste stari ajuta interfata sa ofere feedback utilizatorului.
+
+In backend, operatiile asincrone sunt incadrate in try/catch. Acest lucru permite tratarea erorilor si returnarea unui raspuns JSON coerent. Fara try/catch, o eroare ar putea produce un raspuns neclar sau ar putea opri procesarea.
+
+Pentru tranzactii, async/await ajuta la ordonarea clara a pasilor: BEGIN, INSERT proprietate, INSERT imagini, COMMIT sau ROLLBACK. Codul rezultat este usor de urmarit si de explicat.
+
+Operatiile asincrone sunt esentiale intr-o aplicatie web deoarece accesul la retea si baza de date nu este instantaneu. Implementarea lor corecta contribuie la stabilitatea si utilizabilitatea sistemului.
+
+5.36. Implementarea reutilizarii codului
+
+Reutilizarea codului este realizata prin componente, servicii si functii helper. In frontend, campurile de formular sunt extrase in componente precum TextInput, PropertyTextInput si PropertySelect. Acestea reduc duplicarea in formulare.
+
+Componentele de afisare precum PropertyCard, PropertyGrid, AgentsTable si MessagesList pot fi dezvoltate si modificate independent. Aceasta abordare face interfata mai modulara.
+
+In backend, functiile jsonOk si jsonError sunt definite in rute pentru raspunsuri standardizate. Serviciile centralizeaza logica pentru entitati, astfel incat interogarile SQL nu sunt repetate in componente sau in mai multe rute.
+
+Functiile de validare sunt reutilizate in rutele API. De exemplu, validateCreatePropertyInput si validateUpdatePropertyInput definesc reguli similare, dar adaptate pentru creare si actualizare. Aceasta separare evita folosirea aceleiasi validari in contexte diferite fara control.
+
+Reutilizarea este aplicata cu masura. Proiectul evita abstractizarea excesiva si pastreaza functiile usor de inteles. Aceasta alegere este potrivita pentru scopul lucrarii, unde claritatea este mai importanta decat generalizarea avansata.
+
+5.37. Probleme intampinate si solutii adoptate
+
+In timpul implementarii, una dintre provocarile principale a fost separarea accesului public de accesul agentului pentru aceleasi resurse. Proprietatile trebuie sa poata fi citite public doar daca sunt publicate si active, dar agentul trebuie sa poata vedea si proprietatile sale in ciorna sau inactive. Solutia adoptata a fost verificarea sesiunii si folosirea parametrului publicata pentru a decide tipul de lista returnata.
+
+O alta provocare a fost gestionarea imaginilor impreuna cu datele proprietatii. Deoarece formularele cu fisiere nu pot fi trimise simplu ca JSON, s-a folosit FormData. Pe server, datele text si fisierele sunt extrase separat. Proprietatea si imaginile sunt salvate in tranzactie pentru a pastra coerenta.
+
+Autorizarea proprietatilor a fost o alta zona importanta. Nu este suficient ca utilizatorul sa fie agent; el trebuie sa fie agentul proprietatii. Solutia adoptata a fost cautarea proprietatilor dupa id si agent_id in serviciile pentru agent. Astfel, daca id-ul nu apartine agentului, serviciul se comporta ca si cum proprietatea nu ar fi gasita.
+
+Validarea manuala a datelor a necesitat definirea clara a regulilor pentru fiecare entitate. Desi o biblioteca de validare ar fi redus cantitatea de cod, validarea manuala face regulile mai vizibile si respecta cerintele proiectului.
+
+O alta provocare a fost pastrarea formularelor suficient de simple. Pentru a evita un obiect mare cu toate valorile formularului, fiecare camp a fost pastrat in propria stare. Aceasta abordare produce mai multe linii de cod, dar face comportamentul fiecarui camp explicit.
+
+5.38. Concluzii
+
+Implementarea aplicatiei Max Imob a transformat proiectarea sistemului intr-o platforma web functionala. Au fost realizate rutele publice pentru vizualizarea proprietatilor, rutele private pentru agenti si administrator, mecanismul de autentificare, validarea datelor, interactiunea cu PostgreSQL si gestionarea mesajelor.
+
+Aplicatia foloseste o structura clara, impartita intre app, lib si db. Paginile si componentele definesc interfata, rutele API gestioneaza comunicarea HTTP, serviciile contin logica de business, iar baza de date pastreaza informatiile persistente. Aceasta organizare sustine mentenabilitatea si face proiectul usor de explicat.
+
+Functionalitatile implementate acopera fluxurile principale ale sistemului: administratorul creeaza agenti, agentii gestioneaza proprietati, utilizatorii publici consulta ofertele si trimit mesaje, iar agentii vizualizeaza lead-urile primite. Aceste fluxuri demonstreaza functionarea unei platforme imobiliare simplificate, dar apropiate de un scenariu real.
+
+Prin folosirea autentificarii cu JWT, a parolelor hash-uite, a cookie-urilor HTTP-only, a validarilor server-side si a verificarilor de rol, aplicatia include masuri de securitate adecvate pentru scopul proiectului. Prin folosirea PostgreSQL, a migratiilor SQL si a relatiilor explicite, datele sunt organizate coerent.
+
+Capitolul urmator va prezenta testarea aplicatiei, scenariile verificate si modul in care s-a confirmat ca functionalitatile implementate respecta cerintele stabilite in analiza initiala.

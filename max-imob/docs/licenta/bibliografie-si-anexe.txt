@@ -1,0 +1,188 @@
+BIBLIOGRAFIE SI ANEXE
+
+BIBLIOGRAFIE
+
+[1] Vercel. Next.js Documentation - App Router.
+Disponibil la: https://nextjs.org/docs/app
+Accesat la data de 04.06.2026.
+
+[2] Meta Open Source. React Documentation - Learn React.
+Disponibil la: https://react.dev/learn
+Accesat la data de 04.06.2026.
+
+[3] Microsoft. TypeScript Documentation.
+Disponibil la: https://www.typescriptlang.org/docs/
+Accesat la data de 04.06.2026.
+
+[4] Bootstrap Team. Bootstrap v5.3 Documentation - Getting Started.
+Disponibil la: https://getbootstrap.com/docs/5.3/getting-started/introduction/
+Accesat la data de 04.06.2026.
+
+[5] OpenJS Foundation. Node.js API Documentation.
+Disponibil la: https://nodejs.org/api/documentation.html
+Accesat la data de 04.06.2026.
+
+[6] PostgreSQL Global Development Group. PostgreSQL Documentation.
+Disponibil la: https://www.postgresql.org/docs/
+Accesat la data de 04.06.2026.
+
+[7] The PostgreSQL Global Development Group. PostgreSQL 17 Documentation.
+Disponibil la: https://www.postgresql.org/docs/17/
+Accesat la data de 04.06.2026.
+
+[8] npm. jsonwebtoken - npm package documentation.
+Disponibil la: https://www.npmjs.com/package/jsonwebtoken
+Accesat la data de 04.06.2026.
+
+[9] npm. bcryptjs - npm package documentation.
+Disponibil la: https://www.npmjs.com/package/bcryptjs
+Accesat la data de 04.06.2026.
+
+[10] Internet Engineering Task Force. RFC 7519 - JSON Web Token (JWT).
+Disponibil la: https://datatracker.ietf.org/doc/html/rfc7519
+Accesat la data de 04.06.2026.
+
+[11] MDN Web Docs. HTTP cookies.
+Disponibil la: https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies
+Accesat la data de 04.06.2026.
+
+[12] npm. pg - PostgreSQL client for Node.js.
+Disponibil la: https://www.npmjs.com/package/pg
+Accesat la data de 04.06.2026.
+
+[13] Next.js Documentation. Route Handlers.
+Disponibil la: https://nextjs.org/docs/app/building-your-application/routing/route-handlers
+Accesat la data de 04.06.2026.
+
+[14] Next.js Documentation. Server and Client Components.
+Disponibil la: https://nextjs.org/docs/app/getting-started/server-and-client-components
+Accesat la data de 04.06.2026.
+
+[15] Next.js Documentation. Environment Variables.
+Disponibil la: https://nextjs.org/docs/app/guides/environment-variables
+Accesat la data de 04.06.2026.
+
+[16] ESLint. ESLint Documentation.
+Disponibil la: https://eslint.org/docs/latest/
+Accesat la data de 04.06.2026.
+
+[17] Git. Git Documentation.
+Disponibil la: https://git-scm.com/doc
+Accesat la data de 04.06.2026.
+
+
+ANEXE
+
+Anexa 1. Structura proiectului
+
+Aplicatia Max Imob este organizata in directoare care separa responsabilitatile principale:
+
+- app - contine paginile, componentele si rutele API ale aplicatiei Next.js;
+- app/api - contine endpoint-urile pentru autentificare, agenti, proprietati si mesaje;
+- app/admin - contine zona administratorului;
+- app/agent - contine zona agentului;
+- app/properties - contine zona publica pentru proprietati;
+- lib - contine serviciile, validarile si logica reutilizabila;
+- lib/auth - contine autentificarea si gestionarea sesiunii;
+- lib/agents - contine serviciile si validarile pentru agenti;
+- lib/properties - contine serviciile pentru proprietati, imagini si mesaje;
+- lib/db - contine configurarea conexiunii la baza de date;
+- db/migrations - contine migratiile SQL;
+- docs/licenta - contine documentatia lucrarii.
+
+[PLACEHOLDER ANEXA 1 - Captura sau schema cu structura directoarelor proiectului.]
+
+
+Anexa 2. Exemple de migratii SQL
+
+Exemple de fisiere de migrare utilizate in proiect:
+
+- 001_create_users.sql - creeaza tabela users si rolurile admin/agent;
+- 003_create_properties.sql - creeaza tabela properties si tipurile pentru proprietati;
+- 004_create_property_images.sql - creeaza tabela property_images;
+- 005_create_messages.sql - creeaza tabela messages;
+- 006_add_property_offer_type.sql - adauga tipul de oferta vanzare/inchiriere.
+
+Aceste migratii definesc structura bazei de date si relatiile dintre entitati. Ele permit reproducerea bazei de date intr-un mediu nou si documenteaza evolutia sistemului.
+
+[PLACEHOLDER ANEXA 2 - Fragment SQL relevant pentru tabela properties.]
+
+
+Anexa 3. Exemple de rute API
+
+Rute API principale:
+
+- POST /api/auth/login - autentificarea administratorului sau agentului;
+- GET /api/agents - listarea agentilor, disponibila administratorului;
+- POST /api/agents - crearea unui agent, disponibila administratorului;
+- PUT /api/agents/[id] - actualizarea unui agent;
+- DELETE /api/agents/[id] - dezactivarea unui agent;
+- GET /api/properties - listarea proprietatilor publice sau a proprietatilor agentului;
+- POST /api/properties - crearea unei proprietati de catre agent;
+- GET /api/properties/[id] - obtinerea detaliilor unei proprietati;
+- PUT /api/properties/[id] - actualizarea unei proprietati de catre agent;
+- PATCH /api/properties/[id] - activarea unei proprietati;
+- DELETE /api/properties/[id] - dezactivarea unei proprietati;
+- POST /api/properties/[id]/messages - trimiterea unui mesaj public;
+- GET /api/agent/messages - listarea mesajelor primite de agent.
+
+[PLACEHOLDER ANEXA 3 - Captura din cod cu o ruta API reprezentativa.]
+
+
+Anexa 4. Capturi de ecran ale aplicatiei
+
+Capturi recomandate pentru documentul final:
+
+- pagina principala Max Imob;
+- lista publica de proprietati;
+- filtrele pentru proprietati;
+- pagina de detalii a unei proprietati;
+- formularul de contact;
+- pagina de login;
+- panoul administratorului pentru agenti;
+- panoul agentului pentru proprietati;
+- panoul agentului pentru mesaje.
+
+[PLACEHOLDER ANEXA 4.1 - Pagina principala.]
+[PLACEHOLDER ANEXA 4.2 - Lista proprietatilor.]
+[PLACEHOLDER ANEXA 4.3 - Detalii proprietate.]
+[PLACEHOLDER ANEXA 4.4 - Panou administrator.]
+[PLACEHOLDER ANEXA 4.5 - Panou agent.]
+
+
+Anexa 5. Scenarii de testare
+
+Scenarii principale folosite la validarea aplicatiei:
+
+1. Autentificarea administratorului cu date corecte.
+2. Autentificarea agentului cu date corecte.
+3. Respingerea autentificarii cu parola gresita.
+4. Crearea unui agent de catre administrator.
+5. Dezactivarea unui agent si verificarea imposibilitatii de autentificare.
+6. Crearea unei proprietati de catre agent.
+7. Editarea unei proprietati proprii.
+8. Dezactivarea si reactivarea unei proprietati.
+9. Afisarea proprietatilor publicate in zona publica.
+10. Filtrarea proprietatilor dupa oras, tip si oferta.
+11. Trimiterea unui mesaj prin formularul de contact.
+12. Afisarea mesajului in panoul agentului responsabil.
+13. Verificarea faptului ca un agent nu vede mesajele altui agent.
+14. Respingerea accesului unui agent la rutele administratorului.
+15. Respingerea datelor invalide in formularele principale.
+
+[PLACEHOLDER ANEXA 5 - Tabel cu scenarii, pasi, rezultat asteptat si rezultat obtinut.]
+
+
+Anexa 6. Conturi de test
+
+Pentru demonstrarea aplicatiei pot fi folosite conturi de test. Datele exacte trebuie completate doar in documentul final daca sunt potrivite pentru prezentare si nu contin parole reale folosite in alte contexte.
+
+Administrator:
+Email: admin@max-imob.local
+Parola: [completati parola de test]
+
+Agent:
+Email: [completati email agent de test]
+Parola: [completati parola agent de test]
+
+Observatie: parolele reale de productie nu trebuie incluse in lucrare. Pentru sustinere se recomanda folosirea unor conturi demonstrative.

@@ -4,6 +4,7 @@ import {
   createProperty,
   listAgentProperties,
   listPublicProperties,
+  PropertyInputError,
 } from "@/lib/properties/property-service";
 import {
   getImageFiles,
@@ -49,7 +50,7 @@ async function handleGetProperties(request: NextRequest) {
 
 function getPublicFiltersFromRequest(request: NextRequest) {
   return {
-    city: request.nextUrl.searchParams.get("city") ?? "",
+    cityId: request.nextUrl.searchParams.get("cityId") ?? "",
     propertyType: request.nextUrl.searchParams.get("propertyType") ?? "",
     bedrooms: request.nextUrl.searchParams.get("bedrooms") ?? "",
     offerType: request.nextUrl.searchParams.get("offerType") ?? "",
@@ -87,7 +88,7 @@ function getPropertyInputFromFormData(formData: FormData) {
     title: formData.get("title"),
     description: formData.get("description"),
     price: formData.get("price"),
-    city: formData.get("city"),
+    cityId: formData.get("cityId"),
     address: formData.get("address"),
     propertyType: formData.get("propertyType"),
     offerType: formData.get("offerType"),
@@ -100,6 +101,10 @@ function getPropertyInputFromFormData(formData: FormData) {
 
 function handleRouteError(error: unknown) {
   if (error instanceof AuthError) {
+    return jsonError(error.message, error.status);
+  }
+
+  if (error instanceof PropertyInputError) {
     return jsonError(error.message, error.status);
   }
 

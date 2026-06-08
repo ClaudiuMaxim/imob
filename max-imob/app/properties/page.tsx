@@ -1,4 +1,3 @@
-import Link from "next/link";
 import PropertiesBrowser from "./components/properties-browser";
 import Header from "../components/Header";
 import Footer from "../components/Footer";

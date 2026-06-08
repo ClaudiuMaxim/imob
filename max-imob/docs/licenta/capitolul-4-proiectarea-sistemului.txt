@@ -1,0 +1,408 @@
+CAPITOLUL 4
+PROIECTAREA SISTEMULUI
+
+4.1. Introducere
+
+Proiectarea sistemului reprezinta etapa in care cerintele identificate anterior sunt transformate intr-o structura tehnica. Daca analiza cerintelor stabileste ce trebuie sa faca aplicatia, proiectarea descrie cum este organizat sistemul pentru a raspunde acestor cerinte. In cazul aplicatiei Max Imob, proiectarea are rolul de a defini arhitectura generala, modulele principale, structura bazei de date, rutele aplicatiei, fluxurile de date si mecanismele de securitate.
+
+Aplicatia Max Imob este conceputa ca o platforma web full-stack pentru domeniul imobiliar. Ea include o zona publica, accesibila fara autentificare, o zona privata pentru agenti si o zona privata pentru administrator. Aceasta impartire este fundamentala pentru proiectare, deoarece fiecare zona are reguli diferite de acces, functionalitati diferite si tipuri diferite de date.
+
+Un principiu important al proiectarii a fost simplitatea. Sistemul nu foloseste arhitecturi complicate, microservicii sau modele avansate care ar ingreuna intelegerea proiectului. In schimb, aplicatia este organizata intr-un mod clar, cu pagini Next.js, componente reutilizabile, rute API si module de servicii pentru logica principala. Aceasta abordare este potrivita pentru o lucrare de licenta, deoarece permite explicarea completa a aplicatiei, de la interfata pana la baza de date.
+
+In acest capitol sunt prezentate deciziile de proiectare care stau la baza implementarii. Sunt descrise arhitectura pe straturi, organizarea rutelor, proiectarea interfetei, proiectarea bazei de date, fluxurile principale, validarea datelor, securitatea si modul in care sunt tratate situatiile limita. Scopul capitolului este de a arata ca aplicatia nu este doar o colectie de pagini si formulare, ci un sistem coerent, construit in jurul unor reguli clare.
+
+[PLACEHOLDER FIGURA 4.1 - Arhitectura generala a sistemului Max Imob: browser, Next.js, API routes, servicii, PostgreSQL.]
+
+4.2. Principii generale de proiectare
+
+Primul principiu urmat in proiectarea aplicatiei este separarea responsabilitatilor. Fiecare parte a sistemului trebuie sa aiba un rol clar. Componentele de interfata sunt responsabile pentru afisare si interactiune, rutele API sunt responsabile pentru primirea cererilor si returnarea raspunsurilor, serviciile contin logica principala, iar baza de date asigura persistenta datelor.
+
+Al doilea principiu este pastrarea unei arhitecturi simple. Aplicatia este dezvoltata pentru un scenariu de licenta, deci trebuie sa fie suficient de completa pentru a demonstra concepte reale, dar fara extinderi inutile. De aceea, sistemul este construit ca aplicatie web monolitica, in care partea de frontend si partea de backend se afla in acelasi proiect Next.js. Aceasta alegere reduce numarul de componente externe si face fluxul mai usor de urmarit.
+
+Al treilea principiu este controlul accesului pe baza de rol. Exista doua roluri autentificate: admin si agent. Administratorul gestioneaza agentii, iar agentul gestioneaza proprietatile proprii si mesajele primite. Utilizatorii publici nu au conturi si nu se autentifica. Aceasta regula influenteaza proiectarea rutelor, a serviciilor si a interfetei.
+
+Al patrulea principiu este validarea datelor inainte de salvare. Datele introduse prin formulare nu trebuie considerate corecte doar pentru ca vin din interfata. Serverul trebuie sa verifice campurile obligatorii, formatele, valorile numerice si regulile de business. Aceasta proiectare reduce riscul de date invalide in baza de date.
+
+Al cincilea principiu este mentenabilitatea. Fisierele mari sunt impartite in componente sau module mai mici, iar denumirile sunt alese pentru a descrie clar rolul fiecarui element. Proiectul include directoare precum lib/auth, lib/agents si lib/properties, ceea ce permite separarea logicii pe domenii functionale.
+
+4.3. Arhitectura generala a aplicatiei
+
+Aplicatia Max Imob este organizata pe mai multe straturi logice. Aceste straturi nu sunt separate in aplicatii independente, dar fiecare indeplineste un rol distinct. Straturile principale sunt: stratul de prezentare, stratul de rute, stratul de servicii, stratul de acces la date si stratul de persistenta.
+
+Stratul de prezentare este format din paginile si componentele React din directorul app. Acesta include paginile publice, pagina de login, panoul agentului si panoul administratorului. Utilizatorul interactioneaza direct cu acest strat prin browser. Componentele afiseaza date, preiau informatii din formulare si declanseaza cereri catre API atunci cand este necesar.
+
+Stratul de rute este reprezentat de rutele Next.js si de rutele API. Rutele de pagina definesc experienta vizuala pentru utilizatori, iar rutele API definesc punctele prin care frontend-ul comunica cu serverul. De exemplu, exista rute API pentru autentificare, agenti, proprietati si mesaje.
+
+Stratul de servicii contine logica principala a aplicatiei. In loc ca rutele API sa contina toata logica, aceasta este mutata in fisiere din lib. De exemplu, autentificarea este gestionata prin servicii din lib/auth, agentii prin lib/agents, iar proprietatile si mesajele prin lib/properties. Aceasta separare face codul mai usor de testat si de explicat.
+
+Stratul de acces la date include conectarea la PostgreSQL prin pool-ul de conexiuni. Fisierul lib/db/pool.ts centralizeaza accesul la baza de date, astfel incat serviciile sa poata executa interogari fara a crea conexiuni separate in fiecare loc. Aceasta abordare este mai ordonata si reduce duplicarea codului.
+
+Stratul de persistenta este baza de date PostgreSQL. Aici sunt stocate conturile interne, proprietatile, imaginile si mesajele. Structura bazei de date este definita prin migratii SQL, ceea ce permite reproducerea structurii si documentarea modificarilor.
+
+4.4. Organizarea proiectului
+
+Structura proiectului reflecta impartirea functionala a aplicatiei. Directorul app contine paginile, componentele si rutele API. Directorul lib contine logica reutilizabila si serviciile. Directorul db contine migratiile SQL. Directorul docs/licenta contine documentele lucrarii de licenta.
+
+In directorul app se gasesc rutele publice si private. Pagina principala este definita in app/page.tsx. Pagina pentru lista proprietatilor este in app/properties/page.tsx, iar pagina pentru detaliile unei proprietati este in app/properties/[id]/page.tsx. Aceste rute sunt destinate utilizatorilor publici.
+
+Zona de autentificare este definita in app/login. Formularul de autentificare este separat intr-o componenta proprie, ceea ce pastreaza pagina principala de login mai simpla. Aceasta separare este utila deoarece formularul contine stare locala si interactiune cu API-ul de autentificare.
+
+Zona administratorului este organizata in app/admin. Ruta app/admin/page.tsx serveste ca punct de intrare, iar administrarea agentilor este dezvoltata in app/admin/agents. Acolo exista atat pagina principala, cat si componente pentru lista de agenti, formularul de creare si formularul de editare.
+
+Zona agentului este organizata in app/agent. Exista rute pentru proprietati si mesaje. Pentru proprietati, aplicatia foloseste app/agent/properties, unde sunt definite pagina, componenta principala, formularul de proprietate, tabelul si componente auxiliare pentru campuri. Pentru mesaje, aplicatia foloseste app/agent/messages si componente dedicate pentru afisarea lead-urilor.
+
+Rutele API sunt organizate in app/api. Exista endpoint-uri pentru autentificare, agenti, proprietati si mesaje. Aceasta organizare permite separarea clara intre rutele vizuale si rutele care returneaza raspunsuri JSON.
+
+Directorul lib este impartit pe domenii: auth, agents, db si properties. Aceasta impartire arata clar unde se afla logica pentru autentificare, agenti, conexiunea la baza de date si proprietati. In plus, fiecare domeniu are fisiere de validare, ceea ce sustine regula de verificare manuala a inputului.
+
+[PLACEHOLDER FIGURA 4.2 - Structura directoarelor principale: app, app/api, lib, db/migrations, docs/licenta.]
+
+4.5. Proiectarea rutelor publice
+
+Rutele publice sunt accesibile fara autentificare si sunt destinate vizitatorilor care doresc sa consulte proprietati. Aceste rute trebuie sa fie simple, rapide si orientate spre gasirea informatiei. In proiect, rutele publice principale sunt /, /properties si /properties/[id].
+
+Ruta / reprezinta pagina principala. Aceasta are rolul de a prezenta platforma si de a directiona utilizatorul catre lista proprietatilor. Pagina principala poate include componente precum Header, Hero, LatestProperties si Footer. Header-ul ofera navigatie, Hero-ul prezinta mesajul principal al platformei, LatestProperties afiseaza proprietati recente, iar Footer-ul incheie pagina cu informatii generale.
+
+Ruta /properties afiseaza lista de proprietati. Aceasta ruta foloseste componente precum properties-browser, property-filters, property-grid si property-card. Proiectarea acestei pagini urmareste separarea dintre filtrare, afisarea listei si reprezentarea vizuala a unei proprietati. Astfel, fiecare componenta are un rol clar.
+
+Componenta de filtre permite utilizatorului sa restranga rezultatele. Filtrele pot include orasul, tipul proprietatii, tipul ofertei sau alte criterii simple. Componenta de grid este responsabila pentru asezarea proprietatilor in pagina, iar cardul de proprietate afiseaza informatiile principale ale unei singure proprietati.
+
+Ruta /properties/[id] afiseaza detaliile unei proprietati. Aceasta ruta este dinamica, deoarece id-ul proprietatii este primit din URL. Pagina de detalii foloseste componente precum property-details, property-gallery, property-details-info, property-map, contact-agent-modal si contact-agent-form. Prin aceasta structura, informatiile sunt impartite in blocuri usor de inteles.
+
+Pagina de detalii trebuie sa ofere utilizatorului public suficiente informatii pentru a decide daca doreste sa contacteze agentul. Galeria prezinta imaginile, sectiunea de informatii afiseaza datele principale, iar formularul de contact permite trimiterea unui mesaj. Daca proprietatea nu exista, pagina trebuie sa trateze cazul printr-un mesaj adecvat sau printr-o stare de eroare.
+
+4.6. Proiectarea zonei de autentificare
+
+Autentificarea este disponibila doar pentru utilizatorii interni: administrator si agent. Ruta /login afiseaza formularul de autentificare. Formularul solicita email si parola, apoi trimite datele catre API-ul de login.
+
+Proiectarea autentificarii urmareste un flux clar. Utilizatorul completeaza datele, serverul valideaza formatul campurilor, cauta utilizatorul dupa email, verifica parola si verifica daca utilizatorul este activ. Daca autentificarea este corecta, se genereaza un token JWT care contine id-ul utilizatorului si rolul. Tokenul este trimis catre browser prin cookie HTTP-only.
+
+Cookie-ul HTTP-only este important deoarece nu poate fi citit direct de cod JavaScript rulat in browser. Astfel, tokenul este mai bine protejat fata de expunerea prin scripturi client-side. Rutele private folosesc acest cookie pentru a identifica utilizatorul autentificat.
+
+Dupa autentificare, utilizatorul trebuie directionat in functie de rol. Daca rolul este admin, destinatia logica este zona /admin. Daca rolul este agent, destinatia logica este zona /agent. Aceasta separare reduce confuzia si permite fiecarui utilizator sa ajunga direct in panoul potrivit.
+
+Erorile de autentificare trebuie tratate explicit. Daca emailul nu exista, parola este gresita, contul este dezactivat sau datele sunt invalide, sistemul trebuie sa returneze un mesaj de eroare. Mesajul trebuie sa fie suficient de clar pentru utilizator, dar fara a expune informatii sensibile.
+
+[PLACEHOLDER FIGURA 4.3 - Fluxul de autentificare si redirectionare in functie de rol.]
+
+4.7. Proiectarea zonei administratorului
+
+Zona administratorului este destinata gestionarii agentilor. Administratorul are acces la lista agentilor, poate crea agenti si poate edita informatii sau statusuri. El nu administreaza proprietati, conform regulilor de business stabilite.
+
+Ruta /admin poate functiona ca punct de intrare pentru administrator. Aceasta poate directiona catre /admin/agents, unde se afla functionalitatea principala. Organizarea pe ruta separata pentru agenti permite extinderea ulterioara a zonei admin fara a aglomera pagina principala.
+
+Pagina /admin/agents foloseste o componenta principala, agents-admin.tsx, care coordoneaza datele si interactiunile. Componentele mai mici includ agents-list-panel, agents-table, create-agent-form, edit-agent-form si text-input. Aceasta proiectare respecta principiul impartirii componentelor mari in componente mai mici.
+
+Tabelul de agenti afiseaza informatiile principale despre fiecare agent. Formularele de creare si editare permit introducerea datelor. Componenta text-input poate fi reutilizata pentru campuri simple, astfel incat formularele sa fie mai usor de mentinut.
+
+Din punct de vedere al backend-ului, zona administratorului foloseste rutele API /api/agents si /api/agents/[id]. Ruta generala poate fi folosita pentru listare si creare, iar ruta cu id pentru actualizarea unui agent. Fiecare cerere trebuie sa verifice daca utilizatorul este autentificat si are rol de admin.
+
+La crearea unui agent, parola trebuie transformata in hash inainte de salvare. Emailul trebuie sa fie unic, iar datele obligatorii trebuie validate. La editare, sistemul trebuie sa permita modificarea informatiilor relevante si schimbarea statusului activ/inactiv. Daca un agent este dezactivat, acesta nu mai trebuie sa poata accesa panoul sau.
+
+4.8. Proiectarea zonei agentului
+
+Zona agentului este destinata administrarii proprietatilor proprii si vizualizarii mesajelor primite. Aceasta zona este privata si trebuie sa fie accesibila doar utilizatorilor autentificati cu rol de agent.
+
+Ruta /agent poate functiona ca punct de intrare pentru agent. Functionalitatile principale sunt impartite in doua zone: /agent/properties si /agent/messages. Aceasta separare este importanta deoarece administrarea proprietatilor si gestionarea mesajelor sunt activitati diferite.
+
+Ruta /agent/properties permite agentului sa vada proprietatile proprii si sa efectueze operatii de creare, modificare, stergere sau actualizare. Componenta principala properties.tsx coordoneaza interactiunile, iar componentele auxiliare includ properties-list-panel, properties-table, property-form, property-images-input, property-select, property-text-input si property-description.
+
+Formularul de proprietate este proiectat pentru a colecta informatii precum titlu, descriere, pret, oras, adresa, tipul proprietatii, tipul ofertei, status, numar de dormitoare, numar de bai, suprafata si imagini. Fiecare camp trebuie validat. Campurile numerice trebuie sa primeasca valori corecte, iar campurile text obligatorii nu trebuie sa fie goale.
+
+Gestionarea imaginilor este separata prin componenta property-images-input si prin tabela property_images din baza de date. Aceasta separare permite asocierea mai multor imagini cu aceeasi proprietate si pastrarea unei ordini de afisare. In proiectare, imaginile sunt tratate ca entitati separate, nu ca simple campuri text in tabela properties.
+
+Ruta /agent/messages permite agentului sa vada mesajele primite pentru proprietatile sale. Componenta messages-list afiseaza lead-urile, iar datele sunt preluate prin API-ul dedicat. Sistemul trebuie sa filtreze mesajele dupa agentul autentificat, astfel incat un agent sa nu poata vedea mesajele altui agent.
+
+Din punct de vedere al backend-ului, agentul interactioneaza cu rutele /api/properties, /api/properties/[id] si /api/agent/messages. Aceste rute trebuie sa verifice autentificarea, rolul si proprietatea asupra resurselor. Pentru o proprietate existenta, verificarea agent_id este esentiala inainte de modificare sau stergere.
+
+4.9. Proiectarea rutelor API
+
+Rutele API sunt punctele de comunicare dintre interfata si logica server-side. Ele primesc cereri HTTP, extrag datele, verifica autentificarea, apeleaza serviciile si returneaza raspunsuri JSON. In Max Imob, rutele API sunt organizate in app/api.
+
+Ruta /api/auth/login este responsabila pentru autentificare. Aceasta primeste email si parola, valideaza datele, apeleaza serviciul de autentificare si seteaza cookie-ul HTTP-only daca login-ul reuseste. Raspunsul trebuie sa includa informatiile necesare pentru redirectionare, fara a expune parola sau hash-ul parolei.
+
+Ruta /api/agents este destinata operatiilor asupra agentilor. Pentru metoda GET, ruta poate returna lista agentilor. Pentru metoda POST, ruta poate crea un agent nou. Accesul trebuie permis doar administratorului. Raspunsul trebuie sa respecte structura standard cu success, data si error.
+
+Ruta /api/agents/[id] este destinata operatiilor asupra unui agent specific. Aceasta poate permite actualizarea datelor sau schimbarea statusului. Id-ul agentului este primit din ruta, iar serverul trebuie sa valideze existenta agentului si dreptul administratorului de a efectua actiunea.
+
+Ruta /api/properties este folosita pentru listarea proprietatilor si pentru crearea unei proprietati. In zona publica, listarea trebuie sa returneze proprietatile publicabile, de exemplu cele active si cu status potrivit. In zona agentului, crearea unei proprietati trebuie sa fie disponibila doar pentru agenti autentificati.
+
+Ruta /api/properties/[id] este folosita pentru accesarea sau modificarea unei proprietati specifice. Pentru utilizatorul public, aceasta ruta poate returna detaliile unei proprietati publice. Pentru agent, poate permite actualizarea sau stergerea unei proprietati proprii. Aceasta ruta trebuie proiectata atent deoarece combina acces public la citire cu acces privat la modificare.
+
+Ruta /api/properties/[id]/messages permite trimiterea unui mesaj pentru o proprietate. Aceasta ruta este publica, deoarece utilizatorii publici nu au conturi. Totusi, datele trebuie validate riguros. Serverul trebuie sa verifice daca proprietatea exista, sa identifice agentul responsabil si sa salveze mesajul in tabela messages.
+
+Ruta /api/agent/messages permite agentului autentificat sa vada mesajele primite. Aceasta ruta este privata si trebuie sa returneze doar mesajele asociate agentului din sesiune. Raspunsul nu trebuie sa includa date irelevante sau date ale altor agenti.
+
+[PLACEHOLDER TABEL 4.1 - Lista rutelor API, metode HTTP, roluri permise si scop.]
+
+4.10. Proiectarea serviciilor
+
+Serviciile sunt module care contin logica principala a aplicatiei. Ele sunt importante deoarece impiedica aglomerarea rutelor API cu logica de business. In proiect, serviciile sunt organizate in directorul lib.
+
+Serviciile de autentificare se afla in lib/auth. Fisierul auth-service.ts gestioneaza verificarea utilizatorului, compararea parolelor si generarea datelor necesare pentru sesiune. Fisierul session.ts gestioneaza informatiile legate de sesiune si token. Fisierul validation.ts contine regulile de validare pentru datele de login.
+
+Serviciile pentru agenti se afla in lib/agents. Fisierul agent-service.ts contine operatii precum listarea agentilor, crearea unui agent si actualizarea datelor. Fisierul validation.ts contine validarea datelor pentru agenti, cum ar fi emailul, numele, parola si statusul.
+
+Serviciile pentru proprietati se afla in lib/properties. Fisierul property-service.ts contine logica pentru citirea, crearea, actualizarea si stergerea proprietatilor. Fisierul validation.ts contine validarea proprietatilor, iar image-storage.ts gestioneaza partea legata de imagini. Fisierele messages-service.ts si messages-validation.ts gestioneaza mesajele trimise de utilizatori publici.
+
+Aceasta organizare are doua avantaje principale. Primul avantaj este claritatea: fiecare domeniu functional are propriul set de fisiere. Al doilea avantaj este reutilizarea: aceeasi logica poate fi apelata din mai multe rute sau componente server-side, fara duplicare.
+
+In proiectare, serviciile trebuie sa respecte regulile de business. De exemplu, serviciul de proprietati trebuie sa asocieze o proprietate cu agentul autentificat. Serviciul de mesaje trebuie sa identifice agentul unei proprietati inainte de a salva mesajul. Serviciul de agenti trebuie sa se asigure ca emailul este unic si ca parola este protejata.
+
+4.11. Proiectarea bazei de date
+
+Baza de date este proiectata relational, folosind PostgreSQL. Entitatile principale sunt users, properties, property_images si messages. Acestea reflecta actorii si fluxurile aplicatiei.
+
+Tabela users contine utilizatorii interni ai sistemului. Ea include administratorii si agentii. Campurile principale sunt id, email, password_hash, role, is_active, created_at si updated_at. Rolul este definit printr-un tip enumerat user_role, cu valorile admin si agent. Aceasta proiectare impiedica introducerea unor roluri nevalide.
+
+Tabela users include si constrangerea UNIQUE pe email. Aceasta este necesara deoarece emailul este folosit pentru autentificare. Daca doua conturi ar avea acelasi email, sistemul nu ar putea identifica in mod clar utilizatorul. Campul is_active permite dezactivarea unui agent fara stergerea contului.
+
+Tabela properties contine proprietatile administrate de agenti. Campurile principale sunt id, agent_id, title, description, price, city, address, property_type, status, bedrooms, bathrooms, area, is_active, created_at si updated_at. Ulterior, printr-o migrare separata, este adaugat campul offer_type, cu valori precum vanzare si inchiriere.
+
+Campul agent_id este cheie straina catre users(id). Aceasta relatie implementeaza regula conform careia fiecare proprietate apartine unui agent. In plus, tabela include constrangeri CHECK pentru pret, numar de dormitoare, numar de bai si suprafata. Aceste constrangeri protejeaza baza de date impotriva valorilor invalide.
+
+Tipurile property_type, property_status si property_offer sunt definite ca enumerari. property_type include valori precum apartament, casa, teren si comercial. property_status include valori precum ciorna, publicata, vanduta si inchiriata. property_offer include vanzare si inchiriere. Folosirea enumerarilor face modelul de date mai strict si mai usor de inteles.
+
+Tabela property_images permite atasarea imaginilor la proprietati. Campurile sunt id, property_id, image_url, file_name, sort_order si created_at. Relatia cu properties foloseste ON DELETE CASCADE, ceea ce inseamna ca imaginile sunt sterse automat daca proprietatea este stearsa. Aceasta proiectare evita datele orfane.
+
+Tabela messages contine lead-urile trimise de utilizatorii publici. Campurile sunt id, property_id, agent_id, contact_name, contact_email, contact_phone, message_content, status, created_at si updated_at. Mesajul este asociat atat proprietatii, cat si agentului. Aceasta asociere ajuta la afisarea rapida a mesajelor in panoul agentului.
+
+Indecsii sunt folositi pentru optimizarea interogarilor frecvente. De exemplu, properties_agent_id_idx ajuta la cautarea proprietatilor unui agent, properties_public_idx ajuta la listarea proprietatilor publice, iar indecsii pe messages ajuta la filtrarea mesajelor dupa proprietate, agent sau status.
+
+[PLACEHOLDER FIGURA 4.4 - Diagrama entitate-relatie pentru users, properties, property_images si messages.]
+
+4.12. Relatii si cardinalitati
+
+Relatia dintre users si properties este de tip unu-la-multe. Un agent poate avea mai multe proprietati, dar o proprietate apartine unui singur agent. Aceasta relatie este implementata prin campul agent_id din tabela properties.
+
+Relatia dintre properties si property_images este tot de tip unu-la-multe. O proprietate poate avea mai multe imagini, iar fiecare imagine apartine unei singure proprietati. Aceasta relatie permite construirea unei galerii pentru fiecare proprietate.
+
+Relatia dintre properties si messages este de tip unu-la-multe. O proprietate poate primi mai multe mesaje de la utilizatori publici. Fiecare mesaj este asociat unei singure proprietati. Aceasta relatie este necesara pentru ca agentul sa inteleaga la ce oferta se refera cererea.
+
+Relatia dintre users si messages este de tip unu-la-multe pentru agenti. Un agent poate primi mai multe mesaje, iar fiecare mesaj este asociat unui agent. Chiar daca agentul poate fi dedus din proprietate, pastrarea agent_id in tabela messages simplifica interogarile si afisarea mesajelor in panoul agentului.
+
+Administratorii sunt stocati tot in tabela users, dar nu au proprietati. Aceasta este o regula de business, nu o constrangere separata in schema de baza de date. Aplicatia trebuie sa se asigure prin logica de server ca proprietatile sunt asociate doar agentilor.
+
+4.13. Proiectarea fluxului public de vizualizare a proprietatilor
+
+Fluxul public incepe atunci cand utilizatorul acceseaza pagina principala sau direct pagina /properties. Browserul incarca pagina, iar componenta responsabila solicita lista de proprietati. Serverul interogheaza baza de date si returneaza proprietatile care pot fi afisate public.
+
+Pentru afisarea publica, sistemul trebuie sa tina cont de status si de campul is_active. O proprietate aflata in ciorna nu ar trebui sa fie prezentata in lista publica, deoarece agentul nu a publicat-o inca. O proprietate inactiva nu trebuie afisata, chiar daca exista in baza de date. Aceste reguli ajuta la separarea datelor interne de continutul public.
+
+Utilizatorul poate aplica filtre. Filtrele sunt transmise catre server sau aplicate in componenta client, in functie de implementare. Pentru un sistem simplu, filtrele pot fi gestionate in interfata atunci cand setul de date este mic. Pentru un sistem mai mare, filtrarea server-side ar fi mai potrivita. In proiectarea Max Imob, se pastreaza posibilitatea de a extinde filtrarea fara schimbari majore in structura.
+
+Dupa selectarea unei proprietati, utilizatorul acceseaza pagina /properties/[id]. Serverul cauta proprietatea dupa id, incarca imaginile si returneaza datele necesare pentru afisarea detaliilor. Daca id-ul nu corespunde unei proprietati existente sau publice, sistemul trebuie sa afiseze o stare de eroare.
+
+Acest flux este important deoarece reprezinta principala interactiune a utilizatorului public cu platforma. Proiectarea trebuie sa favorizeze claritatea, incarcarea rapida si accesul usor la formularul de contact.
+
+4.14. Proiectarea fluxului de trimitere a unui mesaj
+
+Fluxul de trimitere a unui mesaj incepe pe pagina de detalii a unei proprietati. Utilizatorul completeaza formularul de contact cu nume, email, telefon si mesaj. Deoarece utilizatorul public nu este autentificat, toate informatiile necesare pentru contact trebuie introduse in formular.
+
+La trimiterea formularului, frontend-ul apeleaza ruta /api/properties/[id]/messages. Id-ul proprietatii este preluat din ruta, iar datele formularului sunt trimise in corpul cererii. Serverul valideaza datele si verifica existenta proprietatii.
+
+Daca proprietatea exista, serverul identifica agentul asociat prin campul agent_id. Mesajul este apoi salvat in tabela messages, impreuna cu property_id si agent_id. Statusul initial poate fi unread, pentru a indica faptul ca agentul nu a procesat inca mesajul.
+
+Daca datele sunt invalide, serverul returneaza un raspuns de eroare. Daca proprietatea nu exista sau nu poate primi mesaje, cererea este respinsa. Frontend-ul trebuie sa afiseze utilizatorului un mesaj clar, fie de succes, fie de eroare.
+
+Acest flux transforma o interactiune publica intr-o informatie utila pentru agent. Asocierea mesajului cu proprietatea si agentul este esentiala pentru trasabilitate. Fara aceasta asociere, agentul nu ar sti pentru ce proprietate a fost trimisa cererea.
+
+[PLACEHOLDER FIGURA 4.5 - Diagrama de secventa pentru trimiterea unui mesaj de contact.]
+
+4.15. Proiectarea fluxului de administrare a proprietatilor
+
+Fluxul de administrare a proprietatilor este disponibil doar agentilor autentificati. Agentul acceseaza pagina /agent/properties, iar sistemul verifica sesiunea. Daca utilizatorul nu este autentificat sau nu are rol de agent, accesul trebuie refuzat.
+
+La incarcarea paginii, aplicatia solicita proprietatile agentului. Serverul foloseste id-ul agentului din sesiune si interogheaza tabela properties dupa agent_id. Astfel, agentul vede doar datele proprii. Aceasta proiectare este mai sigura decat transmiterea id-ului agentului din frontend, deoarece frontend-ul poate fi manipulat.
+
+Pentru crearea unei proprietati, agentul completeaza formularul. Datele sunt trimise catre /api/properties. Serverul valideaza campurile si asociaza proprietatea cu agentul autentificat. Campul agent_id nu trebuie ales liber din interfata, deoarece agentul nu trebuie sa creeze proprietati in numele altcuiva.
+
+Pentru modificarea unei proprietati, agentul trimite datele catre /api/properties/[id]. Serverul cauta proprietatea si verifica daca agent_id corespunde agentului autentificat. Doar dupa aceasta verificare se aplica modificarile. Aceeasi regula se aplica si pentru stergere.
+
+Pentru imagini, sistemul pastreaza datele in tabela property_images. Ordonarea imaginilor este controlata prin sort_order. Aceasta proiectare permite afisarea unei galerii coerente pe pagina publica si administrarea mai clara in panoul agentului.
+
+4.16. Proiectarea fluxului de administrare a agentilor
+
+Fluxul de administrare a agentilor este disponibil doar administratorului. Administratorul se autentifica si acceseaza /admin/agents. Serverul verifica sesiunea si rolul admin. Daca utilizatorul este agent sau nu este autentificat, accesul trebuie refuzat.
+
+La incarcarea paginii, aplicatia solicita lista agentilor prin /api/agents. Serverul returneaza conturile de agenti, fara a include parole sau hash-uri. Informatiile afisate pot include numele, emailul, statusul si eventual date de profil.
+
+Pentru crearea unui agent, administratorul completeaza formularul cu datele necesare. Serverul valideaza emailul, parola si campurile obligatorii. Daca emailul este deja folosit, cererea este respinsa. Daca datele sunt corecte, parola este transformata in hash si utilizatorul este salvat cu rol agent.
+
+Pentru editarea unui agent, administratorul poate modifica date relevante sau statusul. Dezactivarea unui agent nu sterge contul, ci seteaza is_active la false. Aceasta abordare pastreaza datele istorice si permite reactivarea ulterioara.
+
+Acest flux este proiectat separat de administrarea proprietatilor. Administratorul gestioneaza accesul agentilor, nu continutul operational al acestora. Aceasta separare reduce complexitatea si respecta regulile de business ale aplicatiei.
+
+4.17. Proiectarea fluxului de vizualizare a mesajelor de catre agent
+
+Fluxul de vizualizare a mesajelor incepe atunci cand agentul acceseaza /agent/messages. Sistemul verifica autentificarea si rolul. Daca utilizatorul este valid, frontend-ul solicita mesajele prin /api/agent/messages.
+
+Serverul foloseste id-ul agentului din sesiune si cauta mesajele din tabela messages unde agent_id corespunde agentului autentificat. Aceasta filtrare pe server este esentiala pentru securitate. Nu este suficient ca frontend-ul sa ascunda mesajele altor agenti, deoarece un utilizator ar putea incerca sa modifice cererile manual.
+
+Mesajele returnate trebuie sa includa informatiile necesare: numele persoanei, emailul, telefonul, continutul mesajului, statusul, data trimiterii si informatii despre proprietatea asociata. In interfata, agentul trebuie sa poata identifica rapid pentru ce proprietate a fost trimis fiecare mesaj.
+
+Statusul mesajului poate fi folosit pentru a diferentia mesajele necitite de cele procesate. Chiar daca functionalitatea de schimbare a statusului poate fi extinsa ulterior, proiectarea tabelei include campul status pentru a permite aceasta evolutie.
+
+Acest flux completeaza ciclul inceput de utilizatorul public. Utilizatorul trimite un mesaj, iar agentul il vede in panoul sau. Astfel, aplicatia simuleaza un proces real de comunicare intre potentialul client si agentul imobiliar.
+
+4.18. Proiectarea validarii datelor
+
+Validarea datelor este proiectata ca parte separata a logicii, prin fisiere dedicate de validation.ts. Exista validari pentru autentificare, agenti, proprietati si mesaje. Aceasta separare permite mentinerea rutelor API mai simple si reutilizarea regulilor.
+
+Pentru autentificare, validarea verifica existenta emailului si parolei, precum si formatul emailului. Datele invalide trebuie respinse inainte de interogarea bazei de date, deoarece nu are sens sa fie procesate cereri incomplete.
+
+Pentru agenti, validarea verifica emailul, parola, numele si statusul. Emailul trebuie sa aiba format corect si sa fie unic. Parola trebuie sa respecte o lungime minima, iar statusul trebuie sa fie o valoare acceptata. Validarea este importanta deoarece conturile de agenti primesc acces la zone private.
+
+Pentru proprietati, validarea este mai ampla. Titlul, descrierea, orasul si adresa trebuie completate. Pretul trebuie sa fie numeric si nenegativ. Suprafata trebuie sa fie mai mare decat zero. Numarul de dormitoare si bai nu poate fi negativ. Tipul proprietatii, statusul si tipul ofertei trebuie sa fie valori acceptate.
+
+Pentru mesaje, validarea verifica numele, emailul, telefonul si continutul mesajului. Emailul trebuie sa aiba format valid, iar mesajul nu trebuie sa fie gol. Deoarece formularul este public, validarea este foarte importanta pentru a evita date incorecte sau abuzive.
+
+Validarea se realizeaza manual, conform regulilor proiectului. Aceasta inseamna ca nu se foloseste o biblioteca externa pentru scheme de validare, ci functii proprii, simple si usor de explicat. Avantajul acestei abordari este transparenta: regulile sunt vizibile direct in cod.
+
+4.19. Proiectarea securitatii
+
+Securitatea aplicatiei este proiectata in jurul autentificarii, autorizarii, protectiei parolelor, protectiei tokenului si validarii inputului. Deoarece sistemul contine zone private pentru agenti si administrator, securitatea este o componenta esentiala.
+
+Parolele sunt protejate prin hashing. La crearea unui agent, parola nu este salvata in text clar, ci este transformata intr-un hash. La login, parola introdusa este comparata cu hash-ul salvat. Aceasta abordare reduce riscul in cazul accesului neautorizat la baza de date.
+
+Autentificarea foloseste JWT. Tokenul contine informatii esentiale, precum userId si role. Aceste informatii permit identificarea utilizatorului si aplicarea regulilor de autorizare. Tokenul este stocat intr-un cookie HTTP-only, ceea ce il face inaccesibil pentru JavaScript din browser.
+
+Autorizarea se bazeaza pe rol. Rutele de administrator sunt accesibile doar pentru admin. Rutele de agent sunt accesibile doar pentru agent. In plus, pentru resurse precum proprietatile si mesajele, se verifica si apartenenta datelor. Un agent nu poate modifica proprietati care nu ii apartin.
+
+Inputul este validat pe server. Aceasta masura este necesara deoarece validarea din frontend poate fi ocolita. Serverul este responsabil pentru respingerea datelor incomplete, invalide sau nepermise. Validarea contribuie atat la securitate, cat si la integritatea datelor.
+
+Datele sensibile sunt gestionate prin variabile de mediu. Secretul JWT si datele de conectare la baza de date nu trebuie scrise direct in cod. Aceasta regula face proiectul mai sigur si mai usor de configurat in medii diferite.
+
+[PLACEHOLDER FIGURA 4.6 - Schema mecanismelor de securitate: hash parola, JWT, cookie HTTP-only, verificare rol, validare input.]
+
+4.20. Proiectarea raspunsurilor API
+
+Raspunsurile API trebuie sa fie consecvente. Proiectul foloseste o structura standard cu success, data si error. Aceasta structura ajuta frontend-ul sa trateze usor rezultatele.
+
+Pentru o cerere reusita, success este true, data contine informatiile returnate, iar error este null. Pentru o cerere esuata, success este false, data poate fi null sau absent, iar error contine mesajul de eroare. Aceasta abordare este simpla si clara.
+
+Standardizarea raspunsurilor este utila in formulare. De exemplu, formularul de login poate verifica success pentru a decide daca redirectioneaza utilizatorul sau afiseaza o eroare. Formularul de contact poate afisa un mesaj de succes daca lead-ul a fost salvat sau o eroare daca datele sunt invalide.
+
+Raspunsurile nu trebuie sa expuna informatii sensibile. De exemplu, API-ul pentru agenti nu trebuie sa returneze password_hash. API-ul de login nu trebuie sa indice detalii prea precise care ar putea ajuta un atacator, cum ar fi diferentierea excesiva intre email inexistent si parola gresita.
+
+Codurile HTTP trebuie folosite coerent. O cerere valida poate returna 200 sau 201, o cerere cu date invalide poate returna 400, accesul neautentificat poate returna 401, accesul fara drepturi poate returna 403, iar o resursa inexistenta poate returna 404. Chiar daca raspunsul JSON contine success si error, codul HTTP ramane important.
+
+4.21. Proiectarea interfetei
+
+Interfata aplicatiei este proiectata pentru claritate si utilizare usoara. Fiind o platforma imobiliara, utilizatorul trebuie sa poata vedea rapid informatiile despre proprietati, iar agentii si administratorii trebuie sa poata efectua actiuni operationale fara confuzie.
+
+Pentru zona publica, designul este orientat spre prezentarea proprietatilor. Pagina principala trebuie sa directioneze utilizatorul catre oferte. Lista proprietatilor trebuie sa permita compararea rapida a cardurilor. Pagina de detalii trebuie sa puna in evidenta imaginile, informatiile principale si actiunea de contactare a agentului.
+
+Pentru zona agentului, designul este orientat spre administrare. Tabelele si formularele sunt mai importante decat elementele decorative. Agentul trebuie sa poata identifica rapid proprietatile, statusul acestora si mesajele primite. Formularele trebuie sa aiba campuri clare si mesaje de eroare vizibile.
+
+Pentru zona administratorului, interfata este orientata spre gestionarea agentilor. Lista agentilor trebuie sa fie usor de parcurs, iar actiunile de creare, editare, activare si dezactivare trebuie sa fie usor de gasit. Administratorul nu are nevoie de elemente legate de proprietati, deoarece acest lucru ar incalca separarea rolurilor.
+
+Aplicatia foloseste Bootstrap pentru layout si componente vizuale. Aceasta alegere sustine o interfata responsive si coerenta. Structura trebuie sa fie mobile-first, astfel incat paginile sa ramana utilizabile pe ecrane mici.
+
+4.22. Proiectarea componentelor frontend
+
+Componentele frontend sunt proiectate pentru reutilizare si separarea responsabilitatilor. In loc ca o pagina sa contina toata interfata si toata logica, aceasta poate delega parti din afisare catre componente mai mici.
+
+In zona publica, componentele Header, Hero, LatestProperties si Footer alcatuiesc pagina principala. Pentru lista de proprietati, componentele properties-browser, property-filters, property-grid si property-card separa filtrarea de afisare. Aceasta structura face mai usoara modificarea unei parti fara afectarea intregii pagini.
+
+In pagina de detalii, property-details coordoneaza afisarea, property-gallery gestioneaza imaginile, property-details-info afiseaza informatiile principale, property-map poate indica zona proprietatii, iar contact-agent-form si contact-agent-modal gestioneaza contactarea agentului. Aceasta organizare face pagina mai usor de inteles.
+
+In zona agentului, property-form este componenta centrala pentru crearea si editarea proprietatilor. Campurile sunt separate in componente precum property-text-input, property-select si property-description. Aceasta proiectare reduce duplicarea si ajuta la pastrarea unui formular coerent.
+
+In zona administratorului, create-agent-form si edit-agent-form sunt separate pentru claritate. agents-table afiseaza lista, iar agents-list-panel poate grupa actiunile si continutul. Componenta text-input poate fi reutilizata pentru campuri simple.
+
+Componentele care au nevoie de interactivitate sunt client components. Componentele care doar afiseaza date pot ramane server components atunci cand este posibil. Aceasta alegere respecta principiul folosirii componentelor client doar cand sunt necesare.
+
+4.23. Proiectarea gestionarii imaginilor
+
+Imaginile proprietatilor sunt importante pentru o platforma imobiliara, deoarece ajuta utilizatorul sa inteleaga mai bine oferta. In proiectare, imaginile nu sunt stocate direct in tabela properties, ci intr-o tabela separata, property_images.
+
+Aceasta decizie permite asocierea mai multor imagini cu aceeasi proprietate. Fiecare imagine are propriul id, URL, nume de fisier si ordine de afisare. Campul sort_order permite controlul ordinii in galerie. Astfel, imaginea principala poate fi afisata prima, iar restul imaginilor pot fi prezentate ulterior.
+
+Relatia property_images -> properties foloseste ON DELETE CASCADE. Aceasta inseamna ca atunci cand o proprietate este stearsa, imaginile asociate sunt sterse automat din baza de date. Aceasta regula pastreaza coerenta datelor si evita inregistrarile fara proprietate.
+
+In partea de frontend, componenta property-images-input permite agentului sa introduca sau sa gestioneze imaginile. In partea publica, property-gallery afiseaza imaginile proprietatii. Separarea dintre input si afisare este importanta deoarece agentul are nevoie de controale de administrare, iar utilizatorul public are nevoie doar de vizualizare.
+
+4.24. Proiectarea starilor proprietatilor
+
+Proprietatile au un status care descrie starea lor in sistem. Statusurile definite sunt ciorna, publicata, vanduta si inchiriata. Aceasta proiectare permite agentului sa controleze vizibilitatea si situatia fiecarei proprietati.
+
+Statusul ciorna indica faptul ca proprietatea exista in sistem, dar nu este inca pregatita pentru publicare. Aceasta stare este utila atunci cand agentul introduce treptat informatiile. Proprietatile in ciorna nu ar trebui afisate utilizatorilor publici.
+
+Statusul publicata indica faptul ca proprietatea este disponibila pentru afisare publica. Proprietatile publicate si active pot aparea in lista publica si pe pagina de detalii. Aceasta stare este principala stare vizibila pentru utilizatori.
+
+Statusurile vanduta si inchiriata indica faptul ca proprietatea nu mai este disponibila in acelasi mod. In functie de regulile finale, acestea pot fi afisate public cu eticheta corespunzatoare sau pot fi excluse din lista. Pentru proiectare, important este ca statusul sa permita diferentierea clara a situatiei.
+
+Pe langa status, tabela properties include campul is_active. Acest camp poate fi folosit pentru ascunderea unei proprietati fara schimbarea statusului sau pentru dezactivarea logica. Combinarea statusului cu is_active ofera flexibilitate in administrare.
+
+4.25. Proiectarea tipurilor de proprietati si oferte
+
+Tipul proprietatii si tipul ofertei sunt doua elemente diferite. Tipul proprietatii descrie natura bunului imobiliar, iar tipul ofertei descrie scopul tranzactiei. Aceasta separare este importanta pentru filtrare si afisare.
+
+Tipurile de proprietati definite sunt apartament, casa, teren si comercial. Aceste valori acopera categoriile principale necesare pentru o platforma imobiliara simplificata. Folosirea unui tip enumerat in baza de date impiedica introducerea unor valori necontrolate.
+
+Tipurile de oferta sunt vanzare si inchiriere. Aceasta diferentiere este importanta deoarece utilizatorii publici cauta adesea fie proprietati de cumparat, fie proprietati de inchiriat. Prin existenta campului offer_type, filtrarea poate deveni mai relevanta.
+
+In interfata, aceste valori pot fi prezentate prin selecturi. Agentul alege tipul proprietatii si tipul ofertei atunci cand creeaza sau editeaza o proprietate. Utilizatorul public poate folosi aceleasi valori pentru filtrare.
+
+Aceasta proiectare pastreaza datele clare si reduce ambiguitatea. De exemplu, o proprietate de tip apartament poate avea oferta vanzare sau inchiriere. Cele doua campuri nu trebuie combinate intr-un singur text, deoarece ar deveni mai greu de filtrat.
+
+4.26. Proiectarea navigatiei
+
+Navigatia trebuie sa fie diferita in functie de context. Utilizatorul public are nevoie de acces la pagina principala, lista proprietatilor si login. Agentul are nevoie de acces la proprietatile sale si la mesaje. Administratorul are nevoie de acces la gestionarea agentilor.
+
+Header-ul public poate include legaturi catre acasa, proprietati si autentificare. Acesta trebuie sa fie simplu si usor de folosit. Pe dispozitive mobile, navigatia trebuie sa ramana accesibila fara a ocupa prea mult spatiu.
+
+Dupa autentificare, utilizatorul poate fi redirectionat catre zona potrivita. Agentul ajunge in /agent, iar administratorul in /admin. In interiorul acestor zone pot exista legaturi catre subsectiuni. De exemplu, agentul poate naviga intre proprietati si mesaje.
+
+Navigatia trebuie sa respecte autorizarea. Nu este suficient ca linkurile sa fie ascunse in interfata; rutele si API-urile trebuie sa verifice accesul. Totusi, ascunderea linkurilor nepotrivite imbunatateste experienta utilizatorului si reduce confuzia.
+
+4.27. Proiectarea tratarii erorilor
+
+Tratarea erorilor este importanta pentru stabilitatea sistemului si pentru experienta utilizatorului. Erorile pot aparea din date invalide, lipsa autentificarii, lipsa autorizarii, resurse inexistente sau probleme de baza de date.
+
+Pentru date invalide, sistemul trebuie sa returneze mesaje clare. De exemplu, daca pretul unei proprietati este negativ sau emailul unui mesaj este invalid, utilizatorul trebuie informat ca datele trebuie corectate.
+
+Pentru lipsa autentificarii, sistemul trebuie sa refuze accesul la rutele private. Utilizatorul poate fi redirectionat catre login sau poate primi un raspuns 401. Pentru lipsa autorizarii, raspunsul potrivit este 403, deoarece utilizatorul este cunoscut, dar nu are dreptul sa efectueze actiunea.
+
+Pentru resurse inexistente, sistemul trebuie sa returneze 404. De exemplu, daca o proprietate nu exista, pagina de detalii sau API-ul trebuie sa trateze cazul in mod explicit. Nu trebuie afisate date incomplete sau mesaje confuze.
+
+Pentru erori de baza de date, sistemul trebuie sa evite expunerea detaliilor tehnice catre utilizator. Mesajele interne pot fi utile pentru dezvoltare, dar raspunsurile publice trebuie sa ramana generale. Aceasta abordare protejeaza informatiile interne si pastreaza interfata clara.
+
+4.28. Proiectarea mentenabilitatii
+
+Mentenabilitatea este un obiectiv important al proiectului, deoarece aplicatia trebuie sa poata fi explicata, modificata si extinsa. Pentru aceasta, codul este impartit pe domenii functionale si componente mici.
+
+In frontend, paginile sunt folosite pentru orchestrare, iar componentele pentru afisare si interactiune. Aceasta separare impiedica transformarea paginilor in fisiere foarte mari si greu de urmarit. Componentele precum formularele, tabelele si cardurile pot fi modificate individual.
+
+In backend, rutele API nu trebuie sa contina logica de business complexa. Ele trebuie sa primeasca cererea, sa verifice contextul, sa apeleze serviciul potrivit si sa returneze raspunsul. Serviciile contin logica principala, iar validarile sunt separate.
+
+In baza de date, migratiile SQL documenteaza evolutia structurii. Fiecare schimbare majora are propriul fisier de migrare. Aceasta organizare face mai usor de urmarit cum a evoluat schema si permite refacerea bazei de date intr-un mediu nou.
+
+Mentenabilitatea este sustinuta si de TypeScript. Tipurile explicite reduc riscul de erori atunci cand structura datelor se modifica. ESLint ajuta la pastrarea unor reguli consecvente de cod.
+
+4.29. Proiectarea posibilitatilor de extindere
+
+Desi aplicatia este proiectata pentru un set clar de functionalitati, structura permite extinderi ulterioare. Aceste extinderi pot fi realizate fara schimbarea fundamentala a arhitecturii.
+
+O prima directie de extindere este adaugarea programarilor pentru vizionari. Aceasta ar putea presupune o tabela noua, appointments, asociata cu properties, users si datele vizitatorului. Agentul ar putea vedea cererile de programare in panoul sau.
+
+O a doua directie este adaugarea de statistici pentru agenti. Sistemul ar putea calcula numarul de proprietati publicate, numarul de mesaje primite sau distributia proprietatilor dupa status. Aceste informatii ar putea fi afisate intr-un dashboard.
+
+O a treia directie este imbunatatirea filtrarii publice. Se pot adauga filtre dupa suprafata, numar de camere, interval de pret, status sau tip de oferta. Baza de date include deja unele campuri care permit astfel de filtre.
+
+O a patra directie este adaugarea notificarilor. Agentii ar putea primi notificari atunci cand apare un mesaj nou. Aceasta functionalitate ar putea fi implementata prin email sau printr-un sistem intern de notificari.
+
+O a cincea directie este gestionarea mai avansata a imaginilor. Se pot adauga upload local, optimizare de imagini, imagine principala sau stergere individuala. Tabela property_images ofera deja o baza pentru aceasta extindere.
+
+4.30. Concluzii
+
+Proiectarea sistemului Max Imob transforma cerintele definite anterior intr-o arhitectura clara si implementabila. Aplicatia este organizata pe straturi logice: interfata, rute, servicii, acces la date si baza de date. Aceasta organizare sustine separarea responsabilitatilor si face proiectul mai usor de inteles.
+
+Rutele publice permit vizualizarea proprietatilor si trimiterea mesajelor fara autentificare. Rutele agentului permit administrarea proprietatilor proprii si vizualizarea mesajelor primite. Rutele administratorului permit gestionarea agentilor. Aceasta impartire respecta regulile de business si ajuta la aplicarea autorizarii.
+
+Baza de date relationala este proiectata in jurul tabelelor users, properties, property_images si messages. Relatiile dintre aceste tabele reflecta fluxurile principale ale aplicatiei: agentii detin proprietati, proprietatile au imagini, iar utilizatorii publici trimit mesaje asociate proprietatilor si agentilor.
+
+Securitatea este integrata in proiectare prin hashing-ul parolelor, JWT, cookie HTTP-only, verificarea rolurilor si validarea inputului. Mentenabilitatea este sustinuta prin organizarea in module, componente mici si migratii SQL.
+
+Prin urmare, proiectarea prezentata in acest capitol ofera baza necesara pentru implementarea descrisa in capitolul urmator. Ea arata cum cerintele aplicatiei sunt transpuse intr-un sistem coerent, simplu, extensibil si potrivit pentru obiectivele unei lucrari de licenta.

@@ -24,6 +24,7 @@ export type Property = {
   title: string;
   description: string;
   price: number;
+  cityId: string;
   city: string;
   address: string;
   propertyType: PropertyType;
@@ -44,6 +45,7 @@ type PropertyRow = {
   title: string;
   description: string;
   price: string;
+  city_id: string;
   city: string;
   address: string;
   property_type: PropertyType;
@@ -64,13 +66,18 @@ type PropertyImageRow = {
   sort_order: number;
 };
 
+export class PropertyInputError extends Error {
+  status = 400;
+}
+
 export async function listAgentProperties(agentId: string) {
   const result = await getPool().query<PropertyRow>(
     `
-      SELECT *
+      SELECT properties.*, cities.name AS city
       FROM properties
-      WHERE agent_id = $1
-      ORDER BY created_at DESC
+      JOIN cities ON cities.id = properties.city_id
+      WHERE properties.agent_id = $1
+      ORDER BY properties.created_at DESC
     `,
     [agentId],
   );
@@ -80,37 +87,38 @@ export async function listAgentProperties(agentId: string) {
 
 export async function listPublicProperties(filters: PublicPropertyFilters = {}) {
   const queryParts = [
-    "status = 'publicata'",
-    "is_active = true",
+    "properties.status = 'publicata'",
+    "properties.is_active = true",
   ];
   const queryValues: Array<string | number> = [];
 
-  if (filters.city) {
-    queryValues.push(`%${filters.city}%`);
-    queryParts.push(`city ILIKE $${queryValues.length}`);
+  if (filters.cityId) {
+    queryValues.push(filters.cityId);
+    queryParts.push(`properties.city_id = $${queryValues.length}`);
   }
 
   if (filters.propertyType) {
     queryValues.push(filters.propertyType);
-    queryParts.push(`property_type = $${queryValues.length}`);
+    queryParts.push(`properties.property_type = $${queryValues.length}`);
   }
 
   if (filters.offerType) {
     queryValues.push(filters.offerType);
-    queryParts.push(`offer_type = $${queryValues.length}`);
+    queryParts.push(`properties.offer_type = $${queryValues.length}`);
   }
 
   if (filters.bedrooms) {
     queryValues.push(filters.bedrooms);
-    queryParts.push(`bedrooms = $${queryValues.length}`);
+    queryParts.push(`properties.bedrooms = $${queryValues.length}`);
   }
 
   const result = await getPool().query<PropertyRow>(
     `
-      SELECT *
+      SELECT properties.*, cities.name AS city
       FROM properties
+      JOIN cities ON cities.id = properties.city_id
       WHERE ${queryParts.join(" AND ")}
-      ORDER BY created_at DESC
+      ORDER BY properties.created_at DESC
       LIMIT 6
     `,
     queryValues,
@@ -125,12 +133,13 @@ export async function createProperty(
   images: SavedPropertyImage[],
 ) {
   const client = await getPool().connect();
+  const propertyId = randomUUID();
 
   try {
     await client.query("BEGIN");
 
-    const propertyId = randomUUID();
-    const result = await client.query<PropertyRow>(
+    const cityId = await resolveCityId(client, input.cityId);
+    await client.query(
       `
         INSERT INTO properties (
           id,
@@ -138,7 +147,7 @@ export async function createProperty(
           title,
           description,
           price,
-          city,
+          city_id,
           address,
           property_type,
           status,
@@ -158,7 +167,7 @@ export async function createProperty(
         input.title,
         input.description,
         input.price,
-        input.city,
+        cityId,
         input.address,
         input.propertyType,
         input.status,
@@ -171,22 +180,23 @@ export async function createProperty(
 
     await insertPropertyImages(client, propertyId, images, 0);
     await client.query("COMMIT");
-
-    return mapPropertyRow(result.rows[0], await listImagesForProperty(propertyId));
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;
   } finally {
     client.release();
   }
+
+  return getAgentPropertyById(agentId, propertyId);
 }
 
 export async function getAgentPropertyById(agentId: string, propertyId: string) {
   const result = await getPool().query<PropertyRow>(
     `
-      SELECT *
+      SELECT properties.*, cities.name AS city
       FROM properties
-      WHERE id = $1 AND agent_id = $2
+      JOIN cities ON cities.id = properties.city_id
+      WHERE properties.id = $1 AND properties.agent_id = $2
       LIMIT 1
     `,
     [propertyId, agentId],
@@ -198,9 +208,10 @@ export async function getAgentPropertyById(agentId: string, propertyId: string) 
 export async function getPublicPropertyById(propertyId: string) {
   const result = await getPool().query<PropertyRow>(
     `
-      SELECT *
+      SELECT properties.*, cities.name AS city
       FROM properties
-      WHERE id = $1 AND status = 'publicata' AND is_active = true
+      JOIN cities ON cities.id = properties.city_id
+      WHERE properties.id = $1 AND properties.status = 'publicata' AND properties.is_active = true
       LIMIT 1
     `,
     [propertyId],
@@ -225,7 +236,7 @@ export async function updateProperty(
     title: input.title ?? currentProperty.title,
     description: input.description ?? currentProperty.description,
     price: input.price ?? currentProperty.price,
-    city: input.city ?? currentProperty.city,
+    cityId: input.cityId ?? currentProperty.cityId,
     address: input.address ?? currentProperty.address,
     propertyType: input.propertyType ?? currentProperty.propertyType,
     status: input.status ?? currentProperty.status,
@@ -240,13 +251,17 @@ export async function updateProperty(
   try {
     await client.query("BEGIN");
 
-    const result = await client.query<PropertyRow>(
+    const cityId =
+      input.cityId
+        ? await resolveCityId(client, input.cityId)
+        : currentProperty.cityId;
+    await client.query(
       `
         UPDATE properties
         SET title = $3,
             description = $4,
             price = $5,
-            city = $6,
+            city_id = $6,
             address = $7,
             property_type = $8,
             status = $9,
@@ -264,7 +279,7 @@ export async function updateProperty(
         nextProperty.title,
         nextProperty.description,
         nextProperty.price,
-        nextProperty.city,
+        cityId,
         nextProperty.address,
         nextProperty.propertyType,
         nextProperty.status,
@@ -278,14 +293,14 @@ export async function updateProperty(
     const currentImageCount = currentProperty.images.length;
     await insertPropertyImages(client, propertyId, images, currentImageCount);
     await client.query("COMMIT");
-
-    return mapPropertyRow(result.rows[0], await listImagesForProperty(propertyId));
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;
   } finally {
     client.release();
   }
+
+  return getAgentPropertyById(agentId, propertyId);
 }
 
 export async function deactivateProperty(agentId: string, propertyId: string) {
@@ -300,7 +315,7 @@ export async function deactivateProperty(agentId: string, propertyId: string) {
     [propertyId, agentId],
   );
 
-  return mapOptionalProperty(result.rows[0]);
+  return result.rows[0] ? getAgentPropertyById(agentId, propertyId) : null;
 }
 
 export async function activateProperty(agentId: string, propertyId: string) {
@@ -315,7 +330,7 @@ export async function activateProperty(agentId: string, propertyId: string) {
     [propertyId, agentId],
   );
 
-  return mapOptionalProperty(result.rows[0]);
+  return result.rows[0] ? getAgentPropertyById(agentId, propertyId) : null;
 }
 
 async function mapPropertyRows(rows: PropertyRow[]) {
@@ -378,6 +393,27 @@ async function insertPropertyImages(
   }
 }
 
+async function resolveCityId(
+  client: PoolClient,
+  cityId: string,
+) {
+  const result = await client.query<{ id: string }>(
+    `
+      SELECT id
+      FROM cities
+      WHERE id = $1 AND is_active = true
+      LIMIT 1
+    `,
+    [cityId],
+  );
+
+  if (!result.rows[0]) {
+    throw new PropertyInputError("Orasul selectat nu exista.");
+  }
+
+  return result.rows[0].id;
+}
+
 function mapPropertyRow(row: PropertyRow, images: PropertyImage[]): Property {
   return {
     id: row.id,
@@ -385,6 +421,7 @@ function mapPropertyRow(row: PropertyRow, images: PropertyImage[]): Property {
     title: row.title,
     description: row.description,
     price: Number(row.price),
+    cityId: row.city_id,
     city: row.city,
     address: row.address,
     propertyType: row.property_type,

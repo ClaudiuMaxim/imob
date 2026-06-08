@@ -1,0 +1,152 @@
+CAPITOLUL 5
+IMPLEMENTAREA APLICAȚIEI - REZUMAT
+
+5.1. Introducere
+
+Implementarea aplicației Max Imob reprezintă etapa în care proiectarea sistemului a fost transpusă într-o platformă web funcțională. În această etapă au fost realizate paginile publice, zonele private pentru agent și administrator, rutele API, serviciile server-side, validările și structura bazei de date.
+
+Scopul implementării a fost obținerea unei aplicații simple, coerente și ușor de utilizat. Platforma permite vizitatorilor să consulte proprietăți fără autentificare, agenților să își administreze propriile anunțuri și mesajele primite, iar administratorului să gestioneze conturile agenților.
+
+Aplicația este dezvoltată cu Next.js, React, TypeScript, Bootstrap și PostgreSQL. Codul este organizat astfel încât fiecare zonă funcțională să poată fi înțeleasă separat. Paginile și componentele sunt plasate în directorul app, logica reutilizabilă în directorul lib, iar migrările bazei de date în directorul db/migrations.
+
+[PLACEHOLDER SCREENSHOT 5.1 - Pagina principală a aplicației Max Imob.]
+
+5.2. Structura proiectului
+
+Proiectul este organizat pe directoare cu responsabilități clare. Directorul app conține rutele aplicației, paginile vizibile pentru utilizatori, componentele React și rutele API. Directorul lib conține logica de autentificare, serviciile pentru agenți, serviciile pentru proprietăți, validările și conectarea la baza de date. Directorul db conține fișierele de migrare SQL.
+
+În app sunt separate zonele principale ale aplicației. Rutele publice includ pagina principală, lista proprietăților și pagina de detalii. Ruta de autentificare este separată în app/login. Zona administratorului este organizată în app/admin, iar zona agentului în app/agent.
+
+Această organizare face codul mai ușor de urmărit. De exemplu, modificările legate de autentificare se regăsesc în lib/auth, cele legate de agenți în lib/agents, iar cele legate de proprietăți și mesaje în lib/properties.
+
+5.3. Implementarea interfeței publice
+
+Interfața publică este destinată vizitatorilor care nu au cont în aplicație. Pagina principală prezintă platforma și direcționează utilizatorul către lista de proprietăți. Lista proprietăților permite consultarea anunțurilor disponibile și folosirea unor filtre simple.
+
+Pagina de detalii a unei proprietăți afișează informațiile importante despre ofertă: titlu, preț, localizare, tipul proprietății, tipul ofertei, suprafață, camere, descriere și imagini. Această pagină include și posibilitatea de contactare a agentului responsabil.
+
+Componentele publice sunt construite astfel încât afișarea să fie clară și responsive. Bootstrap este folosit pentru structură, spațiere, carduri, butoane și formulare. În acest fel, interfața rămâne utilizabilă atât pe desktop, cât și pe dispozitive mobile.
+
+[PLACEHOLDER SCREENSHOT 5.2 - Lista proprietăților disponibile.]
+
+[PLACEHOLDER SCREENSHOT 5.3 - Pagina de detalii a unei proprietăți.]
+
+5.4. Implementarea autentificării
+
+Autentificarea este disponibilă doar pentru administrator și agenți. Utilizatorii publici nu au conturi, deoarece rolul lor este limitat la consultarea proprietăților și trimiterea mesajelor.
+
+Formularul de login primește emailul și parola, apoi trimite datele către ruta API de autentificare. Serverul validează datele, caută utilizatorul în baza de date și compară parola introdusă cu hash-ul salvat. Dacă autentificarea este corectă, aplicația generează un token JWT.
+
+Tokenul conține id-ul utilizatorului și rolul acestuia. El este stocat într-un cookie HTTP-only, pentru a reduce riscul accesării lui din cod JavaScript. După autentificare, utilizatorul este redirecționat în funcție de rol: administratorul către zona /admin, iar agentul către zona /agent.
+
+[PLACEHOLDER SCREENSHOT 5.4 - Formularul de autentificare.]
+
+5.5. Implementarea sesiunii și autorizării
+
+Sesiunea este verificată pe baza tokenului JWT salvat în cookie. Funcțiile din modulul de sesiune citesc tokenul, îl validează și extrag informațiile despre utilizator. Dacă tokenul lipsește sau este invalid, cererea este respinsă.
+
+Autorizarea este realizată prin verificarea rolului. Rutele pentru administrator permit accesul doar utilizatorilor cu rol admin. Rutele pentru agent permit accesul doar utilizatorilor cu rol agent. Pentru proprietăți și mesaje se verifică și apartenența datelor, nu doar rolul.
+
+Această verificare este importantă deoarece un agent trebuie să lucreze doar cu propriile proprietăți. Chiar dacă ar încerca să modifice manual id-ul unei proprietăți în cerere, serverul verifică dacă proprietatea aparține agentului autentificat.
+
+5.6. Implementarea zonei administratorului
+
+Zona administratorului este folosită pentru gestionarea agenților. Administratorul poate vedea lista agenților, poate crea un agent nou, poate modifica informațiile unui agent și poate activa sau dezactiva conturi.
+
+Interfața este împărțită în componente pentru formularul de creare, formularul de editare și tabelul de agenți. Această separare păstrează pagina principală mai clară și reduce aglomerarea codului.
+
+La crearea unui agent, serverul validează numele, emailul, telefonul și parola. Emailul trebuie să fie unic, iar parola este salvată doar sub formă de hash. Agentul nou este introdus în tabela users cu rolul agent.
+
+Dezactivarea unui agent nu șterge contul din baza de date. În schimb, câmpul is_active este setat la false. Astfel, istoricul rămâne păstrat, iar agentul dezactivat nu se mai poate autentifica.
+
+[PLACEHOLDER SCREENSHOT 5.5 - Panoul administratorului cu lista agenților.]
+
+[PLACEHOLDER SCREENSHOT 5.6 - Formularul de creare sau editare a unui agent.]
+
+5.7. Implementarea zonei agentului
+
+Zona agentului este destinată administrării proprietăților și vizualizării mesajelor primite. Agentul are acces doar la propriile date, pe baza id-ului extras din sesiunea autentificată.
+
+În panoul de proprietăți, agentul poate crea, edita, activa sau dezactiva anunțuri. Formularul de proprietate conține câmpuri pentru titlu, descriere, preț, oraș, adresă, tipul proprietății, tipul ofertei, status, suprafață, camere, băi și imagini.
+
+Formularul folosește câte o stare separată pentru fiecare input. Această alegere face codul mai explicit și respectă regula proiectului privind formularele. Pentru proprietățile care includ imagini, datele sunt trimise folosind FormData.
+
+După salvarea unei proprietăți, lista agentului este actualizată. Proprietățile publicate și active devin vizibile și în zona publică. Proprietățile în ciornă sau inactive rămân vizibile doar agentului.
+
+[PLACEHOLDER SCREENSHOT 5.7 - Panoul agentului pentru administrarea proprietăților.]
+
+[PLACEHOLDER SCREENSHOT 5.8 - Formularul de creare sau editare a unei proprietăți.]
+
+5.8. Implementarea proprietăților și imaginilor
+
+Proprietățile sunt salvate în tabela properties și sunt asociate unui agent prin câmpul agent_id. Această relație permite sistemului să controleze accesul și să afișeze fiecărui agent doar propriile anunțuri.
+
+Imaginile sunt salvate separat, în tabela property_images. Această soluție permite asocierea mai multor imagini cu aceeași proprietate și păstrarea unei ordini de afișare. Dacă o proprietate este ștearsă fizic, imaginile asociate pot fi eliminate prin relația cu baza de date.
+
+Pentru operațiile care salvează proprietatea împreună cu imaginile se folosește o abordare controlată. Dacă apare o eroare în timpul salvării, operația trebuie anulată pentru a evita date incomplete. Astfel, se păstrează coerența dintre proprietate și imaginile sale.
+
+[PLACEHOLDER SCREENSHOT 5.9 - Galerie de imagini pentru o proprietate.]
+
+5.9. Implementarea mesajelor și a lead-urilor
+
+Mesajele sunt create de utilizatorii publici prin formularul de contact de pe pagina unei proprietăți. Formularul colectează numele, emailul, telefonul și mesajul persoanei interesate.
+
+La trimiterea formularului, serverul verifică datele și caută proprietatea pentru care a fost trimis mesajul. Apoi identifică agentul asociat acelei proprietăți și salvează mesajul în tabela messages. În acest fel, fiecare lead este legat atât de proprietate, cât și de agent.
+
+Agentul poate vedea mesajele în zona /agent/messages. Lista afișează informațiile de contact, mesajul trimis, data și proprietatea pentru care a fost primit lead-ul. Serverul returnează doar mesajele agentului autentificat.
+
+[PLACEHOLDER SCREENSHOT 5.10 - Formularul de contact pentru o proprietate.]
+
+[PLACEHOLDER SCREENSHOT 5.11 - Lista mesajelor primite de agent.]
+
+5.10. Implementarea bazei de date
+
+Baza de date este implementată în PostgreSQL. Structura este definită prin fișiere de migrare SQL, ceea ce permite refacerea schemei într-un mod controlat. Migrările creează tabelele, tipurile de date și relațiile necesare aplicației.
+
+Tabela users stochează administratorii și agenții. Tabela properties stochează anunțurile imobiliare. Tabela property_images stochează imaginile asociate proprietăților. Tabela messages stochează lead-urile trimise de vizitatori.
+
+Conectarea la PostgreSQL este centralizată într-un modul dedicat. Serviciile folosesc același pool de conexiuni, ceea ce evită duplicarea configurării. Datele sensibile, precum stringul de conectare și secretul JWT, sunt citite din variabile de mediu.
+
+Interogările SQL folosesc parametri, nu concatenare directă de valori. Această practică reduce riscul de injecție SQL și face accesul la date mai sigur.
+
+[PLACEHOLDER SCREENSHOT 5.12 - Structura migrărilor SQL sau diagrama tabelelor.]
+
+5.11. Implementarea validării și tratării erorilor
+
+Validarea este realizată pe server pentru toate datele importante. Sunt verificate datele de login, datele agenților, datele proprietăților, filtrele de căutare și mesajele trimise de vizitatori.
+
+Pentru proprietăți, sistemul verifică existența câmpurilor obligatorii și corectitudinea valorilor numerice. Prețul și suprafața trebuie să aibă valori valide, iar tipul proprietății, tipul ofertei și statusul trebuie să fie valori acceptate.
+
+Pentru mesaje, sistemul verifică numele, emailul, telefonul și conținutul mesajului. Deoarece formularul este public, această validare este necesară pentru a evita date incomplete sau abuzive.
+
+Erorile sunt returnate în format JSON, folosind o structură consecventă. În frontend, mesajele de eroare și succes sunt afișate prin componente Bootstrap. Utilizatorul primește feedback clar atunci când o operație reușește sau eșuează.
+
+5.12. Implementarea securității
+
+Securitatea aplicației este susținută prin mai multe măsuri. Parolele sunt hash-uite înainte de salvare, autentificarea se face prin JWT, iar tokenul este păstrat într-un cookie HTTP-only.
+
+Accesul la funcționalități este controlat prin roluri. Administratorul poate gestiona agenții, agentul poate gestiona doar proprietățile și mesajele proprii, iar vizitatorul public nu are acces la zone private.
+
+Datele sunt validate pe server, iar interogările SQL folosesc parametri. În plus, aplicația nu returnează către frontend informații sensibile, precum hash-ul parolei.
+
+Aceste măsuri sunt potrivite pentru scopul proiectului și demonstrează aplicarea unor principii de securitate necesare într-o aplicație web.
+
+5.13. Fluxuri principale implementate
+
+Primul flux important este fluxul administrator-agent. Administratorul se autentifică, creează un cont de agent, iar agentul folosește acel cont pentru a accesa zona sa de lucru. Dacă administratorul dezactivează contul, agentul nu se mai poate autentifica.
+
+Al doilea flux important este fluxul agent-proprietate. Agentul creează o proprietate, completează datele, adaugă imagini și setează statusul. Dacă proprietatea este activă și publicată, aceasta apare în zona publică.
+
+Al treilea flux important este fluxul public-agent. Vizitatorul consultă proprietățile, deschide pagina de detalii și trimite un mesaj prin formularul de contact. Mesajul este salvat ca lead și devine vizibil în panoul agentului responsabil.
+
+[PLACEHOLDER SCREENSHOT 5.13 - Flux compus: agentul publică proprietatea, vizitatorul o vede, agentul primește mesajul.]
+
+5.14. Concluzii
+
+Implementarea aplicației Max Imob a urmărit construirea unei platforme funcționale, cu o structură simplă și logică. Aplicația include rute publice pentru consultarea proprietăților, zone private pentru agent și administrator, autentificare, autorizare, validare, gestionarea imaginilor și salvarea lead-urilor.
+
+Structura proiectului separă interfața, rutele API, serviciile și baza de date. Această separare ajută la mentenabilitate și face aplicația mai ușor de explicat în cadrul lucrării de licență.
+
+Funcționalitățile implementate acoperă scenariile principale ale unei platforme imobiliare: administratorul creează agenți, agentul publică proprietăți, utilizatorul public trimite mesaje, iar agentul gestionează lead-urile primite.
+
+Prin folosirea TypeScript, Bootstrap, PostgreSQL, autentificării cu JWT, cookie-urilor HTTP-only și validării server-side, aplicația oferă o bază tehnică solidă, potrivită pentru obiectivele proiectului.

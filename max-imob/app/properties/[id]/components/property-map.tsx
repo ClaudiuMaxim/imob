@@ -7,24 +7,23 @@ type PropertyMapProps = {
 };
 
 export default function PropertyMap({ address }: PropertyMapProps) {
-  const [mapUrl, setMapUrl] = useState("");
-  const [mapLoading, setMapLoading] = useState(false);
-  const [mapError, setMapError] = useState("");
+  const [mapState, setMapState] = useState({
+    address: "",
+    error: "",
+    url: "",
+  });
+  const mapLoading = Boolean(address && mapState.address !== address);
+  const mapUrl = mapState.address === address ? mapState.url : "";
+  const mapError = mapState.address === address ? mapState.error : "";
 
   useEffect(() => {
     if (!address) {
-      setMapUrl("");
-      setMapError("");
       return;
     }
 
     const controller = new AbortController();
     const encodedAddress = encodeURIComponent(address);
     const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}`;
-
-    setMapLoading(true);
-    setMapError("");
-    setMapUrl("");
 
     fetch(nominatimUrl, {
       signal: controller.signal,
@@ -50,17 +49,20 @@ export default function PropertyMap({ address }: PropertyMapProps) {
         const maxLon = Number(lon) + delta;
         const maxLat = Number(lat) + delta;
 
-        setMapUrl(
-          `https://www.openstreetmap.org/export/embed.html?bbox=${minLon},${minLat},${maxLon},${maxLat}&layer=mapnik&marker=${lat},${lon}`,
-        );
+        setMapState({
+          address,
+          error: "",
+          url: `https://www.openstreetmap.org/export/embed.html?bbox=${minLon},${minLat},${maxLon},${maxLat}&layer=mapnik&marker=${lat},${lon}`,
+        });
       })
       .catch((error) => {
         if (error instanceof Error && error.name !== "AbortError") {
-          setMapError(error.message);
+          setMapState({
+            address,
+            error: error.message,
+            url: "",
+          });
         }
-      })
-      .finally(() => {
-        setMapLoading(false);
       });
 
     return () => controller.abort();

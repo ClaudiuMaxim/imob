@@ -3,13 +3,15 @@ import PropertyDescription from "./property-description";
 import PropertyImagesInput from "./property-images-input";
 import PropertySelect from "./property-select";
 import PropertyTextInput from "./property-text-input";
+import type { City } from "../lib/types";
 
 type PropertyFormProps = {
   address: string;
   area: string;
   bathrooms: string;
   bedrooms: string;
-  city: string;
+  cities: City[];
+  cityId: string;
   description: string;
   imageInputKey: number;
   isEditing: boolean;
@@ -19,7 +21,7 @@ type PropertyFormProps = {
   onBathroomsChange: (value: string) => void;
   onBedroomsChange: (value: string) => void;
   onCancel: () => void;
-  onCityChange: (value: string) => void;
+  onCityIdChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onImagesChange: (files: File[]) => void;
   onPriceChange: (value: string) => void;
@@ -55,7 +57,8 @@ export default function PropertyForm({
   area,
   bathrooms,
   bedrooms,
-  city,
+  cities,
+  cityId,
   description,
   imageInputKey,
   isEditing,
@@ -65,7 +68,7 @@ export default function PropertyForm({
   onBathroomsChange,
   onBedroomsChange,
   onCancel,
-  onCityChange,
+  onCityIdChange,
   onDescriptionChange,
   onImagesChange,
   onPriceChange,
@@ -107,12 +110,19 @@ export default function PropertyForm({
             type="number"
             value={price}
           />
-          <PropertyTextInput
+          <PropertySelect
             label="Oras"
-            name="city"
-            onChange={onCityChange}
+            name="cityId"
+            onChange={onCityIdChange}
+            options={[
+              { label: "Alege orasul", value: "" },
+              ...cities.map((city) => ({
+                label: `${city.name} (${city.countyCode})`,
+                value: city.id,
+              })),
+            ]}
             required
-            value={city}
+            value={cityId}
           />
           <PropertyTextInput
             label="Adresa"

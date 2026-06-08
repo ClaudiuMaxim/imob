@@ -1,0 +1,224 @@
+CAPITOLUL 2
+ANALIZA CERINTELOR
+
+2.1. Rolul analizei cerintelor in dezvoltarea aplicatiei
+
+Analiza cerintelor reprezinta una dintre cele mai importante etape in dezvoltarea unei aplicatii software, deoarece stabileste ce trebuie sa realizeze sistemul inainte de proiectarea tehnica si implementarea efectiva. In cazul unei platforme imobiliare, aceasta etapa este esentiala deoarece aplicatia trebuie sa raspunda unor nevoi diferite: vizitatorii publici trebuie sa gaseasca rapid proprietati, agentii trebuie sa isi administreze anunturile si mesajele primite, iar administratorul trebuie sa gestioneze conturile agentilor.
+
+Fara o analiza clara a cerintelor, sistemul ar putea ajunge sa includa functionalitati inutile sau sa omita reguli importante de business. De exemplu, daca nu este definita clar diferenta dintre utilizatorul public si agent, s-ar putea ajunge la un model de autentificare inutil pentru vizitatori sau la expunerea unor date administrative catre persoane neautorizate. Prin urmare, analiza cerintelor are rolul de a delimita responsabilitatile fiecarei categorii de utilizatori si de a stabili comportamentul asteptat al aplicatiei.
+
+Pentru aplicatia Max Imob, cerintele sunt formulate tinand cont de scopul lucrarii de licenta: realizarea unei platforme web functionale, coerente, usor de explicat si apropiate de un scenariu real. Sistemul nu urmareste sa reproduca toate functionalitatile unei platforme comerciale complexe, ci sa implementeze un set esential de functii care demonstreaza intelegerea procesului de analiza, proiectare, implementare si testare.
+
+Analiza prezentata in acest capitol acopera atat cerintele functionale, adica actiunile concrete pe care sistemul trebuie sa le permita, cat si cerintele nefunctionale, care descriu calitatea sistemului din punct de vedere al performantei, securitatii, usurintei in utilizare si mentenabilitatii. De asemenea, sunt prezentate actorii sistemului, scenariile principale de utilizare, regulile de business, constrangerile tehnice si criteriile de acceptare.
+
+2.2. Descrierea generala a domeniului
+
+Domeniul imobiliar presupune interactiunea dintre persoane interesate de cumpararea sau inchirierea unor proprietati si persoane sau agentii care promoveaza aceste proprietati. Intr-un sistem traditional, informatiile despre proprietati pot fi transmise prin discutii directe, afise, anunturi tiparite sau recomandari. In mediul digital, aceste informatii sunt centralizate intr-o platforma web, unde utilizatorii pot consulta mai multe oferte si pot contacta agentii responsabili.
+
+O proprietate imobiliara are de obicei mai multe caracteristici importante: titlu, descriere, tip, pret, locatie, status, suprafata si eventual imagini. In functie de complexitatea sistemului, pot exista si alte detalii, precum numarul de camere, etajul, anul constructiei, facilitati sau coordonate geografice. Pentru aplicatia Max Imob, accentul este pus pe informatiile esentiale, astfel incat utilizatorul sa poata intelege rapid oferta, iar agentul sa poata administra datele fara dificultate.
+
+Un aspect important al domeniului este faptul ca utilizatorii publici nu au nevoie neaparat de cont pentru a consulta proprietati. In multe situatii reale, o persoana interesata doreste sa vada rapid anunturile disponibile si sa trimita o cerere de contact doar daca gaseste o oferta potrivita. Obligarea vizitatorilor sa se autentifice ar introduce un pas suplimentar si ar putea reduce usurinta in utilizare. De aceea, in aplicatia propusa, autentificarea este rezervata doar administratorului si agentilor.
+
+Agentul imobiliar are rol operational. Acesta introduce proprietati in sistem, actualizeaza informatiile si urmareste mesajele venite de la potentiali clienti. Fiecare agent trebuie sa poata lucra doar cu propriile proprietati, deoarece intr-un sistem multi-utilizator este important ca datele sa fie separate. Aceasta regula sprijina atat organizarea interna, cat si securitatea aplicatiei.
+
+Administratorul are rol de control asupra utilizatorilor interni. El nu gestioneaza direct proprietati si nu preia responsabilitatile agentilor. Rolul sau este de a crea conturi de agenti si de a activa sau dezactiva accesul acestora. Aceasta separare simplifica sistemul si permite definirea unor reguli de autorizare clare.
+
+2.3. Actorii sistemului
+
+In cadrul aplicatiei Max Imob sunt identificati trei actori principali: utilizatorul public, agentul si administratorul. Fiecare actor are obiective si drepturi diferite, iar sistemul trebuie sa raspunda acestor diferente prin functionalitati si restrictii adecvate.
+
+Utilizatorul public este persoana care acceseaza platforma fara autentificare. Acesta poate vizualiza pagina principala, lista proprietatilor, detaliile unei proprietati si formularul de contact. Utilizatorul public nu are cont, nu poate salva proprietati in sistem, nu poate modifica date si nu poate accesa zonele administrative. Rolul sau este strict orientat spre consultarea informatiilor si transmiterea unei cereri catre agentul responsabil.
+
+Agentul este un utilizator intern autentificat. Acesta are cont creat de administrator si se autentifica folosind email si parola. Agentul poate administra proprietatile proprii si poate vizualiza lead-urile asociate acestora. Sistemul trebuie sa se asigure ca un agent nu poate modifica proprietatile altui agent si nu poate accesa functionalitati destinate administratorului. Prin aceasta restrictie, aplicatia pastreaza o separare clara a datelor.
+
+Administratorul este utilizatorul intern cu nivelul cel mai ridicat de control asupra conturilor de agenti. Acesta poate crea agenti, poate vizualiza lista agentilor si poate activa sau dezactiva conturi. Administratorul nu gestioneaza proprietati, deoarece proprietatile sunt responsabilitatea agentilor. Aceasta decizie reduce complexitatea rolului administrativ si evita suprapunerea responsabilitatilor.
+
+Pe langa acesti actori principali, sistemul interactioneaza indirect cu baza de date, care stocheaza utilizatorii, proprietatile si lead-urile. Desi baza de date nu este actor uman, ea este o componenta esentiala in analiza cerintelor, deoarece toate fluxurile principale implica citirea sau modificarea datelor persistente.
+
+[PLACEHOLDER FIGURA 2.1 - Diagrama actorilor si a interactiunilor principale: utilizator public, agent, administrator, baza de date.]
+
+2.4. Cerinte functionale pentru zona publica
+
+Zona publica a aplicatiei este destinata vizitatorilor care nu se autentifica. Aceasta zona trebuie sa fie accesibila direct si sa ofere o experienta simpla, deoarece utilizatorii publici sunt interesati in primul rand de gasirea rapida a informatiilor despre proprietati.
+
+Prima cerinta functionala este afisarea unei pagini principale. Pagina principala trebuie sa ofere o introducere scurta in aplicatie si acces catre lista proprietatilor. Aceasta nu trebuie sa fie incarcata inutil, deoarece scopul ei este sa directioneze utilizatorul catre functionalitatea principala: consultarea ofertelor.
+
+A doua cerinta este afisarea listei de proprietati. Sistemul trebuie sa permita vizitatorului sa vada proprietatile disponibile intr-un format clar, cu informatii relevante la nivel de card sau rand: titlu, pret, locatie, tip si status. Lista trebuie sa fie suficient de usor de parcurs pe ecrane desktop si mobile. In cazul in care nu exista proprietati disponibile, sistemul trebuie sa afiseze un mesaj clar, nu o pagina goala.
+
+A treia cerinta este posibilitatea de cautare sau filtrare a proprietatilor. Utilizatorul trebuie sa poata restrange rezultatele dupa criterii simple, cum ar fi localizarea, tipul proprietatii sau intervalul de pret. Filtrarea are rolul de a reduce timpul necesar pentru gasirea unei oferte potrivite. Pentru versiunea curenta a aplicatiei, filtrele trebuie sa fie simple si usor de inteles, fara mecanisme avansate care ar creste inutil complexitatea.
+
+A patra cerinta este afisarea paginii de detalii pentru o proprietate. Atunci cand utilizatorul selecteaza o proprietate, sistemul trebuie sa afiseze informatii mai complete despre aceasta. Pagina de detalii trebuie sa includa titlul, descrierea, pretul, localizarea, tipul, statusul si datele necesare pentru intelegerea ofertei. Daca proprietatea nu exista sau nu mai este disponibila, sistemul trebuie sa trateze situatia printr-un mesaj corespunzator.
+
+A cincea cerinta este transmiterea unui mesaj prin formularul de contact. Utilizatorul public trebuie sa poata completa numele, emailul, mesajul si eventual alte informatii de contact. Sistemul trebuie sa valideze datele introduse si sa salveze cererea ca lead. Lead-ul trebuie sa fie asociat proprietatii vizualizate si agentului responsabil de acea proprietate. Aceasta asociere este importanta pentru ca agentul sa poata raspunde ulterior.
+
+A sasea cerinta este existenta unei pagini generale de contact. Aceasta poate fi folosita pentru mesaje care nu sunt legate direct de o anumita proprietate sau pentru informatii generale despre platforma. In functie de implementarea finala, mesajele generale pot fi tratate separat sau pot directiona utilizatorul catre o forma simplificata de contact.
+
+2.5. Cerinte functionale pentru agent
+
+Zona agentului este o zona privata si trebuie sa fie accesibila doar dupa autentificare. Agentul are responsabilitatea de a administra proprietatile proprii si de a urmari mesajele primite de la utilizatorii publici. Functionalitatile agentului trebuie sa fie clare, deoarece acesta foloseste sistemul in mod operational.
+
+Prima cerinta este autentificarea agentului. Agentul trebuie sa introduca emailul si parola, iar sistemul trebuie sa verifice datele. Daca datele sunt corecte si contul este activ, agentul primeste acces la panoul sau. Daca datele sunt gresite sau contul este dezactivat, sistemul trebuie sa refuze autentificarea si sa afiseze un mesaj de eroare.
+
+A doua cerinta este afisarea unui panou principal pentru agent. Acest panou trebuie sa ofere acces rapid la proprietatile agentului si la lead-urile primite. Interfata trebuie sa fie simpla, fara elemente vizuale inutile, deoarece scopul panoului este administrarea eficienta.
+
+A treia cerinta este vizualizarea proprietatilor proprii. Agentul trebuie sa poata vedea doar proprietatile care ii apartin. Sistemul nu trebuie sa permita afisarea sau modificarea proprietatilor altor agenti. Aceasta cerinta este atat functionala, cat si de securitate, deoarece implica separarea datelor intre utilizatorii interni.
+
+A patra cerinta este crearea unei proprietati. Agentul trebuie sa poata introduce informatiile necesare pentru un anunt: titlu, descriere, pret, locatie, tip si status. Sistemul trebuie sa valideze datele inainte de salvare. De exemplu, titlul nu trebuie sa fie gol, pretul trebuie sa fie numeric si pozitiv, iar tipul proprietatii trebuie sa fie unul acceptat de sistem.
+
+A cincea cerinta este modificarea unei proprietati existente. Agentul trebuie sa poata actualiza informatiile unei proprietati proprii atunci cand apar schimbari. Sistemul trebuie sa verifice inainte de modificare ca proprietatea apartine agentului autentificat. Daca agentul incearca sa modifice o proprietate care nu ii apartine, cererea trebuie refuzata.
+
+A sasea cerinta este stergerea unei proprietati. Agentul poate elimina o proprietate proprie din sistem atunci cand aceasta nu mai trebuie afisata. In functie de regulile implementate, stergerea poate fi fizica sau logica. Pentru un sistem simplu, stergerea directa poate fi suficienta, dar trebuie analizat impactul asupra lead-urilor asociate. Daca exista lead-uri pentru proprietatea respectiva, sistemul trebuie sa pastreze coerenta datelor.
+
+A saptea cerinta este actualizarea statusului unei proprietati. Proprietatile pot avea stari precum disponibila, rezervata, vanduta sau inactiva, in functie de modelul adoptat. Agentul trebuie sa poata schimba statusul pentru a reflecta situatia curenta. Aceasta functionalitate este utila deoarece utilizatorii publici trebuie sa vada informatii cat mai apropiate de realitate.
+
+A opta cerinta este vizualizarea lead-urilor. Agentul trebuie sa poata vedea mesajele trimise de utilizatorii publici pentru proprietatile sale. Fiecare lead trebuie sa includa datele de contact, mesajul si proprietatea la care se refera. Agentul nu trebuie sa poata vedea lead-urile altor agenti.
+
+2.6. Cerinte functionale pentru administrator
+
+Zona administratorului este o zona privata destinata gestionarii agentilor. Administratorul are drepturi diferite de cele ale agentului si nu trebuie sa administreze proprietati. Acest lucru pastreaza sistemul simplu si reduce riscul de actiuni gresite asupra datelor operationale.
+
+Prima cerinta este autentificarea administratorului. Administratorul trebuie sa se conecteze folosind email si parola. Sistemul trebuie sa verifice rolul utilizatorului autentificat si sa permita accesul la zona administrativa doar daca rolul este admin. Un agent autentificat nu trebuie sa poata accesa rutele sau paginile administratorului.
+
+A doua cerinta este afisarea listei de agenti. Administratorul trebuie sa poata vedea conturile agentilor existente, impreuna cu informatii de baza precum nume, email si status. Lista trebuie sa fie usor de parcurs si sa permita identificarea rapida a agentilor activi sau dezactivati.
+
+A treia cerinta este crearea unui agent. Administratorul trebuie sa poata introduce datele necesare pentru un cont nou: nume, email si parola. Sistemul trebuie sa valideze datele si sa se asigure ca emailul nu este deja folosit. Parola trebuie salvata in forma securizata, prin hashing, nu in text clar. Dupa creare, agentul poate folosi datele de autentificare pentru accesarea panoului propriu.
+
+A patra cerinta este activarea si dezactivarea unui agent. Administratorul trebuie sa poata bloca accesul unui agent fara a sterge neaparat contul sau datele asociate. Dezactivarea este utila atunci cand un agent nu mai lucreaza temporar sau cand accesul trebuie suspendat. Un agent dezactivat nu trebuie sa poata intra in sistem.
+
+A cincea cerinta este pastrarea separarii dintre administrarea agentilor si administrarea proprietatilor. Administratorul nu trebuie sa aiba in interfata sa actiuni de creare, editare sau stergere a proprietatilor. Aceasta decizie de analiza stabileste o granita clara intre roluri si simplifica implementarea regulilor de autorizare.
+
+2.7. Cerinte legate de autentificare si autorizare
+
+Autentificarea este necesara doar pentru administrator si agenti. Utilizatorii publici nu au conturi si nu trebuie sa treaca printr-un proces de login pentru a vizualiza proprietati sau pentru a trimite mesaje. Aceasta regula este importanta pentru experienta utilizatorului si pentru delimitarea clara a sistemului.
+
+Procesul de autentificare trebuie sa inceapa prin completarea unui formular de login cu email si parola. Sistemul verifica daca emailul exista, daca parola corespunde parolei salvate securizat si daca utilizatorul are un rol acceptat. Daca autentificarea reuseste, sistemul genereaza un JWT care contine cel putin identificatorul utilizatorului si rolul acestuia. Tokenul este stocat intr-un cookie HTTP-only, pentru a reduce riscul accesarii sale prin cod JavaScript din browser.
+
+Autorizarea trebuie aplicata la fiecare cerere catre zonele private. Sistemul trebuie sa verifice tokenul, sa extraga rolul si sa permita sau sa refuze accesul. Pentru rutele de administrator, rolul trebuie sa fie admin. Pentru rutele de agent, rolul trebuie sa fie agent. In cazul actiunilor asupra proprietatilor si lead-urilor, sistemul trebuie sa verifice si proprietatea asupra datelor, nu doar rolul. De exemplu, un agent autentificat nu trebuie sa poata edita o proprietate doar pentru ca are rol de agent; proprietatea trebuie sa ii apartina.
+
+Deconectarea trebuie sa elimine cookie-ul de autentificare sau sa il invalideze. Dupa deconectare, utilizatorul nu trebuie sa mai poata accesa zone private fara o noua autentificare. Sistemul trebuie sa trateze si cazurile in care tokenul lipseste, este expirat sau este invalid.
+
+[PLACEHOLDER FIGURA 2.2 - Diagrama fluxului de autentificare: login, verificare parola, generare JWT, cookie HTTP-only, acces la rute private.]
+
+2.8. Cerinte de date si model conceptual
+
+Aplicatia Max Imob foloseste trei entitati principale: users, properties si leads. Aceste entitati reflecta regulile de business ale sistemului si sustin fluxurile descrise anterior.
+
+Entitatea users reprezinta utilizatorii interni ai sistemului. In aceasta categorie intra administratorii si agentii. Fiecare utilizator trebuie sa aiba un identificator unic, un nume, o adresa de email, o parola salvata securizat, un rol si un status care indica daca este activ. Rolul poate fi admin sau agent. Utilizatorii publici nu sunt salvati ca utilizatori ai sistemului, deoarece nu au conturi.
+
+Entitatea properties reprezinta proprietatile publicate in platforma. Fiecare proprietate trebuie sa aiba un identificator unic si trebuie sa fie asociata unui agent. Informatiile minime includ titlul, descrierea, pretul, localizarea, tipul si statusul. In functie de versiunea aplicatiei, pot exista si campuri suplimentare precum suprafata, numarul de camere sau imaginea principala. Este important ca o proprietate sa aiba intotdeauna un agent responsabil, deoarece lead-urile generate pentru acea proprietate trebuie directionate catre agentul respectiv.
+
+Entitatea leads reprezinta mesajele trimise de utilizatorii publici. Fiecare lead trebuie sa contina numele persoanei, emailul, mesajul si referinta catre proprietatea pentru care a fost trimis. De asemenea, lead-ul trebuie asociat agentului responsabil. Aceasta asociere poate fi stabilita direct sau derivata din proprietate, dar pentru afisare rapida si claritate poate fi util ca legatura cu agentul sa fie explicita.
+
+Relatiile dintre entitati sunt simple si importante. Un agent poate avea mai multe proprietati, dar fiecare proprietate apartine unui singur agent. O proprietate poate avea mai multe lead-uri, dar fiecare lead apartine unei singure proprietati. Un agent poate primi mai multe lead-uri, dar fiecare lead este asociat unui singur agent. Aceste relatii trebuie respectate prin constrangeri in baza de date si prin verificari in cod.
+
+2.9. Reguli de business
+
+Regulile de business stabilesc comportamentul aplicatiei dincolo de simpla existenta a paginilor si formularelor. Ele definesc ce este permis, ce este interzis si cum trebuie interpretate actiunile utilizatorilor.
+
+Prima regula este ca utilizatorii publici nu au conturi. Aceasta regula simplifica aplicatia si reflecta scopul platformei: vizualizare rapida si contact direct. Vizitatorii pot trimite mesaje, dar nu pot gestiona date si nu pot accesa panouri interne.
+
+A doua regula este ca doar administratorii si agentii se autentifica. Sistemul trebuie sa limiteze formularul de login la utilizatorii interni si sa nu creeze mecanisme de inregistrare publica. Conturile de agenti sunt create de administrator, nu de vizitatori.
+
+A treia regula este ca fiecare proprietate apartine unui singur agent. Aceasta regula permite organizarea clara a responsabilitatilor. Agentul care a creat sau detine proprietatea este responsabil pentru actualizarea datelor si pentru urmarirea mesajelor primite.
+
+A patra regula este ca agentul poate administra doar proprietatile proprii. Chiar daca mai multi agenti folosesc aceeasi platforma, datele lor trebuie sa fie separate. Aceasta regula se aplica atat la afisare, cat si la operatiile de creare, modificare, stergere si schimbare a statusului.
+
+A cincea regula este ca fiecare lead apartine unei proprietati si unui agent. Aceasta regula permite urmarirea sursei mesajului si directionarea corecta catre agentul responsabil. Un lead fara proprietate sau fara agent nu ar fi suficient de util in contextul aplicatiei.
+
+A sasea regula este ca administratorul gestioneaza agenti, nu proprietati. Desi administratorul are un rol superior, acesta nu trebuie sa modifice direct continutul operational al agentilor. Aceasta limitare contribuie la claritatea sistemului si reduce posibilitatea de erori.
+
+A saptea regula este ca datele introduse de utilizatori trebuie validate. Sistemul nu trebuie sa accepte campuri obligatorii goale, emailuri invalide, preturi negative sau valori care nu corespund tipurilor acceptate. Validarea contribuie la calitatea datelor si la stabilitatea aplicatiei.
+
+2.10. Cerinte nefunctionale
+
+Cerintele nefunctionale descriu calitatile sistemului si influenteaza modul in care aplicatia este perceputa si intretinuta. Pentru Max Imob, cele mai importante cerinte nefunctionale sunt performanta, securitatea, usurinta in utilizare, mentenabilitatea si compatibilitatea.
+
+Din punct de vedere al performantei, aplicatia trebuie sa incarce rapid paginile principale si lista de proprietati. Operatiile uzuale, precum afisarea proprietatilor, autentificarea si salvarea unui lead, trebuie sa se execute intr-un timp rezonabil. Deoarece proiectul are dimensiune academica, nu este necesara optimizarea pentru milioane de utilizatori, dar structura trebuie sa permita functionarea fluenta pentru scenarii normale de utilizare.
+
+Din punct de vedere al securitatii, sistemul trebuie sa protejeze parolele prin hashing si sa nu le stocheze in text clar. Tokenul de autentificare trebuie pastrat intr-un cookie HTTP-only. Rutele private trebuie protejate prin verificarea autentificarii si a rolului. In plus, datele introduse in formulare trebuie validate pentru a reduce riscul introducerii unor valori incorecte sau intentionat problematice.
+
+Din punct de vedere al usurintei in utilizare, interfata trebuie sa fie clara si minimalista. Utilizatorul public trebuie sa poata ajunge rapid la proprietati si la formularul de contact. Agentul trebuie sa identifice usor actiunile de creare, editare si vizualizare a lead-urilor. Administratorul trebuie sa poata gestiona agentii fara a naviga prin zone irelevante.
+
+Din punct de vedere al mentenabilitatii, codul trebuie organizat in module usor de inteles. Functionalitatile trebuie separate in functie de responsabilitate, iar functiile trebuie pastrate cat mai mici. Aceasta cerinta este importanta nu doar pentru dezvoltare, ci si pentru prezentarea proiectului in cadrul lucrarii de licenta. Un sistem clar este mai usor de explicat, testat si extins.
+
+Din punct de vedere al compatibilitatii, aplicatia trebuie sa poata fi folosita pe dispozitive desktop si mobile. Interfata trebuie sa fie mobile-first si sa foloseasca elemente vizuale simple, astfel incat paginile sa ramana lizibile pe ecrane de dimensiuni diferite.
+
+2.11. Cerinte de interfata
+
+Interfata aplicatiei trebuie sa fie simpla, coerenta si orientata spre fluxurile principale. Fiind vorba despre o platforma imobiliara, informatia trebuie prezentata clar, fara aglomerare vizuala. Utilizatorul trebuie sa inteleaga rapid ce poate face pe fiecare pagina.
+
+Pentru zona publica, lista proprietatilor trebuie sa puna accent pe informatiile esentiale. Fiecare proprietate trebuie prezentata intr-un mod care permite compararea rapida cu alte proprietati. Butonul sau legatura catre detalii trebuie sa fie vizibil(a), iar formularul de contact trebuie sa fie usor de completat. Mesajele de eroare sau succes trebuie afisate intr-un mod clar.
+
+Pentru zona agentului, interfata trebuie sa sprijine lucrul repetat. Tabelele sau listele trebuie sa permita identificarea proprietatilor, iar formularele trebuie sa fie grupate logic. Fiecare camp trebuie sa aiba o eticheta clara. Actiunile importante, precum stergerea sau schimbarea statusului, trebuie prezentate astfel incat utilizatorul sa inteleaga consecintele.
+
+Pentru zona administratorului, interfata trebuie sa fie orientata spre gestionarea agentilor. Administratorul trebuie sa poata vedea rapid statusul fiecarui agent si sa efectueze actiuni de activare sau dezactivare. Nu trebuie adaugate elemente care apartin fluxului agentului, deoarece acest lucru ar incarca inutil panoul administrativ.
+
+Designul trebuie sa respecte principiul mobile-first. Paginile trebuie sa ramana utilizabile pe ecrane mici, iar elementele de formular trebuie sa fie suficient de clare si accesibile. Folosirea Bootstrap ajuta la obtinerea unei interfete responsive si consecvente, fara a introduce complexitate vizuala inutila.
+
+[PLACEHOLDER FIGURA 2.3 - Schita wireframe pentru lista de proprietati si pagina de detalii.]
+
+2.12. Scenarii principale de utilizare
+
+Primul scenariu este cautarea unei proprietati de catre un utilizator public. Utilizatorul acceseaza aplicatia, intra in pagina de proprietati si consulta lista disponibila. Daca are criterii specifice, foloseste filtrele disponibile. Dupa identificarea unei proprietati interesante, acceseaza pagina de detalii. Daca informatiile sunt potrivite, completeaza formularul de contact. Sistemul valideaza datele si salveaza lead-ul. Agentul responsabil va putea vedea ulterior mesajul in panoul sau.
+
+Al doilea scenariu este crearea unei proprietati de catre un agent. Agentul se autentifica folosind email si parola. Dupa autentificare, acceseaza panoul propriu si selecteaza actiunea de creare a unei proprietati. Completeaza campurile necesare si trimite formularul. Sistemul valideaza datele, asociaza proprietatea cu agentul autentificat si salveaza informatiile in baza de date. Proprietatea devine apoi vizibila in lista agentului si, daca statusul permite, in zona publica.
+
+Al treilea scenariu este modificarea statusului unei proprietati. Agentul se autentifica si acceseaza lista proprietatilor proprii. Selecteaza proprietatea care trebuie actualizata si schimba statusul. Sistemul verifica faptul ca proprietatea apartine agentului si salveaza modificarea. Dupa actualizare, statusul nou este reflectat in zona publica sau in panoul agentului, in functie de regulile de afisare.
+
+Al patrulea scenariu este vizualizarea lead-urilor de catre agent. Agentul acceseaza panoul sau si intra in sectiunea de mesaje sau lead-uri. Sistemul afiseaza doar lead-urile asociate proprietatilor agentului. Agentul poate consulta datele de contact si mesajul utilizatorului public. Aceasta functionalitate permite continuarea comunicarii in afara platformei, de exemplu prin email sau telefon.
+
+Al cincilea scenariu este crearea unui agent de catre administrator. Administratorul se autentifica, acceseaza zona de administrare si completeaza formularul pentru un agent nou. Sistemul verifica validitatea datelor si unicitatea emailului. Daca datele sunt corecte, parola este salvata securizat, iar contul este creat. Agentul poate primi ulterior datele de conectare si poate folosi platforma.
+
+Al saselea scenariu este dezactivarea unui agent. Administratorul acceseaza lista agentilor si schimba statusul unui agent din activ in inactiv. Sistemul salveaza modificarea. Dupa dezactivare, agentul nu mai poate accesa panoul sau. Datele existente nu trebuie sterse automat, deoarece proprietatile si lead-urile pot fi necesare pentru evidenta.
+
+2.13. Constrangeri si limitari
+
+Aplicatia este dezvoltata ca proiect de licenta, motiv pentru care functionalitatile sunt alese astfel incat sa acopere un scenariu realist, dar controlat. Nu se urmareste construirea unei platforme comerciale complete, cu toate modulele posibile din domeniul imobiliar.
+
+O prima constrangere este lipsa conturilor pentru utilizatorii publici. Aceasta este o decizie intentionata, nu o limitare accidentala. Ea simplifica fluxul de utilizare si reduce cantitatea de date personale stocate. In acelasi timp, inseamna ca utilizatorii publici nu pot avea favorite, istoric de cautari sau profil personal.
+
+O a doua constrangere este faptul ca administratorul nu gestioneaza proprietati. Aceasta mentine separarea rolurilor, dar poate fi diferita fata de unele sisteme reale in care administratorii au drepturi complete. Pentru scopul proiectului, delimitarea este considerata mai importanta decat flexibilitatea maxima.
+
+O a treia constrangere este folosirea unui set redus de entitati principale. Sistemul se concentreaza pe users, properties si leads. Nu sunt incluse module avansate precum programari pentru vizionari, contracte, plati, rapoarte financiare sau notificari automate. Aceste functionalitati pot fi considerate directii viitoare de dezvoltare.
+
+O a patra constrangere este dependenta de baza de date PostgreSQL pentru persistenta datelor. Sistemul trebuie configurat corect pentru conectarea la baza de date, iar migratiile SQL trebuie aplicate pentru crearea structurii. Aceasta constrangere este normala pentru o aplicatie web cu date persistente.
+
+2.14. Riscuri si situatii limita
+
+Un prim risc este introducerea unor date invalide in formulare. Utilizatorii pot trimite campuri goale, emailuri scrise gresit, preturi negative sau valori prea lungi. Pentru a reduce acest risc, sistemul trebuie sa valideze datele atat in interfata, cat si in partea de server.
+
+Un al doilea risc este accesarea neautorizata a zonelor private. Un utilizator public ar putea incerca sa acceseze direct o ruta de agent sau administrator. Sistemul trebuie sa verifice autentificarea si rolul la nivel de middleware sau logica de server si sa refuze accesul atunci cand conditiile nu sunt indeplinite.
+
+Un al treilea risc este modificarea datelor altui agent. Chiar daca un utilizator este autentificat ca agent, sistemul trebuie sa verifice proprietatea asupra resursei. Aceasta verificare este esentiala pentru operatiile de editare, stergere si vizualizare a lead-urilor.
+
+Un al patrulea risc este existenta unei proprietati sterse sau indisponibile pentru care un utilizator incearca sa trimita mesaj. In acest caz, sistemul trebuie sa verifice existenta proprietatii inainte de salvarea lead-ului. Daca proprietatea nu exista, cererea trebuie respinsa cu un mesaj clar.
+
+Un al cincilea risc este folosirea unui token expirat sau invalid. Sistemul trebuie sa detecteze aceasta situatie si sa directioneze utilizatorul catre login sau sa returneze un raspuns de eroare adecvat. Nu trebuie permis accesul la date private pe baza unui token neverificat.
+
+Un al saselea risc este dezactivarea unui agent care are proprietati active. Sistemul trebuie sa trateze aceasta situatie coerent. Dezactivarea trebuie sa blocheze autentificarea agentului, dar nu trebuie sa stearga automat proprietatile sau lead-urile, deoarece aceste date pot fi necesare pentru evidenta si pentru decizii ulterioare.
+
+2.15. Criterii de acceptare
+
+Aplicatia poate fi considerata conforma cu analiza cerintelor daca indeplineste un set clar de criterii de acceptare. Aceste criterii permit verificarea rezultatului final si vor fi utile si in capitolul dedicat testarii.
+
+Zona publica este acceptata daca utilizatorul poate accesa pagina principala, lista proprietatilor, pagina de detalii si formularul de contact fara autentificare. Lista proprietatilor trebuie sa afiseze informatii relevante, iar formularul de contact trebuie sa salveze un lead valid.
+
+Functionalitatile agentului sunt acceptate daca un agent se poate autentifica, poate vedea doar proprietatile proprii, poate crea, modifica, sterge si actualiza statusul proprietatilor proprii si poate vizualiza doar lead-urile asociate acestora.
+
+Functionalitatile administratorului sunt acceptate daca administratorul se poate autentifica, poate vedea lista agentilor, poate crea agenti si poate activa sau dezactiva conturi de agenti. Administratorul nu trebuie sa aiba functionalitati de administrare directa a proprietatilor.
+
+Autentificarea este acceptata daca parolele sunt verificate corect, tokenul JWT este generat dupa login, cookie-ul este HTTP-only si rutele private refuza accesul utilizatorilor neautentificati sau celor cu rol nepotrivit.
+
+Modelul de date este acceptat daca proprietatile sunt asociate agentilor, lead-urile sunt asociate proprietatilor si agentilor, iar baza de date pastreaza coerenta relatiilor. Nu trebuie sa existe proprietati fara agent sau lead-uri fara legatura cu o proprietate.
+
+Interfata este acceptata daca paginile sunt clare, responsive si usor de folosit. Utilizatorul trebuie sa poata intelege rapid unde se afla si ce actiuni poate efectua. Mesajele de eroare si succes trebuie sa fie vizibile si usor de interpretat.
+
+2.16. Concluzii ale analizei cerintelor
+
+Analiza cerintelor pentru aplicatia Max Imob evidentiaza un sistem cu obiective clare si cu o delimitare bine definita a rolurilor. Aplicatia este construita in jurul ideii ca utilizatorii publici trebuie sa aiba acces rapid la informatii, in timp ce operatiile de administrare trebuie protejate prin autentificare si autorizare.
+
+Cele trei roluri principale - utilizator public, agent si administrator - acopera fluxurile necesare pentru un marketplace imobiliar simplificat. Utilizatorul public consulta proprietati si trimite mesaje, agentul administreaza proprietatile proprii si lead-urile, iar administratorul gestioneaza conturile agentilor. Aceasta organizare permite implementarea unui sistem coerent, fara suprapuneri inutile de responsabilitati.
+
+Cerintele functionale stabilesc actiunile concrete ale aplicatiei, iar cerintele nefunctionale definesc nivelul de calitate asteptat. Regulile de business si scenariile de utilizare ajuta la intelegerea modului in care sistemul trebuie sa reactioneze in situatii reale. Constrangerile si riscurile prezentate ofera o baza pentru proiectarea si testarea aplicatiei.
+
+Prin aceasta analiza, se creeaza fundamentul pentru capitolele urmatoare. Capitolul despre tehnologii va justifica instrumentele folosite pentru implementare, iar capitolul despre proiectarea sistemului va transforma cerintele identificate in structuri tehnice, rute, componente, modele de date si fluxuri concrete.

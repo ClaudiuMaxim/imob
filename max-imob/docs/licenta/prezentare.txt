@@ -1,0 +1,658 @@
+GHID PENTRU PREZENTAREA APLICATIEI MAX IMOB
+
+Autor: Claudiu Stefan
+Lucrare de licenta - aplicatie web pentru piata imobiliara
+
+
+1. Rolul documentului
+
+Acest document este un suport pentru prezentarea lucrarii de licenta si pentru discutia cu comisia. Nu este scris ca un capitol al lucrarii, ci ca un ghid practic: ce trebuie prezentat, in ce ordine, cum poate fi explicata aplicatia si ce intrebari pot aparea la sustinere.
+
+Conform ghidului de evaluare UNITBV pentru domeniul Informatica, prezentarea trebuie sa fie coerenta, clara, sa nu fie citita integral de pe slide-uri si sa evidentieze aplicatia practica, analiza, proiectarea, tehnologiile folosite, securitatea, testarea, contributia personala si demo-ul aplicatiei.
+
+Ideea principala pe care trebuie sa o transmiti comisiei:
+
+"Am dezvoltat o platforma web imobiliara numita Max Imob, care permite vizitatorilor sa consulte proprietati fara cont, agentilor sa isi administreze propriile proprietati si mesajele primite, iar administratorului sa gestioneze conturile agentilor. Aplicatia foloseste Next.js, TypeScript, PostgreSQL, autentificare cu JWT si cookie HTTP-only, validare manuala a datelor si o structura simpla, usor de explicat si de intretinut."
+
+
+2. Structura recomandata pentru prezentare
+
+Prezentarea ar trebui sa aiba aproximativ 10-12 slide-uri. Nu incarca slide-urile cu mult text. Foloseste titluri clare, liste scurte si capturi de ecran din aplicatie.
+
+Slide 1 - Titlul lucrarii
+
+Ce pui pe slide:
+- Titlul lucrarii
+- Numele tau: Claudiu Stefan
+- Universitatea Transilvania din Brasov
+- Facultatea de Matematica si Informatica
+- Coordonatorul, daca este cazul
+
+Ce spui:
+
+"Buna ziua. Lucrarea mea de licenta se numeste Max Imob si reprezinta o platforma web pentru publicarea si administrarea ofertelor imobiliare. Aplicatia simuleaza un sistem real in care exista vizitatori publici, agenti imobiliari si un administrator."
+
+
+Slide 2 - Motivatia alegerii temei
+
+Ce pui pe slide:
+- Domeniul imobiliar are nevoie de centralizarea ofertelor.
+- Utilizatorii vor acces rapid la proprietati.
+- Agentii au nevoie de administrare simpla.
+- Tema permite integrarea frontend, backend, baza de date si securitate.
+
+Ce spui:
+
+"Am ales aceasta tema deoarece domeniul imobiliar este familiar utilizatorilor si permite dezvoltarea unei aplicatii complete. O astfel de platforma include cautare si filtrare, pagini publice, formulare, administrare, autentificare, autorizare si persistenta datelor. Din acest motiv, tema este potrivita pentru demonstrarea cunostintelor de dezvoltare web full-stack."
+
+
+Slide 3 - Obiectivele lucrarii
+
+Ce pui pe slide:
+- Platforma publica pentru vizualizarea proprietatilor.
+- Dashboard pentru agenti.
+- Panou de administrare pentru agenti.
+- Autentificare doar pentru admin si agent.
+- Baza de date relationala.
+- Interfata simpla si responsive.
+
+Ce spui:
+
+"Obiectivul principal a fost dezvoltarea unei aplicatii functionale, nu doar a unei interfete statice. Am urmarit sa implementez fluxuri reale: vizitatorul vede proprietati si trimite mesaje, agentul gestioneaza proprietatile proprii, iar administratorul gestioneaza agentii. Un obiectiv important a fost separarea clara a rolurilor si protejarea zonelor private."
+
+
+Slide 4 - Actorii sistemului
+
+Ce pui pe slide:
+- Vizitator public
+- Agent imobiliar
+- Administrator
+
+Ce spui:
+
+"Aplicatia are trei categorii de actori. Vizitatorul public nu are cont si poate doar sa consulte proprietati si sa trimita mesaje. Agentul se autentifica si poate administra proprietatile proprii, precum si mesajele primite. Administratorul se autentifica si gestioneaza agentii, dar nu modifica proprietati. Aceasta separare a rolurilor este una dintre regulile centrale ale proiectului."
+
+Poti arata aici diagrama cazurilor de utilizare.
+
+
+Slide 5 - Tehnologii utilizate
+
+Ce pui pe slide:
+- Next.js App Router
+- React
+- TypeScript
+- Bootstrap
+- Node.js
+- PostgreSQL
+- pg
+- JWT
+- bcryptjs
+
+Ce spui:
+
+"Pentru frontend am folosit Next.js cu App Router si React, deoarece permit organizarea clara a paginilor si componentelor. TypeScript a fost folosit pentru tipare statica si reducerea erorilor. Pentru stilizare am folosit Bootstrap, deoarece ofera componente rapide si responsive. Datele sunt stocate in PostgreSQL, iar conectarea se face prin biblioteca pg. Pentru autentificare am folosit JWT si cookie HTTP-only, iar parolele sunt protejate cu bcryptjs."
+
+
+Slide 6 - Arhitectura aplicatiei
+
+Ce pui pe slide:
+- Pagini publice
+- Rute API
+- Validatoare
+- Servicii
+- PostgreSQL
+- Cookie HTTP-only
+
+Ce spui:
+
+"Aplicatia este organizata pe straturi simple. Paginile trimit cereri catre rutele API. Rutele API valideaza datele, verifica sesiunea unde este nevoie si apeleaza serviciile. Serviciile contin logica principala si comunica cu baza de date. Am pastrat controllerele sau route handler-ele simple, iar logica am mutat-o in servicii, pentru ca proiectul sa fie mai usor de explicat si intretinut."
+
+Poti arata aici diagrama componentelor.
+
+
+Slide 7 - Modelul bazei de date
+
+Ce pui pe slide:
+- users
+- properties
+- property_images
+- messages / leads
+
+Ce spui:
+
+"Baza de date este relationala si contine entitatile principale ale aplicatiei. Tabela users stocheaza administratorii si agentii, diferentiati prin rol. Tabela properties stocheaza ofertele imobiliare si fiecare proprietate apartine unui agent. Imaginile sunt stocate separat si asociate proprietatii. Mesajele sunt trimise de vizitatori si sunt legate atat de proprietate, cat si de agent. Aceasta structura permite filtrarea, administrarea si separarea clara a datelor."
+
+Poti arata aici diagrama claselor de domeniu sau diagrama ERD.
+
+
+Slide 8 - Securitate
+
+Ce pui pe slide:
+- Autentificare doar pentru admin si agent
+- Parole criptate cu bcryptjs
+- JWT pentru sesiune
+- Cookie HTTP-only
+- Autorizare pe roluri
+- Validare input
+
+Ce spui:
+
+"Securitatea aplicatiei a fost gandita in jurul autentificarii si autorizarii. Doar administratorii si agentii se autentifica. Parolele nu sunt salvate in clar, ci sub forma de hash. Dupa autentificare se genereaza un JWT care contine userId si role, iar tokenul este salvat intr-un cookie HTTP-only. Pe rutele protejate se verifica sesiunea si rolul utilizatorului. In plus, datele primite de la client sunt validate manual inainte de a fi folosite."
+
+
+Slide 9 - Functionalitati implementate
+
+Ce pui pe slide:
+- Vizualizare si filtrare proprietati
+- Pagina detalii proprietate
+- Formular contact
+- Login
+- Dashboard agent
+- Administrare proprietati
+- Mesaje pentru agent
+- Administrare agenti
+
+Ce spui:
+
+"Functionalitatile implementate acopera fluxurile principale ale unei platforme imobiliare. Zona publica permite vizualizarea proprietatilor si trimiterea mesajelor. Zona agentului permite adaugarea, editarea, activarea si dezactivarea proprietatilor, precum si consultarea mesajelor primite. Zona administratorului permite crearea si gestionarea agentilor."
+
+
+Slide 10 - Demo aplicatie
+
+Ce pui pe slide:
+- Scenariu 1: vizitator public
+- Scenariu 2: agent
+- Scenariu 3: administrator
+
+Ce spui inainte de demo:
+
+"Pentru demo voi prezenta trei fluxuri: un flux public, un flux de agent si un flux de administrator. Astfel se observa diferenta dintre zonele fara autentificare si zonele protejate."
+
+Ordine recomandata pentru demo:
+
+1. Deschide pagina principala.
+2. Intra in lista de proprietati.
+3. Aplica un filtru dupa oras, tip sau pret.
+4. Deschide detaliile unei proprietati.
+5. Trimite un mesaj prin formularul de contact.
+6. Mergi la login si autentifica-te ca agent.
+7. Arata dashboard-ul agentului.
+8. Arata lista proprietatilor agentului.
+9. Creeaza sau editeaza o proprietate, daca demo-ul este stabil.
+10. Arata mesajul primit de la vizitator.
+11. Delogheaza-te sau treci in contul admin.
+12. Autentifica-te ca administrator.
+13. Arata lista agentilor.
+14. Creeaza, editeaza sau dezactiveaza un agent.
+
+Recomandare:
+
+Nu incerca sa demonstrezi prea multe lucruri daca timpul este scurt. Mai bine prezinti 3 fluxuri clare si stabile decat multe actiuni in graba.
+
+
+Slide 11 - Testare si validare
+
+Ce pui pe slide:
+- Testare fluxuri publice
+- Testare autentificare
+- Testare autorizare
+- Testare validari
+- Testare responsive
+- Testare API
+
+Ce spui:
+
+"Testarea a urmarit scenariile principale ale aplicatiei. Am verificat accesul public la proprietati, autentificarea, restrictiile pe roluri, validarea formularelor, raspunsurile API si comportamentul interfetei pe dimensiuni diferite de ecran. Am testat si situatii negative, cum ar fi date invalide, credentiale gresite sau accesarea unei zone protejate fara sesiune."
+
+
+Slide 12 - Concluzii si dezvoltari viitoare
+
+Ce pui pe slide:
+- Aplicatie full-stack functionala
+- Separare clara a rolurilor
+- Persistenta datelor
+- Securitate de baza
+- Directii viitoare
+
+Ce spui:
+
+"In concluzie, proiectul Max Imob indeplineste obiectivul de a simula o platforma imobiliara functionala. Aplicatia include o zona publica, un dashboard pentru agenti, un panou de administrare, baza de date relationala si mecanisme de autentificare si autorizare. Ca dezvoltari viitoare, aplicatia poate fi extinsa cu harti, notificari prin email, cautare avansata, statistici pentru agenti si upload mai complex pentru imagini."
+
+
+3. Discurs scurt pentru inceputul prezentarii
+
+Varianta de aproximativ 1 minut:
+
+"Buna ziua. Lucrarea mea de licenta are ca tema dezvoltarea unei platforme web imobiliare numite Max Imob. Aplicatia a fost gandita ca un sistem complet, cu trei categorii de utilizatori: vizitator public, agent imobiliar si administrator. Vizitatorii pot consulta proprietati si pot trimite mesaje fara sa isi creeze cont. Agentii se autentifica si isi administreaza propriile proprietati si mesajele primite. Administratorul gestioneaza conturile agentilor.
+
+Am ales aceasta tema deoarece combina mai multe aspecte importante din dezvoltarea web: interfata responsive, API REST, baza de date relationala, autentificare, autorizare, validare si testare. In continuare voi prezenta cerintele aplicatiei, tehnologiile folosite, arhitectura, principalele functionalitati si un demo al fluxurilor implementate."
+
+
+4. Discurs scurt pentru demo
+
+"In demo voi incepe cu partea publica a aplicatiei, deoarece aceasta este accesibila oricarui vizitator. Voi arata lista de proprietati, filtrarea si pagina de detaliu. Apoi voi trimite un mesaj catre agent prin formularul public. Dupa aceea voi intra in contul agentului pentru a demonstra ca mesajul ajunge in zona privata si ca agentul isi poate administra proprietatile. La final voi intra in zona administratorului, unde sunt gestionate conturile agentilor."
+
+
+5. Ce trebuie sa subliniezi in fata comisiei
+
+1. Aplicatia este full-stack.
+
+Spune ca nu este doar o interfata, ci are frontend, API, autentificare, baza de date si fluxuri functionale.
+
+2. Rolurile sunt separate clar.
+
+Vizitatorul nu se autentifica, agentul gestioneaza proprietati, administratorul gestioneaza agenti.
+
+3. Ai aplicat reguli de securitate de baza.
+
+Parole hash-uite, JWT, cookie HTTP-only, autorizare pe rol, validare input.
+
+4. Ai proiectat baza de date relational.
+
+Fiecare proprietate apartine unui agent, fiecare mesaj apartine unei proprietati si unui agent.
+
+5. Ai pastrat arhitectura simpla.
+
+Aceasta este importanta pentru o lucrare de licenta: proiectul este usor de urmarit, explicat si extins.
+
+6. Ai testat fluxurile importante.
+
+Mentioneaza testarea pozitiva si negativa: cazuri valide, date invalide, acces neautorizat.
+
+
+6. Intrebari probabile din partea comisiei si raspunsuri recomandate
+
+Intrebare 1: Care este scopul aplicatiei?
+
+Raspuns:
+"Scopul aplicatiei este sa ofere o platforma web pentru publicarea si administrarea ofertelor imobiliare. Vizitatorii pot cauta proprietati si pot contacta agentii, agentii isi administreaza proprietatile si mesajele, iar administratorul gestioneaza conturile agentilor."
+
+
+Intrebare 2: De ce ai ales aceasta tema?
+
+Raspuns:
+"Am ales tema pentru ca permite dezvoltarea unei aplicatii full-stack realiste. Include interfata, logica server-side, baza de date, autentificare, autorizare, validari si testare. In plus, domeniul imobiliar este usor de inteles si permite prezentarea clara a fluxurilor."
+
+
+Intrebare 3: Ce contributie personala ai avut?
+
+Raspuns:
+"Contributia mea consta in analiza cerintelor, proiectarea rolurilor si fluxurilor, realizarea modelului bazei de date, implementarea interfetei, rutelor API, serviciilor, autentificarii, autorizarii, validarilor si testarii aplicatiei. Am construit fluxurile principale de la zero si am organizat codul astfel incat sa fie simplu si usor de intretinut."
+
+
+Intrebare 4: De ce vizitatorii publici nu au cont?
+
+Raspuns:
+"Am ales ca vizitatorii publici sa nu aiba cont pentru a simplifica experienta de utilizare si pentru ca intr-o platforma imobiliara vizualizarea ofertelor si trimiterea unei cereri de contact trebuie sa fie rapide. Conturi au doar utilizatorii care administreaza date: agentii si administratorul."
+
+
+Intrebare 5: Ce rol are administratorul?
+
+Raspuns:
+"Administratorul gestioneaza conturile agentilor. El poate crea agenti, modifica datele lor si activa sau dezactiva conturi. Administratorul nu gestioneaza proprietatile, deoarece proprietatile apartin agentilor imobiliari."
+
+
+Intrebare 6: Ce rol are agentul?
+
+Raspuns:
+"Agentul gestioneaza proprietatile proprii. El poate crea, edita, activa sau dezactiva proprietati si poate vedea mesajele primite de la vizitatori. Agentul nu poate modifica proprietatile altui agent."
+
+
+Intrebare 7: Cum este realizata autentificarea?
+
+Raspuns:
+"Autentificarea se face prin email si parola. Backend-ul cauta utilizatorul dupa email, verifica parola folosind bcryptjs si, daca datele sunt corecte, genereaza un token JWT. Tokenul contine userId si role si este salvat intr-un cookie HTTP-only."
+
+
+Intrebare 8: De ce folosesti cookie HTTP-only pentru JWT?
+
+Raspuns:
+"Cookie-ul HTTP-only nu poate fi accesat direct din JavaScript din browser, ceea ce reduce riscul expunerii tokenului in cazul unor atacuri XSS. Tokenul este trimis automat la cererile catre server, iar serverul verifica sesiunea si rolul utilizatorului."
+
+
+Intrebare 9: Ce contine tokenul JWT?
+
+Raspuns:
+"Tokenul contine informatiile minime necesare pentru autorizare: userId si role. Nu am inclus date sensibile, cum ar fi parola sau alte informatii personale inutile."
+
+
+Intrebare 10: Cum protejezi parolele?
+
+Raspuns:
+"Parolele nu sunt salvate in clar. La crearea unui utilizator, parola este transformata intr-un hash folosind bcryptjs. La autentificare, parola introdusa este comparata cu hash-ul stocat."
+
+
+Intrebare 11: Cum se face autorizarea?
+
+Raspuns:
+"Autorizarea se face pe baza rolului din sesiune. Rutele de admin permit acces doar utilizatorilor cu rol admin, iar rutele de agent permit acces doar utilizatorilor cu rol agent. In plus, pentru proprietati se verifica si apartenenta proprietatii la agentul autentificat."
+
+
+Intrebare 12: Cum impiedici un agent sa modifice proprietatea altui agent?
+
+Raspuns:
+"In serviciul pentru proprietati, interogarile folosesc atat id-ul proprietatii, cat si id-ul agentului autentificat. Astfel, chiar daca un agent cunoaste id-ul unei alte proprietati, operatia nu se aplica daca proprietatea nu ii apartine."
+
+
+Intrebare 13: Ce baza de date ai folosit si de ce?
+
+Raspuns:
+"Am folosit PostgreSQL deoarece este o baza de date relationala stabila, potrivita pentru date structurate si relatii clare intre entitati. In aplicatie exista relatii intre agenti, proprietati, imagini si mesaje, iar PostgreSQL permite modelarea acestor relatii prin chei primare si chei externe."
+
+
+Intrebare 14: Care sunt tabelele principale?
+
+Raspuns:
+"Tabelele principale sunt users, properties, property_images si messages. Users stocheaza administratorii si agentii, properties stocheaza ofertele imobiliare, property_images stocheaza imaginile asociate proprietatilor, iar messages stocheaza mesajele trimise de vizitatori catre agenti."
+
+
+Intrebare 15: De ce ai folosit TypeScript?
+
+Raspuns:
+"TypeScript ajuta la definirea clara a tipurilor si reduce erorile care pot aparea in timpul dezvoltarii. Pentru o aplicatie cu mai multe entitati si raspunsuri API, tiparea statica face codul mai usor de intretinut si mai sigur."
+
+
+Intrebare 16: De ce ai folosit Next.js?
+
+Raspuns:
+"Next.js ofera o structura moderna pentru aplicatii React, cu App Router, pagini organizate si rute API in acelasi proiect. Pentru aceasta aplicatie a fost potrivit deoarece am putut construi atat interfata, cat si partea de API intr-o structura unitara."
+
+
+Intrebare 17: De ce ai folosit Bootstrap?
+
+Raspuns:
+"Am folosit Bootstrap pentru a construi rapid o interfata curata, responsive si usor de folosit. Pentru scopul lucrarii, accentul a fost pe functionalitate, claritate si usurinta in utilizare, iar Bootstrap a sustinut aceste obiective."
+
+
+Intrebare 18: Cum validezi datele primite de la utilizator?
+
+Raspuns:
+"Datele sunt validate manual inainte de apelarea serviciilor. De exemplu, se verifica formatul emailului, lungimea parolei, campurile obligatorii, valorile permise pentru tipul proprietatii si status, precum si lungimea mesajului trimis prin formular."
+
+
+Intrebare 19: Ce se intampla daca utilizatorul trimite date invalide?
+
+Raspuns:
+"API-ul returneaza un raspuns de eroare, de obicei cu status 400, iar frontend-ul poate afisa mesajul corespunzator. Datele invalide nu sunt trimise catre baza de date."
+
+
+Intrebare 20: Ce raspunsuri returneaza API-ul?
+
+Raspuns:
+"API-ul returneaza raspunsuri JSON intr-un format standard, cu success, data si error. Acest lucru face raspunsurile mai usor de tratat in frontend si pastreaza consistenta intre rute."
+
+
+Intrebare 21: Cum ai organizat codul?
+
+Raspuns:
+"Codul este organizat pe pagini, rute API, servicii, validatoare si componente reutilizabile. Rutele API primesc cererile si coordoneaza fluxul, validatoarele verifica inputul, iar serviciile contin logica principala si comunicarea cu baza de date."
+
+
+Intrebare 22: De ce ai separat serviciile de rutele API?
+
+Raspuns:
+"Am separat serviciile pentru a evita incarcarea rutelor API cu logica de business. Astfel, rutele raman simple, iar logica este centralizata in servicii, ceea ce face codul mai usor de testat, modificat si explicat."
+
+
+Intrebare 23: Ce inseamna API REST in contextul proiectului?
+
+Raspuns:
+"API-ul foloseste metode HTTP pentru operatii asupra resurselor: GET pentru citire, POST pentru creare, PATCH pentru actualizare si DELETE pentru dezactivare sau stergere logica. Resursele principale sunt agentii, proprietatile si mesajele."
+
+
+Intrebare 24: Ai folosit stergere fizica sau logica?
+
+Raspuns:
+"In zonele importante am preferat dezactivarea, adica stergere logica, prin campuri precum isActive. Aceasta pastreaza datele in baza de date si reduce riscul pierderii accidentale a informatiilor."
+
+
+Intrebare 25: Cum functioneaza trimiterea unui mesaj de catre vizitator?
+
+Raspuns:
+"Vizitatorul completeaza formularul de contact de pe pagina unei proprietati. API-ul valideaza datele, verifica proprietatea si identifica agentul asociat. Mesajul este salvat in baza de date cu propertyId si agentId, iar agentul il poate vedea in dashboard."
+
+
+Intrebare 26: Cum ai testat aplicatia?
+
+Raspuns:
+"Am testat manual fluxurile principale: vizualizarea proprietatilor, filtrarea, trimiterea mesajelor, autentificarea, accesul la rute protejate, administrarea proprietatilor si administrarea agentilor. Am testat si cazuri negative, cum ar fi date invalide, parola gresita si acces fara autentificare."
+
+
+Intrebare 27: Ce inseamna testare negativa?
+
+Raspuns:
+"Testarea negativa verifica modul in care aplicatia se comporta in situatii gresite: input invalid, credentiale incorecte, acces neautorizat, proprietate inexistenta sau lipsa unor campuri obligatorii. Scopul este sa ne asiguram ca aplicatia raspunde controlat si nu salveaza date gresite."
+
+
+Intrebare 28: Care este cea mai importanta regula de business?
+
+Raspuns:
+"O regula importanta este separarea responsabilitatilor: vizitatorii nu au conturi, agentii gestioneaza doar proprietatile proprii, iar administratorul gestioneaza doar agentii. Aceasta regula influenteaza autentificarea, autorizarea si structura bazei de date."
+
+
+Intrebare 29: Ce limitari are aplicatia?
+
+Raspuns:
+"Aplicatia este un proiect de licenta si nu acopera toate functionalitatile unei platforme comerciale mature. De exemplu, nu include plati online, notificari automate prin email, integrare cu harti, analytics avansat sau sistem complex de moderare."
+
+
+Intrebare 30: Ce imbunatatiri ai adauga in viitor?
+
+Raspuns:
+"As adauga notificari prin email pentru mesajele noi, integrare cu harti, cautare avansata, salvarea proprietatilor favorite, statistici pentru agenti, roluri mai detaliate si teste automate mai extinse."
+
+
+Intrebare 31: Cum se diferentiaza aplicatia ta de un site simplu de prezentare?
+
+Raspuns:
+"Aplicatia nu este doar un site static. Are baza de date, autentificare, rute API, formulare validate, roluri diferite, administrare de continut si fluxuri functionale intre vizitator, agent si administrator."
+
+
+Intrebare 32: Ce ai face diferit daca ai relua proiectul?
+
+Raspuns:
+"As planifica de la inceput o suita mai mare de teste automate si as adauga mai devreme functionalitati de monitorizare si logging. Totusi, pentru scopul lucrarii, am prioritizat fluxurile principale si claritatea arhitecturii."
+
+
+Intrebare 33: De ce nu ai folosit microservicii?
+
+Raspuns:
+"Pentru dimensiunea proiectului, microserviciile ar fi adaugat complexitate inutila. O arhitectura simpla, monolitica, este mai potrivita pentru o aplicatie de licenta si este mai usor de dezvoltat, testat si explicat."
+
+
+Intrebare 34: Cum tratezi erorile?
+
+Raspuns:
+"Erorile sunt tratate prin raspunsuri JSON clare, cu status HTTP corespunzator. De exemplu, 400 pentru date invalide, 401 pentru lipsa autentificarii, 403 pentru acces interzis si 404 pentru resurse inexistente."
+
+
+Intrebare 35: Ce inseamna responsive design in aplicatia ta?
+
+Raspuns:
+"Responsive design inseamna ca interfata se adapteaza la dimensiuni diferite de ecran. Am folosit clase Bootstrap pentru grid, layout si componente, astfel incat aplicatia sa fie utilizabila atat pe desktop, cat si pe dispozitive mobile."
+
+
+Intrebare 36: Cum ai ales structura paginilor?
+
+Raspuns:
+"Structura paginilor reflecta rolurile sistemului. Rutele publice sunt pentru vizitatori, /login este pentru autentificare, /agent este pentru dashboard-ul agentului, iar /admin este pentru zona administratorului."
+
+
+Intrebare 37: Ce inseamna App Router?
+
+Raspuns:
+"App Router este sistemul modern de rutare din Next.js, in care structura folderelor defineste rutele aplicatiei. Acesta permite organizarea paginilor, layout-urilor si rutelor API intr-un mod clar."
+
+
+Intrebare 38: Cum se face filtrarea proprietatilor?
+
+Raspuns:
+"Filtrarea se face pe baza parametrilor trimisi catre API, cum ar fi orasul, tipul proprietatii sau alte criterii. API-ul valideaza filtrele si returneaza doar proprietatile care respecta criteriile si sunt publice."
+
+
+Intrebare 39: Cum decizi ce proprietati apar public?
+
+Raspuns:
+"Apar public doar proprietatile active si publicate. Astfel, proprietatile aflate in ciorna, dezactivate, vandute sau inchiriate pot fi controlate separat de agent."
+
+
+Intrebare 40: Ce ai invatat din proiect?
+
+Raspuns:
+"Am invatat sa organizez o aplicatie full-stack, sa modelez date relationale, sa separ responsabilitatile in cod, sa implementez autentificare si autorizare si sa gandesc o aplicatie nu doar ca interfata, ci ca sistem complet cu reguli de business."
+
+
+7. Intrebari mai tehnice care pot aparea
+
+Intrebare: Ce este o cheie straina?
+
+Raspuns:
+"O cheie straina este un camp care face legatura intre doua tabele. De exemplu, properties.agentId face legatura intre o proprietate si agentul din tabela users."
+
+
+Intrebare: Ce este un hash?
+
+Raspuns:
+"Un hash este rezultatul unei functii unidirectionale aplicate asupra parolei. In practica, parola nu poate fi recuperata direct din hash, iar la login se compara parola introdusa cu hash-ul salvat."
+
+
+Intrebare: De ce folosesti bcrypt si nu o functie simpla de hashing?
+
+Raspuns:
+"bcrypt este special conceput pentru parole si include un mecanism de cost care face atacurile brute-force mai dificile decat in cazul unor functii rapide de hashing."
+
+
+Intrebare: Ce este JWT?
+
+Raspuns:
+"JWT este un token semnat care poate transporta informatii despre sesiune. In aplicatie il folosesc pentru a identifica utilizatorul autentificat si rolul lui."
+
+
+Intrebare: Care este diferenta dintre autentificare si autorizare?
+
+Raspuns:
+"Autentificarea verifica cine este utilizatorul, iar autorizarea verifica ce are voie sa faca. De exemplu, login-ul este autentificare, iar verificarea rolului admin pentru /admin este autorizare."
+
+
+Intrebare: Ce inseamna SQL injection si cum reduci riscul?
+
+Raspuns:
+"SQL injection apare cand inputul utilizatorului este introdus direct in interogari SQL. Riscul este redus prin validarea inputului si folosirea interogarilor parametrizate, in care valorile sunt transmise separat de textul SQL."
+
+
+Intrebare: Ce inseamna relatie one-to-many?
+
+Raspuns:
+"O relatie one-to-many inseamna ca o inregistrare dintr-o tabela poate avea mai multe inregistrari asociate in alta tabela. De exemplu, un agent poate avea mai multe proprietati."
+
+
+Intrebare: De ce ai folosit JSON pentru raspunsuri?
+
+Raspuns:
+"JSON este formatul standard pentru comunicarea dintre frontend si backend in aplicatiile web moderne. Este usor de citit, usor de procesat in JavaScript si potrivit pentru API-uri REST."
+
+
+Intrebare: Ce inseamna server component si client component?
+
+Raspuns:
+"In Next.js, server components sunt randate pe server si sunt potrivite pentru afisare si incarcare de date. Client components ruleaza in browser si sunt necesare pentru interactiuni precum formulare, stare locala si evenimente."
+
+
+Intrebare: De ce nu trebuie pusa logica de business direct in componente?
+
+Raspuns:
+"Daca logica de business este pusa direct in componente, codul devine greu de reutilizat si testat. Separarea logicii in servicii pastreaza componentele orientate spre interfata si serviciile orientate spre reguli."
+
+
+8. Intrebari despre lucrarea scrisa
+
+Intrebare: Cum este organizata lucrarea?
+
+Raspuns:
+"Lucrarea este organizata in capitole care acopera introducerea, analiza cerintelor, tehnologiile folosite, proiectarea sistemului, implementarea, testarea si concluziile. La final sunt incluse bibliografia si anexele."
+
+
+Intrebare: Unde se vede analiza cerintelor?
+
+Raspuns:
+"Analiza cerintelor este reflectata in identificarea actorilor, cerintelor functionale si nefunctionale, regulilor de business, scenariilor de utilizare si criteriilor de acceptare."
+
+
+Intrebare: Unde se vede proiectarea?
+
+Raspuns:
+"Proiectarea se vede in arhitectura aplicatiei, structura bazei de date, diagramele UML, separarea rolurilor, proiectarea rutelor API si proiectarea fluxurilor principale."
+
+
+Intrebare: Unde se vede testarea?
+
+Raspuns:
+"Testarea este prezentata prin scenarii pentru fluxurile principale, verificarea validarilor, verificarea autorizarii si testarea comportamentului aplicatiei pe cazuri valide si invalide."
+
+
+9. Lucruri pe care sa le eviti in prezentare
+
+- Nu citi tot textul de pe slide-uri.
+- Nu intra prea mult in cod daca nu esti intrebat.
+- Nu promite functionalitati pe care aplicatia nu le are.
+- Nu spune ca aplicatia este perfecta sau completa comercial.
+- Nu te bloca daca apare o eroare in demo; explica ce ar trebui sa se intample si treci mai departe.
+- Nu folosi termeni tehnici fara sa ii poti explica simplu.
+
+
+10. Daca demo-ul are probleme
+
+Daca aplicatia nu porneste sau apare o eroare:
+
+"In mod normal, acest flux permite utilizatorului sa faca aceasta actiune. In lucrare am documentat implementarea si testarea acestui scenariu. Daca este nevoie, pot explica pe baza codului si a capturilor de ecran cum este realizat fluxul."
+
+Daca autentificarea nu merge:
+
+"Autentificarea foloseste email, parola, bcrypt pentru verificarea parolei si JWT in cookie HTTP-only. Probabil problema este de configurare locala, de exemplu variabila de mediu sau baza de date, nu de conceptul fluxului."
+
+Daca baza de date nu are date:
+
+"Pentru demo sunt necesare date initiale: utilizatori, agenti si proprietati. Structura bazei de date permite aceste relatii, iar fluxurile functioneaza dupa popularea tabelelor."
+
+
+11. Formula de final
+
+"In concluzie, Max Imob este o aplicatie full-stack care demonstreaza implementarea unui sistem web cu roluri diferite, autentificare, autorizare, persistenta datelor si interfata responsive. Consider ca obiectivele propuse au fost atinse, iar aplicatia poate fi extinsa in viitor cu functionalitati precum notificari, harti, cautare avansata si statistici pentru agenti. Va multumesc."
+
+
+12. Checklist inainte de sustinere
+
+- Verifica daca aplicatia porneste.
+- Verifica daca baza de date are date pentru demo.
+- Pregateste un cont de admin si un cont de agent.
+- Pregateste cel putin 2-3 proprietati publicate.
+- Pregateste o proprietate cu imagini.
+- Testeaza login-ul inainte de prezentare.
+- Testeaza formularul de mesaj.
+- Testeaza zona agentului.
+- Testeaza zona administratorului.
+- Pregateste capturi de ecran in caz ca demo-ul live are probleme.
+- Pregateste codul PlantUML sau imaginile diagramelor.
+- Repeta prezentarea fara sa citesti integral slide-urile.
+- Cronometreaza-te ca sa te incadrezi in timpul alocat.
+
+
+13. Ordine scurta de memorat
+
+Problema:
+"Piata imobiliara are nevoie de o platforma unde ofertele pot fi publicate si administrate clar."
+
+Solutia:
+"Max Imob ofera zona publica, zona agentului si zona administratorului."
+
+Tehnic:
+"Next.js, TypeScript, Bootstrap, PostgreSQL, API REST, JWT, bcrypt."
+
+Securitate:
+"Parole hash-uite, JWT in cookie HTTP-only, autorizare pe roluri."
+
+Demo:
+"Public vede si trimite mesaj, agent gestioneaza proprietati si mesaje, admin gestioneaza agenti."
+
+Concluzie:
+"Aplicatia este functionala, extensibila si potrivita pentru demonstrarea unui sistem web full-stack."

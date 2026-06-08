@@ -1,0 +1,1167 @@
+Clase pentru diagrame UML
+Aplicatia Max Imob
+
+Autor: Claudiu Ștefan
+
+Rolul documentului
+
+Acest document centralizeaza clasele si relatiile principale care pot fi folosite la realizarea diagramelor UML pentru aplicatia Max Imob. Aplicatia este dezvoltata ca platforma web pentru administrarea si publicarea ofertelor imobiliare, avand trei categorii de utilizatori: vizitator public, agent imobiliar si administrator.
+
+Documentul poate fi utilizat ca anexa pentru lucrarea de licenta sau ca suport pentru sectiunile de proiectare si implementare. Clasele sunt prezentate la nivel conceptual, pornind de la structura reala a aplicatiei: tabelele PostgreSQL, serviciile TypeScript, validatoarele si rutele API definite in proiect.
+
+[Placeholder imagine: Diagrama UML generala a claselor aplicatiei Max Imob]
+
+
+1. Clase de domeniu
+
+Clasele de domeniu descriu obiectele principale ale aplicatiei. Acestea corespund entitatilor persistente din baza de date si sunt folosite in fluxurile de autentificare, administrare agenti, administrare proprietati si transmitere mesaje.
+
+
+1.1. User
+
+Clasa User reprezinta contul intern al sistemului. In aplicatie, conturi au doar administratorii si agentii imobiliari. Vizitatorii publici nu au conturi si nu se autentifica.
+
+Atribute:
+- id: string
+- email: string
+- passwordHash: string
+- role: UserRole
+- name: string | null
+- phone: string | null
+- isActive: boolean
+- createdAt: Date
+- updatedAt: Date
+
+Metode conceptuale:
+- isAdmin(): boolean
+- isAgent(): boolean
+- canAuthenticate(): boolean
+
+Observatii:
+- role poate avea valorile admin sau agent.
+- passwordHash contine parola stocata in forma criptata, nu parola in clar.
+- isActive este folosit pentru activarea sau dezactivarea agentilor.
+- Administratorul poate gestiona agenti, dar nu gestioneaza proprietati.
+
+
+1.2. Agent
+
+Clasa Agent este o specializare logica a clasei User. In baza de date, agentii sunt stocati in tabela users, diferentierea fiind facuta prin campul role = agent.
+
+Atribute:
+- id: string
+- name: string
+- email: string
+- phone: string | null
+- isActive: boolean
+- createdAt: string
+- updatedAt: string
+
+Metode conceptuale:
+- createProperty(input: CreatePropertyInput): Property
+- updateProperty(propertyId: string, input: UpdatePropertyInput): Property
+- deactivateProperty(propertyId: string): Property
+- viewMessages(): Message[]
+
+Observatii:
+- Un agent poate avea mai multe proprietati.
+- Un agent poate primi mai multe mesaje prin proprietatile publicate.
+- Un agent poate modifica doar proprietatile proprii.
+
+
+1.3. Admin
+
+Clasa Admin este o specializare logica a clasei User. Administratorul are rol de administrare a agentilor si nu participa la fluxurile de gestionare a proprietatilor.
+
+Atribute:
+- id: string
+- email: string
+- role: UserRole
+- name: string | null
+- isActive: boolean
+
+Metode conceptuale:
+- listAgents(status: AgentStatusFilter): Agent[]
+- createAgent(input: CreateAgentInput): Agent
+- updateAgent(agentId: string, input: UpdateAgentInput): Agent
+- deactivateAgent(agentId: string): Agent
+
+Observatii:
+- Administratorul are acces la zona /admin.
+- Administratorul poate crea, modifica, activa si dezactiva agenti.
+- Administratorul nu creeaza si nu editeaza proprietati.
+
+
+1.4. Property
+
+Clasa Property reprezinta o oferta imobiliara introdusa de un agent. Proprietatile pot fi afisate public doar daca sunt publicate si active.
+
+Atribute:
+- id: string
+- agentId: string
+- title: string
+- description: string
+- price: number
+- city: string
+- address: string
+- propertyType: PropertyType
+- status: PropertyStatus
+- offerType: PropertyOffer
+- bedrooms: number
+- bathrooms: number
+- area: number
+- isActive: boolean
+- images: PropertyImage[]
+- createdAt: string
+- updatedAt: string
+
+Metode conceptuale:
+- publish(): void
+- markAsSold(): void
+- markAsRented(): void
+- activate(): void
+- deactivate(): void
+- addImage(image: PropertyImage): void
+
+Observatii:
+- propertyType poate avea valorile apartament, casa, teren sau comercial.
+- status poate avea valorile ciorna, publicata, vanduta sau inchiriata.
+- offerType poate avea valorile vanzare sau inchiriere.
+- Fiecare proprietate apartine unui singur agent.
+- Proprietatile publice trebuie sa aiba status = publicata si isActive = true.
+
+
+1.5. PropertyImage
+
+Clasa PropertyImage reprezinta o imagine atasata unei proprietati.
+
+Atribute:
+- id: string
+- propertyId: string
+- imageUrl: string
+- fileName: string
+- sortOrder: number
+- createdAt: Date
+
+Metode conceptuale:
+- getDisplayOrder(): number
+
+Observatii:
+- O proprietate poate avea mai multe imagini.
+- Stergerea unei proprietati determina stergerea imaginilor asociate prin relatia ON DELETE CASCADE.
+- sortOrder stabileste ordinea de afisare a imaginilor.
+
+
+1.6. Message
+
+Clasa Message reprezinta mesajul trimis de un vizitator public catre agentul responsabil de o proprietate. In cerintele aplicatiei, aceasta entitate poate fi considerata si lead.
+
+Atribute:
+- id: string
+- propertyId: string
+- agentId: string
+- contactName: string
+- contactEmail: string
+- contactPhone: string
+- messageContent: string
+- status: MessageStatus
+- createdAt: string
+- updatedAt: string
+
+Metode conceptuale:
+- markAsRead(): void
+- archive(): void
+
+Observatii:
+- MessageStatus poate avea valorile unread, read sau archived.
+- Fiecare mesaj apartine unei proprietati.
+- Fiecare mesaj este asociat agentului care detine proprietatea.
+- Vizitatorul public nu are cont; datele sale sunt salvate doar in mesaj.
+
+
+2. Clase de autentificare si autorizare
+
+Aceste clase descriu partea de autentificare pe baza de email, parola, JWT si cookie HTTP-only.
+
+
+2.1. AuthSession
+
+Clasa AuthSession reprezinta informatiile extrase din tokenul JWT al utilizatorului autentificat.
+
+Atribute:
+- userId: string
+- role: UserRole
+
+Metode conceptuale:
+- isAdmin(): boolean
+- isAgent(): boolean
+
+Observatii:
+- Sesiunea contine doar informatiile necesare autorizarii.
+- Tokenul JWT contine userId si role.
+
+
+2.2. AuthService
+
+Clasa AuthService reprezinta serviciul responsabil de autentificare.
+
+Atribute:
+- cookieName: string
+- jwtSecret: string
+
+Metode:
+- loginUser(input: LoginInput): LoginResult
+- findUserByEmail(email: string): StoredUser | null
+- createAuthToken(userId: string, role: UserRole): string
+- invalidCredentials(): LoginResult
+
+Responsabilitati:
+- Validarea existentei utilizatorului.
+- Verificarea starii active a contului.
+- Compararea parolei primite cu parola criptata.
+- Generarea tokenului JWT.
+- Stabilirea redirectarii catre /admin sau /agent.
+
+
+2.3. SessionService
+
+Clasa SessionService reprezinta logica de citire si verificare a sesiunii din request.
+
+Metode:
+- getAuthSession(request: NextRequest): AuthSession | null
+- requireAdmin(request: NextRequest): AuthSession
+- requireAgent(request: NextRequest): AuthSession
+
+Responsabilitati:
+- Citeste cookie-ul auth_token.
+- Verifica tokenul JWT folosind cheia secreta.
+- Permite accesul doar rolurilor autorizate.
+- Arunca AuthError pentru cereri neautentificate sau neautorizate.
+
+
+2.4. AuthError
+
+Clasa AuthError reprezinta o eroare de autentificare sau autorizare.
+
+Atribute:
+- message: string
+- status: 401 | 403
+
+Metode:
+- constructor(message: string, status: 401 | 403)
+
+Observatii:
+- status = 401 indica lipsa autentificarii.
+- status = 403 indica lipsa drepturilor pentru resursa ceruta.
+
+
+3. Clase de servicii
+
+Serviciile contin logica aplicatiei si comunica direct cu baza de date. In arhitectura proiectului, controllerele/rutele API raman simple, iar logica principala este mutata in servicii.
+
+
+3.1. AgentService
+
+Metode:
+- listAgents(status: AgentStatusFilter): Promise<Agent[]>
+- createAgent(input: CreateAgentInput): Promise<Agent>
+- getAgentById(id: string): Promise<Agent | null>
+- updateAgent(id: string, input: UpdateAgentInput): Promise<Agent | null>
+- deactivateAgent(id: string): Promise<Agent | null>
+- isUniqueViolation(error: unknown): boolean
+- mapAgentRow(row: AgentRow): Agent
+
+Responsabilitati:
+- Listeaza agentii.
+- Creeaza agenti noi cu parola criptata.
+- Actualizeaza datele agentului.
+- Dezactiveaza conturi de agent.
+- Transforma randurile SQL in obiecte Agent.
+
+
+3.2. PropertyService
+
+Metode:
+- listAgentProperties(agentId: string): Promise<Property[]>
+- listPublicProperties(filters: PublicPropertyFilters): Promise<Property[]>
+- createProperty(agentId: string, input: CreatePropertyInput, images: SavedPropertyImage[]): Promise<Property>
+- getAgentPropertyById(agentId: string, propertyId: string): Promise<Property | null>
+- getPublicPropertyById(propertyId: string): Promise<Property | null>
+- updateProperty(agentId: string, propertyId: string, input: UpdatePropertyInput, images: SavedPropertyImage[]): Promise<Property | null>
+- deactivateProperty(agentId: string, propertyId: string): Promise<Property | null>
+- activateProperty(agentId: string, propertyId: string): Promise<Property | null>
+- listImagesForProperty(propertyId: string): Promise<PropertyImage[]>
+- insertPropertyImages(client: PoolClient, propertyId: string, images: SavedPropertyImage[], startIndex: number): Promise<void>
+- mapPropertyRow(row: PropertyRow, images: PropertyImage[]): Property
+
+Responsabilitati:
+- Gestioneaza proprietatile agentilor.
+- Filtreaza proprietatile publice.
+- Insereaza proprietati si imagini in tranzactie.
+- Actualizeaza datele proprietatii.
+- Activeaza si dezactiveaza proprietati.
+- Respecta regula ca agentul modifica doar proprietatile proprii.
+
+
+3.3. MessageService
+
+Metode:
+- saveMessage(propertyId: string, agentId: string, input: CreateMessageInput): Promise<Message>
+- getPropertyById(propertyId: string): Promise<PropertyReference | undefined>
+- getMessagesByPropertyId(propertyId: string): Promise<Message[]>
+- getMessagesByAgentId(agentId: string): Promise<Message[]>
+- markMessageAsRead(messageId: string): Promise<Message>
+- mapMessageRow(row: MessageRow): Message
+
+Responsabilitati:
+- Salveaza mesajele trimise prin formularul public.
+- Asociaza mesajul cu proprietatea si agentul corect.
+- Listeaza mesajele pentru o proprietate.
+- Listeaza mesajele pentru agentul autentificat.
+- Marcheaza mesajele ca citite.
+
+
+3.4. DatabasePool
+
+Clasa DatabasePool reprezinta mecanismul centralizat de conectare la PostgreSQL.
+
+Atribute:
+- connectionString: string
+- pgPool: Pool
+
+Metode:
+- getPool(): Pool
+
+Responsabilitati:
+- Creeaza conexiunea la baza de date.
+- Reutilizeaza conexiunea in mediul de dezvoltare.
+- Verifica existenta variabilei de mediu DATABASE_URL.
+
+
+4. Clase de validare
+
+Validatoarele verifica datele primite de la client inainte de apelarea serviciilor.
+
+
+4.1. LoginValidator
+
+Metode:
+- validateLoginInput(input: unknown): LoginValidationResult
+
+Reguli:
+- email trebuie sa fie string valid.
+- password trebuie sa fie string.
+- parola trebuie sa aiba minimum 8 caractere.
+- emailul este normalizat prin trim si lowercase.
+
+
+4.2. AgentValidator
+
+Metode:
+- validateCreateAgentInput(input: unknown): ValidationResult<CreateAgentInput>
+- validateUpdateAgentInput(input: unknown): ValidationResult<UpdateAgentInput>
+- validateAgentStatusFilter(status: string | null): AgentStatusFilter | null
+
+Reguli:
+- name: 2-100 caractere.
+- email: format valid.
+- phone: optional, maximum 30 caractere.
+- password: minimum 8 caractere.
+- isActive: boolean.
+
+
+4.3. PropertyValidator
+
+Metode:
+- validateCreatePropertyInput(input: unknown): ValidationResult<CreatePropertyInput>
+- validateUpdatePropertyInput(input: unknown): ValidationResult<UpdatePropertyInput>
+- validatePublicPropertyFilters(input: unknown): ValidationResult<PublicPropertyFilters>
+
+Reguli:
+- title: 3-150 caractere.
+- description: obligatoriu, maximum 2000 caractere.
+- price: numar mai mare sau egal cu 0.
+- city: 2-100 caractere.
+- address: 5-200 caractere.
+- propertyType: apartament, casa, teren sau comercial.
+- status: ciorna, publicata, vanduta sau inchiriata.
+- offerType: vanzare sau inchiriere.
+- bedrooms: numar intreg mai mare sau egal cu 0.
+- bathrooms: numar intreg mai mare sau egal cu 0.
+- area: numar mai mare decat 0.
+
+
+4.4. MessageValidator
+
+Metode:
+- validateCreateMessageInput(input: unknown): ValidationResult<CreateMessageInput>
+
+Reguli:
+- contactName: 2-100 caractere.
+- contactEmail: format valid.
+- contactPhone: 10-20 caractere si caractere permise pentru numar de telefon.
+- messageContent: 10-5000 caractere.
+
+
+5. Clase de tip controller / route handler
+
+In implementarea Next.js App Router, controllerele sunt reprezentate de fisiere route.ts. Ele primesc cererea HTTP, valideaza datele, verifica sesiunea unde este cazul, apeleaza serviciile si returneaza raspunsuri JSON.
+
+
+5.1. AuthLoginRoute
+
+Endpoint:
+- POST /api/auth/login
+
+Metode:
+- POST(request: NextRequest): Promise<NextResponse>
+
+Responsabilitati:
+- Citeste emailul si parola.
+- Apeleaza LoginValidator.
+- Apeleaza AuthService.
+- Seteaza cookie-ul HTTP-only cu tokenul JWT.
+- Returneaza redirectarea potrivita pentru rol.
+
+
+5.2. AgentsRoute
+
+Endpoint:
+- GET /api/agents
+- POST /api/agents
+
+Metode:
+- GET(request: NextRequest): Promise<NextResponse>
+- POST(request: NextRequest): Promise<NextResponse>
+
+Responsabilitati:
+- Permite acces doar administratorului.
+- Listeaza agentii.
+- Creeaza agenti noi.
+- Gestioneaza erorile de email duplicat.
+
+
+5.3. AgentByIdRoute
+
+Endpoint:
+- GET /api/agents/[id]
+- PATCH /api/agents/[id]
+- DELETE /api/agents/[id]
+
+Metode:
+- GET(request: NextRequest, context): Promise<NextResponse>
+- PATCH(request: NextRequest, context): Promise<NextResponse>
+- DELETE(request: NextRequest, context): Promise<NextResponse>
+
+Responsabilitati:
+- Permite acces doar administratorului.
+- Returneaza detaliile unui agent.
+- Actualizeaza datele agentului.
+- Dezactiveaza agentul.
+
+
+5.4. PropertiesRoute
+
+Endpoint:
+- GET /api/properties
+- POST /api/properties
+
+Metode:
+- GET(request: NextRequest): Promise<NextResponse>
+- POST(request: NextRequest): Promise<NextResponse>
+
+Responsabilitati:
+- Pentru GET public, returneaza proprietatile publicate si active.
+- Pentru POST, permite doar agentilor autentificati sa creeze proprietati.
+- Valideaza filtrele publice si datele proprietatii.
+- Proceseaza imaginile atasate, daca exista.
+
+
+5.5. PropertyByIdRoute
+
+Endpoint:
+- GET /api/properties/[id]
+- PATCH /api/properties/[id]
+- DELETE /api/properties/[id]
+
+Metode:
+- GET(request: NextRequest, context): Promise<NextResponse>
+- PATCH(request: NextRequest, context): Promise<NextResponse>
+- DELETE(request: NextRequest, context): Promise<NextResponse>
+
+Responsabilitati:
+- Pentru GET public, returneaza o proprietate publicata si activa.
+- Pentru PATCH si DELETE, permite acces doar agentului care detine proprietatea.
+- Actualizeaza sau dezactiveaza proprietatea.
+
+
+5.6. PropertyMessagesRoute
+
+Endpoint:
+- POST /api/properties/[id]/messages
+
+Metode:
+- POST(request: NextRequest, context): Promise<NextResponse>
+
+Responsabilitati:
+- Permite vizitatorilor publici sa trimita mesaje.
+- Valideaza datele formularului de contact.
+- Verifica existenta proprietatii.
+- Salveaza mesajul pentru agentul responsabil.
+
+
+5.7. AgentMessagesRoute
+
+Endpoint:
+- GET /api/agent/messages
+
+Metode:
+- GET(request: NextRequest): Promise<NextResponse>
+
+Responsabilitati:
+- Permite acces doar agentilor autentificati.
+- Returneaza mesajele primite de agent.
+
+
+6. Enumerari pentru UML
+
+UserRole:
+- admin
+- agent
+
+PropertyType:
+- apartament
+- casa
+- teren
+- comercial
+
+PropertyStatus:
+- ciorna
+- publicata
+- vanduta
+- inchiriata
+
+PropertyOffer:
+- vanzare
+- inchiriere
+
+MessageStatus:
+- unread
+- read
+- archived
+
+AgentStatusFilter:
+- active
+- inactive
+
+
+7. Relatii intre clase
+
+Relatii principale:
+- Admin mosteneste conceptual User.
+- Agent mosteneste conceptual User.
+- Agent are zero sau mai multe Property.
+- Property apartine unui singur Agent.
+- Property are zero sau mai multe PropertyImage.
+- PropertyImage apartine unei singure Property.
+- Property are zero sau mai multe Message.
+- Message apartine unei singure Property.
+- Message apartine unui singur Agent.
+- AuthService foloseste User pentru autentificare.
+- SessionService produce AuthSession.
+- AgentService gestioneaza Agent.
+- PropertyService gestioneaza Property si PropertyImage.
+- MessageService gestioneaza Message.
+- Route handlers folosesc validatoare, servicii si SessionService.
+
+Multiplicitati:
+- Agent 1 ---- 0..* Property
+- Property 1 ---- 0..* PropertyImage
+- Property 1 ---- 0..* Message
+- Agent 1 ---- 0..* Message
+- User 1 ---- 0..1 AuthSession
+
+
+8. Diagrama UML pentru clasele de domeniu - PlantUML
+
+[Placeholder imagine: Diagrama claselor de domeniu generata din codul PlantUML de mai jos]
+
+@startuml
+title Max Imob - Diagrama claselor de domeniu
+
+enum UserRole {
+  admin
+  agent
+}
+
+enum PropertyType {
+  apartament
+  casa
+  teren
+  comercial
+}
+
+enum PropertyStatus {
+  ciorna
+  publicata
+  vanduta
+  inchiriata
+}
+
+enum PropertyOffer {
+  vanzare
+  inchiriere
+}
+
+enum MessageStatus {
+  unread
+  read
+  archived
+}
+
+class User {
+  +id: string
+  +email: string
+  -passwordHash: string
+  +role: UserRole
+  +name: string
+  +phone: string
+  +isActive: boolean
+  +createdAt: Date
+  +updatedAt: Date
+  +isAdmin(): boolean
+  +isAgent(): boolean
+  +canAuthenticate(): boolean
+}
+
+class Admin {
+  +listAgents(): Agent[]
+  +createAgent(): Agent
+  +updateAgent(): Agent
+  +deactivateAgent(): Agent
+}
+
+class Agent {
+  +createProperty(): Property
+  +updateProperty(): Property
+  +deactivateProperty(): Property
+  +viewMessages(): Message[]
+}
+
+class Property {
+  +id: string
+  +agentId: string
+  +title: string
+  +description: string
+  +price: number
+  +city: string
+  +address: string
+  +propertyType: PropertyType
+  +status: PropertyStatus
+  +offerType: PropertyOffer
+  +bedrooms: number
+  +bathrooms: number
+  +area: number
+  +isActive: boolean
+  +createdAt: string
+  +updatedAt: string
+  +publish(): void
+  +activate(): void
+  +deactivate(): void
+  +addImage(): void
+}
+
+class PropertyImage {
+  +id: string
+  +propertyId: string
+  +imageUrl: string
+  +fileName: string
+  +sortOrder: number
+  +createdAt: Date
+}
+
+class Message {
+  +id: string
+  +propertyId: string
+  +agentId: string
+  +contactName: string
+  +contactEmail: string
+  +contactPhone: string
+  +messageContent: string
+  +status: MessageStatus
+  +createdAt: string
+  +updatedAt: string
+  +markAsRead(): void
+  +archive(): void
+}
+
+User <|-- Admin
+User <|-- Agent
+Agent "1" -- "0..*" Property : detine
+Property "1" -- "0..*" PropertyImage : are
+Property "1" -- "0..*" Message : primeste
+Agent "1" -- "0..*" Message : gestioneaza
+
+User --> UserRole
+Property --> PropertyType
+Property --> PropertyStatus
+Property --> PropertyOffer
+Message --> MessageStatus
+
+@enduml
+
+
+9. Diagrama UML pentru servicii - PlantUML
+
+[Placeholder imagine: Diagrama serviciilor aplicatiei generata din codul PlantUML de mai jos]
+
+@startuml
+title Max Imob - Diagrama claselor de servicii
+
+class DatabasePool {
+  +getPool(): Pool
+}
+
+class AuthService {
+  +loginUser(input: LoginInput): LoginResult
+  -findUserByEmail(email: string): StoredUser
+  -createAuthToken(userId: string, role: UserRole): string
+  -invalidCredentials(): LoginResult
+}
+
+class SessionService {
+  +getAuthSession(request: NextRequest): AuthSession
+  +requireAdmin(request: NextRequest): AuthSession
+  +requireAgent(request: NextRequest): AuthSession
+}
+
+class AgentService {
+  +listAgents(status: AgentStatusFilter): Agent[]
+  +createAgent(input: CreateAgentInput): Agent
+  +getAgentById(id: string): Agent
+  +updateAgent(id: string, input: UpdateAgentInput): Agent
+  +deactivateAgent(id: string): Agent
+  +isUniqueViolation(error: unknown): boolean
+}
+
+class PropertyService {
+  +listAgentProperties(agentId: string): Property[]
+  +listPublicProperties(filters: PublicPropertyFilters): Property[]
+  +createProperty(agentId: string, input: CreatePropertyInput, images: SavedPropertyImage[]): Property
+  +getAgentPropertyById(agentId: string, propertyId: string): Property
+  +getPublicPropertyById(propertyId: string): Property
+  +updateProperty(agentId: string, propertyId: string, input: UpdatePropertyInput, images: SavedPropertyImage[]): Property
+  +deactivateProperty(agentId: string, propertyId: string): Property
+  +activateProperty(agentId: string, propertyId: string): Property
+}
+
+class MessageService {
+  +saveMessage(propertyId: string, agentId: string, input: CreateMessageInput): Message
+  +getPropertyById(propertyId: string): PropertyReference
+  +getMessagesByPropertyId(propertyId: string): Message[]
+  +getMessagesByAgentId(agentId: string): Message[]
+  +markMessageAsRead(messageId: string): Message
+}
+
+class AuthError {
+  +message: string
+  +status: 401 | 403
+}
+
+AuthService --> DatabasePool
+AgentService --> DatabasePool
+PropertyService --> DatabasePool
+MessageService --> DatabasePool
+SessionService --> AuthError
+AuthService ..> User
+AgentService ..> Agent
+PropertyService ..> Property
+PropertyService ..> PropertyImage
+MessageService ..> Message
+
+@enduml
+
+
+10. Diagrama UML pentru validatoare si rute API - PlantUML
+
+[Placeholder imagine: Diagrama validatoarelor si rutelor API generata din codul PlantUML de mai jos]
+
+@startuml
+title Max Imob - Validatoare si rute API
+
+class LoginValidator {
+  +validateLoginInput(input: unknown): LoginValidationResult
+}
+
+class AgentValidator {
+  +validateCreateAgentInput(input: unknown): ValidationResult
+  +validateUpdateAgentInput(input: unknown): ValidationResult
+  +validateAgentStatusFilter(status: string): AgentStatusFilter
+}
+
+class PropertyValidator {
+  +validateCreatePropertyInput(input: unknown): ValidationResult
+  +validateUpdatePropertyInput(input: unknown): ValidationResult
+  +validatePublicPropertyFilters(input: unknown): ValidationResult
+}
+
+class MessageValidator {
+  +validateCreateMessageInput(input: unknown): ValidationResult
+}
+
+class AuthLoginRoute {
+  +POST(request: NextRequest): NextResponse
+}
+
+class AgentsRoute {
+  +GET(request: NextRequest): NextResponse
+  +POST(request: NextRequest): NextResponse
+}
+
+class AgentByIdRoute {
+  +GET(request: NextRequest): NextResponse
+  +PATCH(request: NextRequest): NextResponse
+  +DELETE(request: NextRequest): NextResponse
+}
+
+class PropertiesRoute {
+  +GET(request: NextRequest): NextResponse
+  +POST(request: NextRequest): NextResponse
+}
+
+class PropertyByIdRoute {
+  +GET(request: NextRequest): NextResponse
+  +PATCH(request: NextRequest): NextResponse
+  +DELETE(request: NextRequest): NextResponse
+}
+
+class PropertyMessagesRoute {
+  +POST(request: NextRequest): NextResponse
+}
+
+class AgentMessagesRoute {
+  +GET(request: NextRequest): NextResponse
+}
+
+AuthLoginRoute --> LoginValidator
+AuthLoginRoute --> AuthService
+
+AgentsRoute --> AgentValidator
+AgentsRoute --> AgentService
+AgentsRoute --> SessionService
+
+AgentByIdRoute --> AgentValidator
+AgentByIdRoute --> AgentService
+AgentByIdRoute --> SessionService
+
+PropertiesRoute --> PropertyValidator
+PropertiesRoute --> PropertyService
+PropertiesRoute --> SessionService
+
+PropertyByIdRoute --> PropertyValidator
+PropertyByIdRoute --> PropertyService
+PropertyByIdRoute --> SessionService
+
+PropertyMessagesRoute --> MessageValidator
+PropertyMessagesRoute --> MessageService
+
+AgentMessagesRoute --> MessageService
+AgentMessagesRoute --> SessionService
+
+@enduml
+
+
+11. Observatii pentru integrarea in lucrarea de licenta
+
+Pentru lucrarea scrisa, aceste diagrame pot fi introduse in Capitolul 4 - Proiectarea sistemului, in sectiunea dedicata proiectarii orientate pe obiecte si structurii interne a aplicatiei. Diagrama claselor de domeniu este cea mai importanta pentru explicarea modelului de date, deoarece arata legatura dintre agenti, proprietati, imagini si mesaje.
+
+Diagrama serviciilor poate fi folosita pentru a evidentia separarea responsabilitatilor: rutele API primesc cererile, validatoarele verifica datele, serviciile executa logica aplicatiei, iar DatabasePool gestioneaza accesul la PostgreSQL. Aceasta separare sustine cerintele de mentenabilitate si face aplicatia mai usor de explicat in cadrul sustinerii lucrarii.
+
+Diagrama validatoarelor si rutelor API poate fi folosita pentru a prezenta fluxul cererilor HTTP si modul in care aplicatia respecta regulile de securitate. Zonele administrative folosesc SessionService pentru autorizare, iar zona publica permite doar operatii fara autentificare, precum vizualizarea proprietatilor si trimiterea mesajelor.
+
+
+12. Diagrama cazurilor de utilizare
+
+Diagrama cazurilor de utilizare descrie functionalitatile principale ale aplicatiei din perspectiva actorilor. Pentru aplicatia Max Imob, actorii importanti sunt vizitatorul public, agentul imobiliar si administratorul. Aceasta diagrama este utila in Capitolul 2 - Analiza cerintelor, deoarece face legatura dintre cerintele functionale si rolurile reale din sistem.
+
+Vizitatorul public poate accesa partea publica a aplicatiei fara autentificare. El poate consulta lista de proprietati, poate filtra proprietatile, poate deschide pagina de detaliu a unei proprietati si poate trimite un mesaj catre agentul responsabil. Aceasta alegere respecta regula de business conform careia utilizatorii publici nu au conturi in sistem.
+
+Agentul imobiliar foloseste aplicatia dupa autentificare. El poate administra propriile proprietati, poate adauga imagini, poate modifica statusul unei proprietati si poate consulta mesajele primite de la vizitatori. Restrictia principala este ca agentul poate lucra numai cu datele care ii apartin.
+
+Administratorul are acces la zona de administrare si poate gestiona conturile agentilor. El poate crea agenti, poate modifica datele lor si poate activa sau dezactiva conturi. Administratorul nu are rol de agent si nu gestioneaza direct proprietati.
+
+[Placeholder imagine: Diagrama cazurilor de utilizare pentru aplicatia Max Imob]
+
+@startuml
+title Max Imob - Diagrama cazurilor de utilizare
+
+left to right direction
+
+actor "Vizitator public" as PublicUser
+actor "Agent imobiliar" as Agent
+actor "Administrator" as Admin
+
+rectangle "Max Imob" {
+  usecase "Vizualizare proprietati" as UC1
+  usecase "Filtrare proprietati" as UC2
+  usecase "Vizualizare detalii proprietate" as UC3
+  usecase "Trimitere mesaj catre agent" as UC4
+
+  usecase "Autentificare" as UC5
+  usecase "Gestionare proprietati proprii" as UC6
+  usecase "Adaugare proprietate" as UC7
+  usecase "Editare proprietate" as UC8
+  usecase "Activare/dezactivare proprietate" as UC9
+  usecase "Vizualizare mesaje primite" as UC10
+
+  usecase "Gestionare agenti" as UC11
+  usecase "Creare agent" as UC12
+  usecase "Editare agent" as UC13
+  usecase "Activare/dezactivare agent" as UC14
+}
+
+PublicUser --> UC1
+PublicUser --> UC2
+PublicUser --> UC3
+PublicUser --> UC4
+
+Agent --> UC5
+Agent --> UC6
+Agent --> UC10
+UC6 .> UC7 : include
+UC6 .> UC8 : include
+UC6 .> UC9 : include
+
+Admin --> UC5
+Admin --> UC11
+UC11 .> UC12 : include
+UC11 .> UC13 : include
+UC11 .> UC14 : include
+
+@enduml
+
+
+13. Diagrama de secventa pentru autentificare
+
+Fluxul de autentificare este folosit doar de administratori si agenti. Vizitatorii publici nu folosesc acest flux. Diagrama de secventa evidentiaza pasii prin care formularul de login comunica cu ruta API, validatorul, serviciul de autentificare si baza de date.
+
+Din punct de vedere al securitatii, parola introdusa de utilizator nu este comparata direct cu o parola in clar. Backend-ul cauta utilizatorul dupa email, verifica daca acesta este activ, compara parola cu hash-ul salvat folosind bcrypt si apoi genereaza un token JWT. Tokenul este trimis catre browser printr-un cookie HTTP-only, reducand riscul accesarii lui prin cod JavaScript din client.
+
+[Placeholder imagine: Diagrama de secventa pentru autentificare]
+
+@startuml
+title Max Imob - Secventa autentificare
+
+actor "Admin/Agent" as User
+participant "Pagina Login" as LoginPage
+participant "POST /api/auth/login" as LoginRoute
+participant "LoginValidator" as Validator
+participant "AuthService" as AuthService
+database "PostgreSQL" as DB
+participant "JWT + Cookie HTTP-only" as Cookie
+
+User -> LoginPage : introduce email si parola
+LoginPage -> LoginRoute : trimite cerere POST
+LoginRoute -> Validator : valideaza input
+
+alt date invalide
+  Validator --> LoginRoute : eroare validare
+  LoginRoute --> LoginPage : raspuns 400
+else date valide
+  Validator --> LoginRoute : input normalizat
+  LoginRoute -> AuthService : loginUser(input)
+  AuthService -> DB : cauta utilizator dupa email
+  DB --> AuthService : user sau null
+
+  alt credentiale incorecte sau cont inactiv
+    AuthService --> LoginRoute : rezultat invalid
+    LoginRoute --> LoginPage : raspuns 401
+  else credentiale valide
+    AuthService -> AuthService : verifica parola bcrypt
+    AuthService -> AuthService : genereaza JWT
+    AuthService --> LoginRoute : token si redirectUrl
+    LoginRoute -> Cookie : seteaza auth_token
+    LoginRoute --> LoginPage : raspuns 200
+    LoginPage --> User : redirect catre /admin sau /agent
+  end
+end
+
+@enduml
+
+
+14. Diagrama de secventa pentru trimiterea unui mesaj public
+
+Trimiterea mesajelor este unul dintre fluxurile esentiale ale aplicatiei, deoarece transforma vizitatorul public intr-un potential client pentru agent. Acest flux nu necesita autentificare, dar necesita validarea datelor introduse in formularul de contact.
+
+Sistemul verifica mai intai datele formularului: nume, email, telefon si continutul mesajului. Apoi verifica existenta proprietatii si identifica agentul care o detine. Mesajul este salvat in baza de date impreuna cu propertyId si agentId, ceea ce permite agentului sa vada ulterior mesajele asociate proprietatilor sale.
+
+[Placeholder imagine: Diagrama de secventa pentru trimiterea unui mesaj public]
+
+@startuml
+title Max Imob - Secventa trimitere mesaj public
+
+actor "Vizitator public" as Visitor
+participant "Pagina detalii proprietate" as PropertyPage
+participant "POST /api/properties/[id]/messages" as MessageRoute
+participant "MessageValidator" as Validator
+participant "MessageService" as MessageService
+database "PostgreSQL" as DB
+
+Visitor -> PropertyPage : completeaza formularul de contact
+PropertyPage -> MessageRoute : trimite cerere POST
+MessageRoute -> Validator : valideaza datele mesajului
+
+alt date invalide
+  Validator --> MessageRoute : lista erori
+  MessageRoute --> PropertyPage : raspuns 400
+  PropertyPage --> Visitor : afiseaza mesaj de eroare
+else date valide
+  Validator --> MessageRoute : input valid
+  MessageRoute -> MessageService : getPropertyById(propertyId)
+  MessageService -> DB : cauta proprietatea
+  DB --> MessageService : proprietate si agentId
+
+  alt proprietate inexistenta
+    MessageService --> MessageRoute : nu exista proprietate
+    MessageRoute --> PropertyPage : raspuns 404
+  else proprietate existenta
+    MessageRoute -> MessageService : saveMessage(propertyId, agentId, input)
+    MessageService -> DB : insereaza mesajul
+    DB --> MessageService : mesaj creat
+    MessageService --> MessageRoute : mesaj salvat
+    MessageRoute --> PropertyPage : raspuns 201
+    PropertyPage --> Visitor : confirmare trimitere
+  end
+end
+
+@enduml
+
+
+15. Diagrama de activitate pentru crearea unei proprietati
+
+Crearea unei proprietati este un flux specific agentului imobiliar. Agentul trebuie sa fie autentificat, iar sistemul trebuie sa confirme ca rolul sau este agent. Dupa autorizare, datele formularului sunt validate, imaginile sunt procesate si proprietatea este salvata in baza de date.
+
+Diagrama de activitate poate fi folosita in lucrare pentru a explica logica pas cu pas, inclusiv ramurile de eroare. Aceasta reprezentare este mai usor de urmarit decat codul sursa si ajuta la demonstrarea regulilor de business: proprietatea apartine agentului autentificat, datele sunt validate inainte de salvare, iar imaginile sunt asociate proprietatii create.
+
+[Placeholder imagine: Diagrama de activitate pentru crearea unei proprietati]
+
+@startuml
+title Max Imob - Activitate creare proprietate
+
+start
+:Agentul acceseaza formularul de adaugare proprietate;
+:Completeaza datele proprietatii;
+:Trimite formularul catre API;
+
+if (Agent autentificat?) then (da)
+  :SessionService returneaza sesiunea;
+else (nu)
+  :API returneaza 401;
+  stop
+endif
+
+if (Rolul este agent?) then (da)
+  :Se continua procesarea;
+else (nu)
+  :API returneaza 403;
+  stop
+endif
+
+:PropertyValidator verifica inputul;
+
+if (Date valide?) then (da)
+  :Se proceseaza imaginile incarcate;
+  :PropertyService porneste tranzactia;
+  :Se insereaza proprietatea;
+  :Se insereaza imaginile asociate;
+  :Se confirma tranzactia;
+  :API returneaza proprietatea creata;
+else (nu)
+  :API returneaza 400 cu erori de validare;
+endif
+
+stop
+@enduml
+
+
+16. Diagrama componentelor aplicatiei
+
+Diagrama componentelor prezinta aplicatia la un nivel arhitectural mai larg. Ea arata cum sunt separate interfata, rutele API, serviciile, validatoarele, autentificarea si baza de date. Aceasta diagrama este potrivita pentru Capitolul 4 - Proiectarea sistemului, in sectiunea dedicata arhitecturii aplicatiei.
+
+Aplicatia foloseste Next.js App Router, astfel incat partea de frontend si rutele API sunt organizate in acelasi proiect. Chiar daca proiectul este implementat ca aplicatie Next.js, structura logica ramane apropiata de arhitectura clasica frontend-backend: paginile trimit cereri catre API, API-ul valideaza si autorizeaza cererile, serviciile executa logica, iar baza de date PostgreSQL pastreaza datele persistente.
+
+[Placeholder imagine: Diagrama componentelor pentru aplicatia Max Imob]
+
+@startuml
+title Max Imob - Diagrama componentelor
+
+package "Client web" {
+  component "Pagini publice" as PublicPages
+  component "Pagina login" as LoginPage
+  component "Dashboard agent" as AgentDashboard
+  component "Panou admin" as AdminPanel
+}
+
+package "Next.js App Router" {
+  component "Route handlers API" as ApiRoutes
+  component "Middleware / SessionService" as SessionService
+}
+
+package "Logica aplicatiei" {
+  component "AuthService" as AuthService
+  component "AgentService" as AgentService
+  component "PropertyService" as PropertyService
+  component "MessageService" as MessageService
+  component "Validatoare input" as Validators
+}
+
+database "PostgreSQL" as DB
+folder "public/uploads" as Uploads
+
+PublicPages --> ApiRoutes : cereri publice
+LoginPage --> ApiRoutes : login
+AgentDashboard --> ApiRoutes : cereri agent
+AdminPanel --> ApiRoutes : cereri admin
+
+ApiRoutes --> Validators : validare input
+ApiRoutes --> SessionService : autentificare/autorizare
+ApiRoutes --> AuthService
+ApiRoutes --> AgentService
+ApiRoutes --> PropertyService
+ApiRoutes --> MessageService
+
+AuthService --> DB
+AgentService --> DB
+PropertyService --> DB
+MessageService --> DB
+PropertyService --> Uploads : imagini proprietati
+
+@enduml
+
+
+17. Recomandari pentru folosirea diagramelor in lucrare
+
+Pentru lucrarea de licenta, nu este obligatoriu ca toate diagramele din acest document sa fie incluse in corpul principal al lucrarii. O varianta clara si echilibrata este includerea diagramelor esentiale in Capitolul 4, iar restul diagramelor pot fi mutate in anexe.
+
+Se recomanda urmatoarea repartizare:
+- In Capitolul 2 se poate include diagrama cazurilor de utilizare, deoarece aceasta explica relatia dintre actori si cerinte.
+- In Capitolul 4 se pot include diagrama claselor de domeniu, diagrama componentelor si una dintre diagramele de secventa.
+- In Capitolul 5 se pot mentiona diagramele de secventa si activitate atunci cand se explica implementarea fluxurilor principale.
+- In anexe se pot include toate codurile PlantUML folosite pentru generarea imaginilor.
+
+Pentru sustinerea lucrarii, cele mai utile diagrame sunt:
+- Diagrama cazurilor de utilizare, pentru explicarea functionalitatilor.
+- Diagrama claselor de domeniu, pentru explicarea modelului de date.
+- Diagrama componentelor, pentru explicarea arhitecturii.
+- Diagrama de secventa pentru autentificare, pentru explicarea securitatii.
+
+Este important ca diagramele finale inserate in documentul Word sau PDF sa fie lizibile. Daca o diagrama devine prea aglomerata, este mai bine sa fie impartita in doua diagrame mai mici. De exemplu, diagrama claselor de domeniu poate ramane separata de diagrama serviciilor, iar diagrama validatoarelor poate fi pastrata ca material de anexa.
+
+
+18. Concluzie pentru anexa UML
+
+Diagramele UML prezentate in acest document descriu aplicatia Max Imob din mai multe perspective: functionalitati, structura interna, fluxuri de date si componente arhitecturale. Impreuna, acestea sustin partea de analiza si proiectare a lucrarii de licenta si demonstreaza ca aplicatia a fost construita pe baza unor reguli clare.
+
+Modelul evidentiaza separarea dintre zona publica, zona agentului si zona administratorului. De asemenea, arata modul in care sunt aplicate regulile de securitate: autentificare doar pentru admin si agent, autorizare pe roluri, validarea datelor primite si salvarea tokenului JWT intr-un cookie HTTP-only.
+
+Prin folosirea acestor diagrame, proiectul poate fi prezentat mai clar in fata comisiei. Ele transforma structura tehnica a codului intr-o reprezentare vizuala usor de urmarit si ajuta la explicarea contributiei personale in proiectarea si implementarea platformei imobiliare.

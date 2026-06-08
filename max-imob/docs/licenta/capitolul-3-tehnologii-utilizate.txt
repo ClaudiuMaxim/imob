@@ -1,0 +1,254 @@
+CAPITOLUL 3
+TEHNOLOGII UTILIZATE
+
+3.1. Introducere
+
+Alegerea tehnologiilor reprezinta o etapa importanta in dezvoltarea unei aplicatii web, deoarece influenteaza modul de proiectare, implementare, testare si mentenanta. Pentru aplicatia Max Imob, tehnologiile au fost alese astfel incat sa sustina obiectivele stabilite in capitolele anterioare: realizarea unei platforme imobiliare full-stack, separarea clara a rolurilor, persistenta datelor intr-o baza de date relationala si obtinerea unei interfete simple, responsive si usor de utilizat.
+
+Aplicatia este construita folosind un set de tehnologii moderne, dar fara introducerea unor arhitecturi complexe care nu sunt necesare pentru dimensiunea proiectului. In partea de frontend se folosesc Next.js, React, TypeScript, HTML, CSS si Bootstrap. In partea de server se utilizeaza capabilitatile oferite de Next.js pentru rute API, impreuna cu Node.js ca mediu de executie. Pentru persistenta datelor se foloseste PostgreSQL, iar comunicarea cu baza de date este realizata prin biblioteca pg. Pentru securitate sunt utilizate mecanisme precum hashing-ul parolelor cu bcryptjs, autentificarea pe baza de JWT si stocarea tokenului intr-un cookie HTTP-only.
+
+Un aspect important al acestui proiect este pastrarea unei structuri simple si usor de explicat. Aplicatia nu foloseste microservicii, event sourcing, CQRS sau alte modele avansate, deoarece acestea ar creste complexitatea fara a aduce beneficii proportionale pentru scopul lucrarii. In schimb, proiectul foloseste o arhitectura monolitica web, cu rute publice, rute protejate, componente reutilizabile si acces direct la o baza de date relationala.
+
+Capitolul de fata prezinta tehnologiile folosite, rolul fiecareia in aplicatie si motivele pentru care au fost alese. Sunt analizate atat tehnologiile vizibile pentru utilizator, cum ar fi React si Bootstrap, cat si tehnologiile din partea de server si persistenta, precum Node.js, PostgreSQL, JWT si bcryptjs. De asemenea, sunt discutate avantajele, limitarile si modul in care aceste tehnologii contribuie la realizarea cerintelor definite in capitolul 2.
+
+[PLACEHOLDER FIGURA 3.1 - Diagrama generala a stivei tehnologice: browser, Next.js/React, rute API, Node.js, PostgreSQL.]
+
+3.2. Arhitectura tehnologica generala
+
+Aplicatia Max Imob este o aplicatie web full-stack. Aceasta inseamna ca include atat o parte de prezentare, accesata de utilizator prin browser, cat si o parte de server, responsabila pentru autentificare, validarea datelor, procesarea cererilor si comunicarea cu baza de date. Spre deosebire de aplicatiile complet statice, Max Imob trebuie sa gestioneze date persistente si actiuni diferite in functie de rolul utilizatorului.
+
+Din punct de vedere tehnologic, proiectul este organizat in jurul framework-ului Next.js. Acesta permite definirea paginilor folosind App Router, organizarea componentelor React si implementarea rutelor API in acelasi proiect. Aceasta alegere este potrivita pentru o lucrare de licenta deoarece reduce numarul de aplicatii separate care trebuie configurate si permite prezentarea clara a fluxului dintre interfata si server.
+
+Frontend-ul este responsabil pentru afisarea paginilor publice, a formularului de autentificare, a panoului agentului si a panoului administratorului. Acesta este realizat cu React si TypeScript, iar stilizarea este realizata folosind Bootstrap si CSS. React permite construirea interfetei sub forma de componente, iar TypeScript ajuta la verificarea tipurilor si la prevenirea unor erori in timpul dezvoltarii.
+
+Backend-ul este reprezentat de rutele API si de functiile server-side care proceseaza cererile. Acestea ruleaza in mediul Node.js si pot interactiona cu baza de date PostgreSQL prin biblioteca pg. Backend-ul implementeaza logica de autentificare, controlul accesului, validarea datelor si operatiile asupra entitatilor principale: utilizatori, proprietati, imagini si mesaje.
+
+Baza de date PostgreSQL este folosita pentru stocarea datelor persistente. In aceasta sunt definite tabele precum users, properties, property_images si messages. Structura este creata prin fisiere de migrare SQL, ceea ce permite urmarirea evolutiei bazei de date si reproducerea ei pe alte medii.
+
+Aceasta arhitectura este suficient de simpla pentru a fi inteleasa si testata, dar suficient de completa pentru a demonstra functionarea unei aplicatii web reale. Prin folosirea unei singure aplicatii Next.js, se evita complexitatea separarii in doua proiecte complet distincte pentru frontend si backend, fara a compromite separarea logica a responsabilitatilor.
+
+3.3. Next.js
+
+Next.js este framework-ul principal folosit in aplicatia Max Imob. Acesta este construit peste React si ofera functionalitati suplimentare pentru dezvoltarea aplicatiilor web moderne. Printre cele mai importante caracteristici se numara rutarea pe baza structurii de fisiere, randarea pe server, suportul pentru componente server si client, optimizari pentru performanta si posibilitatea de a crea rute API.
+
+In proiectul Max Imob, Next.js este folosit cu App Router. Aceasta abordare permite organizarea paginilor in directorul app, fiecare ruta fiind reprezentata de fisiere si foldere specifice. De exemplu, pot exista rute publice pentru pagina principala si lista proprietatilor, rute pentru autentificare si rute protejate pentru zonele agentului si administratorului. Aceasta organizare este intuitiva si usor de prezentat in lucrare, deoarece structura fisierelor reflecta structura aplicatiei.
+
+Un avantaj important al Next.js este suportul pentru Server Components. Componentele server pot incarca date si pot genera continut fara a trimite inutil logica de server catre browser. Pentru aplicatia Max Imob, aceasta caracteristica este utila in paginile care afiseaza date din baza de date, cum ar fi lista proprietatilor sau paginile administrative. Client Components sunt folosite doar atunci cand este necesara interactivitate in browser, de exemplu in formulare sau in componente care gestioneaza stare locala.
+
+Next.js permite si definirea metadatelor aplicatiei. In proiect, layout-ul principal seteaza limba documentului la romana si include metadate precum titlul "Max Imob" si descrierea platformei. De asemenea, layout-ul importa stilurile Bootstrap si fisierul global de CSS, ceea ce asigura o baza vizuala comuna pentru toate paginile.
+
+Un alt motiv pentru alegerea Next.js este integrarea naturala cu TypeScript. Framework-ul ofera suport bun pentru tipuri, pentru configurarea proiectului si pentru verificarea erorilor in timpul dezvoltarii. Aceasta compatibilitate sprijina cerinta proiectului de a folosi TypeScript strict si de a evita tipurile nesigure.
+
+Pentru o aplicatie de licenta, Next.js are si avantajul ca reduce efortul de configurare. In loc sa fie necesara configurarea separata a unui server Express, a unui bundler pentru React si a unei legaturi intre ele, Next.js ofera o structura unificata. Aceasta nu inseamna ca principiile backend sunt ignorate; logica trebuie in continuare organizata clar in functii si module, iar rutele API trebuie sa ramana simple.
+
+3.4. React
+
+React este biblioteca folosita pentru construirea interfetei utilizator. Aceasta permite definirea paginilor si elementelor vizuale sub forma de componente reutilizabile. In aplicatia Max Imob, componentele pot reprezenta elemente precum carduri de proprietati, formulare, tabele, bare de navigare sau sectiuni ale panourilor pentru agent si administrator.
+
+Modelul bazat pe componente este potrivit pentru o platforma imobiliara deoarece multe elemente vizuale se repeta. O proprietate poate fi afisata in lista publica, in panoul agentului sau in alte sectiuni, iar folosirea unei structuri reutilizabile reduce duplicarea codului. In acelasi timp, fiecare componenta poate avea o responsabilitate clara, ceea ce imbunatateste mentenabilitatea.
+
+React permite gestionarea starii locale in componentele care au nevoie de interactivitate. De exemplu, formularele pot pastra valorile introduse de utilizator, mesajele de eroare si starea de trimitere. Conform regulilor proiectului, pentru formulare se prefera pastrarea fiecarui camp in propria variabila de stare, in locul unui obiect mare care contine toate campurile. Aceasta abordare este simpla si usor de urmarit in cod.
+
+Un alt avantaj al React este separarea dintre structura interfetei si logica de randare. Componentele pot primi date prin proprietati si pot afisa continut diferit in functie de acestea. De exemplu, un card de proprietate poate primi titlul, pretul, orasul, tipul si statusul, iar apoi poate afisa informatia intr-un format consecvent.
+
+React este folosit impreuna cu Next.js, ceea ce inseamna ca unele componente sunt randate pe server, iar altele in browser. Aceasta combinatie permite optimizarea incarcarii paginilor si reducerea cantitatii de cod JavaScript trimise catre client. Pentru o aplicatie cu multe pagini informative, cum este zona publica a unei platforme imobiliare, randarea pe server este utila deoarece continutul poate fi livrat rapid utilizatorului.
+
+3.5. TypeScript
+
+TypeScript este limbajul folosit pentru dezvoltarea aplicatiei, fiind o extensie a JavaScript care adauga tipare statica. In proiectul Max Imob, TypeScript este important deoarece reduce riscul unor erori comune, cum ar fi folosirea gresita a campurilor, transmiterea unor valori de tip incorect sau accesarea unor proprietati inexistente.
+
+Intr-o aplicatie care foloseste mai multe entitati, tipurile devin un instrument util pentru claritate. De exemplu, un utilizator poate avea un rol de tip admin sau agent, o proprietate poate avea un status bine definit, iar un mesaj trebuie sa contina informatii precum nume, email, telefon si continut. Prin definirea acestor structuri, codul devine mai usor de inteles si mai usor de modificat.
+
+TypeScript contribuie si la respectarea cerintei de a evita tipul any. Folosirea excesiva a tipului any ar elimina o parte importanta din beneficiile limbajului, deoarece compilatorul nu ar mai putea verifica corect valorile. In schimb, definirea unor tipuri explicite pentru entitati, raspunsuri API si parametri ajuta la prevenirea erorilor inainte de executarea aplicatiei.
+
+Un alt avantaj al TypeScript este suportul bun in mediile moderne de dezvoltare. Editorul poate oferi completare automata, semnalarea erorilor si navigare mai usoara intre definitii. Acest lucru este util intr-un proiect academic deoarece ajuta la mentinerea calitatii codului si la intelegerea rapida a structurii.
+
+TypeScript este folosit atat in partea de frontend, cat si in partea de server. Aceasta coerenta este importanta deoarece reduce diferenta dintre modul in care sunt scrise componentele React si modul in care sunt scrise functiile de acces la date sau rutele API. Astfel, proiectul are o baza comuna de limbaj, ceea ce simplifica dezvoltarea.
+
+3.6. HTML si CSS
+
+HTML si CSS reprezinta baza oricarei interfete web. Chiar daca aplicatia foloseste React si Next.js, rezultatul final afisat in browser este format din structura HTML si stiluri CSS. Din acest motiv, folosirea corecta a elementelor semantice si a regulilor de stilizare ramane importanta.
+
+HTML este folosit pentru structurarea continutului. Paginile trebuie sa foloseasca elemente potrivite pentru rolul lor: anteturi pentru titluri, paragrafe pentru text, formulare pentru introducerea datelor, butoane pentru actiuni si tabele sau liste pentru date repetitive. O structura semantica ajuta atat la accesibilitate, cat si la mentenabilitate.
+
+CSS este folosit pentru personalizarea aspectului vizual. In proiect, stilurile globale sunt importate in layout-ul principal, astfel incat toate paginile sa aiba o baza comuna. CSS-ul propriu poate completa Bootstrap atunci cand sunt necesare ajustari specifice aplicatiei, de exemplu pentru spatiere, culori sau comportament responsive.
+
+Pentru o platforma imobiliara, designul trebuie sa fie curat si usor de parcurs. Utilizatorii trebuie sa poata compara proprietatile fara a fi distrasi de elemente decorative excesive. De aceea, CSS-ul trebuie folosit pentru a sprijini claritatea continutului, nu pentru a incarca inutil interfata.
+
+Un aspect important este adaptarea la dispozitive mobile. Multe persoane consulta proprietati de pe telefon, deci paginile trebuie sa fie lizibile si functionale pe ecrane mici. Structurile responsive si clasele Bootstrap contribuie la aceasta cerinta, iar CSS-ul global poate fi folosit pentru ajustari suplimentare.
+
+3.7. Bootstrap
+
+Bootstrap este framework-ul CSS folosit pentru stilizarea interfetei. Acesta ofera clase predefinite pentru layout, formulare, butoane, tabele, carduri si componente responsive. In aplicatia Max Imob, Bootstrap este importat global in layout-ul principal, ceea ce permite folosirea claselor sale in toate paginile.
+
+Alegerea Bootstrap este potrivita pentru acest proiect deoarece permite dezvoltarea rapida a unei interfete curate si consecvente. In loc sa fie necesara scrierea manuala a tuturor regulilor CSS pentru grid, spatiere si componente, Bootstrap ofera o baza deja testata. Acest lucru este util intr-o lucrare de licenta deoarece permite concentrarea pe functionalitatea aplicatiei si pe claritatea fluxurilor.
+
+Bootstrap este folosit pentru obtinerea unui design responsive. Clasele de grid permit organizarea continutului pe coloane care se adapteaza in functie de dimensiunea ecranului. De exemplu, lista proprietatilor poate fi afisata pe mai multe coloane pe desktop si pe o singura coloana pe mobil. Aceasta adaptare contribuie la o experienta mai buna pentru utilizatorii publici.
+
+Formularele reprezinta o alta zona in care Bootstrap este util. Formularele de login, creare agent, creare proprietate si contact pot folosi clase standard pentru etichete, campuri, butoane si mesaje de validare. Aceasta consecventa vizuala ajuta utilizatorii sa inteleaga rapid cum trebuie completate datele.
+
+Un alt avantaj al Bootstrap este faptul ca nu necesita introducerea unor biblioteci vizuale complexe. Pentru scopul proiectului, o interfata simpla este preferabila uneia foarte incarcate. Bootstrap ofera suficiente instrumente pentru un aspect profesional fara a transforma proiectul intr-un exercitiu de design complicat.
+
+Totusi, Bootstrap trebuie folosit cu masura. O aplicatie poate deveni greu de personalizat daca se bazeaza exclusiv pe clase predefinite fara o structura clara. In Max Imob, Bootstrap este folosit ca baza vizuala, iar stilurile proprii pot completa doar acolo unde este necesar. Aceasta abordare pastreaza echilibrul intre viteza de dezvoltare si controlul asupra designului.
+
+[PLACEHOLDER FIGURA 3.2 - Exemplu de structura responsive pentru cardurile de proprietati folosind grid Bootstrap.]
+
+3.8. Node.js
+
+Node.js este mediul de executie care permite rularea codului JavaScript si TypeScript in partea de server. In contextul aplicatiei Max Imob, Node.js sta la baza executiei proiectului Next.js si permite procesarea cererilor, accesul la baza de date si implementarea mecanismelor de autentificare.
+
+Un avantaj al Node.js este faptul ca permite folosirea aceluiasi limbaj de baza, JavaScript, atat in frontend, cat si in backend. In combinatie cu TypeScript, acest lucru duce la o experienta de dezvoltare unitara. Dezvoltatorul nu trebuie sa schimbe complet limbajul intre interfata si server, ceea ce reduce complexitatea proiectului.
+
+Node.js este potrivit pentru aplicatii web care proceseaza cereri HTTP, interactioneaza cu baze de date si returneaza raspunsuri JSON. Pentru Max Imob, operatiile principale sunt autentificarea, citirea proprietatilor, salvarea mesajelor si administrarea utilizatorilor interni. Aceste operatii se potrivesc bine modelului de executie al Node.js.
+
+In proiect, scripturile definite in package.json folosesc comenzi precum next dev, next build, next start si eslint. Aceste comenzi sunt rulate in mediul Node.js si sustin ciclul de dezvoltare: pornirea aplicatiei in mod dezvoltare, generarea versiunii de productie, pornirea versiunii construite si verificarea calitatii codului.
+
+Desi in descrierea generala a proiectului poate fi mentionat modelul backend bazat pe Node.js si Express.js, implementarea curenta valorifica in principal rutele API oferite de Next.js. Aceasta este o alegere potrivita pentru o aplicatie cu dimensiune controlata, deoarece reduce nevoia de a mentine un server Express separat. Principiile raman aceleasi: cererile sunt procesate de functii server-side, datele sunt validate, logica este separata de interfata, iar raspunsurile sunt trimise in format JSON.
+
+3.9. PostgreSQL
+
+PostgreSQL este sistemul de gestiune a bazei de date folosit pentru persistenta datelor. Alegerea unei baze de date relationale este potrivita pentru aplicatia Max Imob deoarece entitatile principale au relatii clare intre ele. Utilizatorii interni, proprietatile, imaginile si mesajele pot fi modelate prin tabele, chei primare, chei straine si constrangeri.
+
+Tabela users stocheaza administratorii si agentii. Aceasta include campuri precum id, email, password_hash, role, is_active, created_at si updated_at. Rolul utilizatorului este definit printr-un tip enumerat, ceea ce limiteaza valorile posibile la admin si agent. Aceasta constrangere contribuie la integritatea datelor si reduce riscul introducerii unor roluri invalide.
+
+Tabela properties stocheaza proprietatile imobiliare. Aceasta include campuri precum id, agent_id, title, description, price, city, address, property_type, status, bedrooms, bathrooms, area, is_active, created_at si updated_at. Campul agent_id este cheie straina catre users, ceea ce reflecta regula conform careia fiecare proprietate apartine unui agent. De asemenea, baza de date include constrangeri pentru valori numerice, cum ar fi pretul nenegativ, numarul de dormitoare sau bai nenegativ si suprafata mai mare decat zero.
+
+Tabela property_images permite asocierea mai multor imagini unei proprietati. Aceasta include un id, id-ul proprietatii, URL-ul imaginii, numele fisierului, ordinea de afisare si data crearii. Relatia cu proprietatea foloseste ON DELETE CASCADE, ceea ce inseamna ca imaginile asociate sunt sterse automat atunci cand proprietatea este eliminata. Aceasta regula pastreaza coerenta datelor si evita imagini ramase fara proprietate.
+
+Tabela messages stocheaza mesajele trimise de utilizatorii publici. Aceasta include informatii precum property_id, agent_id, contact_name, contact_email, contact_phone, message_content si status. Relatiile cu properties si users permit identificarea proprietatii si agentului responsabil. Prin aceasta structura, mesajele pot fi afisate in panoul agentului potrivit.
+
+PostgreSQL ofera suport pentru tipuri enumerate, constrangeri CHECK, chei straine si indecsi. In aplicatie sunt folositi indecsi pentru campuri precum agent_id, status si relatii frecvent accesate. Acest lucru poate imbunatati performanta interogarilor, mai ales atunci cand numarul de proprietati si mesaje creste.
+
+Folosirea migratiilor SQL este un alt aspect important. Fisierele din directorul db/migrations descriu evolutia structurii bazei de date. De exemplu, exista migratii pentru crearea utilizatorilor, adaugarea campurilor de profil pentru agenti, crearea proprietatilor, crearea imaginilor, crearea mesajelor si adaugarea tipului de oferta. Aceasta organizare permite refacerea bazei de date si documenteaza schimbarile aplicate.
+
+[PLACEHOLDER FIGURA 3.3 - Diagrama simplificata a bazei de date: users, properties, property_images, messages.]
+
+3.10. Biblioteca pg
+
+Biblioteca pg este folosita pentru conectarea aplicatiei Node.js la baza de date PostgreSQL. Aceasta permite executarea interogarilor SQL, transmiterea parametrilor si citirea rezultatelor. In aplicatia Max Imob, pg reprezinta legatura dintre logica server-side si datele persistente.
+
+Un avantaj al folosirii pg este controlul direct asupra interogarilor SQL. Dezvoltatorul poate scrie explicit interogarile necesare pentru citirea proprietatilor, crearea mesajelor sau administrarea utilizatorilor. Aceasta abordare este potrivita pentru o lucrare de licenta deoarece face vizibila relatia dintre cod si baza de date, iar interogarile pot fi explicate direct.
+
+Folosirea parametrilor in interogari este importanta pentru securitate. Valorile primite din formulare sau din rute nu trebuie concatenate direct in stringuri SQL. Ele trebuie transmise ca parametri, astfel incat biblioteca sa trateze corect valorile si sa reduca riscul de injectie SQL. Aceasta practica este esentiala in orice aplicatie care primeste date de la utilizatori.
+
+Biblioteca pg permite si configurarea conexiunii prin variabile de mediu. In proiectele web, datele sensibile precum adresa bazei de date, utilizatorul, parola sau secretul JWT nu trebuie scrise direct in codul sursa. Folosirea fisierului .env in mediul local si a variabilelor de mediu in productie sprijina separarea configurarii de cod.
+
+Comparativ cu folosirea unui ORM complex, pg este o solutie mai simpla si mai directa. Pentru proiectul Max Imob, aceasta simplitate este avantajoasa deoarece baza de date are un numar redus de entitati, iar interogarile pot fi mentinute clare. In acelasi timp, responsabilitatea pentru scrierea corecta a SQL-ului revine dezvoltatorului, ceea ce necesita atentie la validare, parametri si relatii.
+
+3.11. JSON si API REST
+
+Comunicarea dintre interfata si partea de server se realizeaza prin cereri HTTP si raspunsuri JSON. JSON este un format usor de citit si de folosit in aplicatiile web, fiind compatibil natural cu JavaScript si TypeScript. In Max Imob, raspunsurile API trebuie sa urmeze o structura standardizata, cu campurile success, data si error.
+
+O structura standard de raspuns ajuta la uniformizarea modului in care frontend-ul trateaza rezultatele. De exemplu, daca o cerere reuseste, campul success este true, iar datele sunt disponibile in data. Daca apare o eroare, success este false, iar error contine informatii despre problema. Aceasta abordare reduce ambiguitatea si face codul mai usor de testat.
+
+API-ul aplicatiei urmeaza principii REST. Resursele principale, precum agentii, proprietatile si mesajele, sunt accesate prin rute care reflecta entitatea asupra careia se actioneaza. Operatiile HTTP pot fi diferentiate prin metode precum GET, POST, PUT, PATCH sau DELETE, in functie de scopul cererii. Aceasta organizare este usor de inteles si se potriveste cu cerintele proiectului.
+
+Pentru zona publica, API-ul poate oferi rute de citire a proprietatilor si de trimitere a mesajelor. Pentru zona agentului, API-ul gestioneaza proprietatile proprii si lead-urile. Pentru zona administratorului, API-ul gestioneaza conturile agentilor. Separarea rutelor in functie de rol si resursa ajuta la aplicarea regulilor de autorizare.
+
+JSON este folosit si pentru transmiterea datelor din formulare. De exemplu, formularul de contact poate trimite numele, emailul, telefonul si mesajul catre server. Serverul valideaza datele, salveaza mesajul si returneaza un raspuns JSON care indica succesul sau eroarea. Aceasta interactiune este tipica pentru aplicatiile web moderne.
+
+3.12. Autentificare cu JWT
+
+JWT, prescurtare de la JSON Web Token, este folosit pentru autentificarea utilizatorilor interni. In aplicatia Max Imob, doar administratorii si agentii se autentifica. Utilizatorii publici pot accesa proprietatile si pot trimite mesaje fara cont.
+
+Fluxul de autentificare incepe cu introducerea emailului si parolei in formularul de login. Serverul cauta utilizatorul dupa email, verifica parola si confirma ca utilizatorul este activ. Daca toate conditiile sunt indeplinite, serverul genereaza un token JWT. Acesta contine informatii esentiale precum id-ul utilizatorului si rolul sau.
+
+Rolul inclus in token este important pentru autorizare. Atunci cand utilizatorul incearca sa acceseze o ruta privata, serverul verifica tokenul si decide daca rolul permite actiunea ceruta. De exemplu, un agent nu trebuie sa poata accesa zona administratorului, iar un administrator nu trebuie confundat cu un agent in fluxurile de administrare a proprietatilor.
+
+JWT este potrivit pentru acest proiect deoarece permite pastrarea unei sesiuni fara a stoca neaparat informatii complexe pe server. Totusi, tokenul trebuie protejat. Din acest motiv, aplicatia foloseste cookie HTTP-only. Aceasta setare impiedica accesarea cookie-ului prin JavaScript din browser, reducand riscul asociat atacurilor de tip cross-site scripting.
+
+Un aspect important este durata de viata a tokenului. Un token nu trebuie sa fie valid la nesfarsit, deoarece in cazul in care ar fi compromis, accesul ar ramane posibil prea mult timp. De aceea, in proiectele reale se folosesc expirari si mecanisme de logout. In Max Imob, logout-ul trebuie sa elimine cookie-ul, iar rutele private trebuie sa trateze corect tokenurile lipsa, invalide sau expirate.
+
+[PLACEHOLDER FIGURA 3.4 - Flux JWT: autentificare, generare token, cookie HTTP-only, verificare la rute protejate.]
+
+3.13. bcryptjs si protectia parolelor
+
+Stocarea parolelor este un aspect critic al securitatii. O aplicatie nu trebuie sa salveze parolele in text clar, deoarece in cazul accesului neautorizat la baza de date, toate conturile ar fi compromise imediat. Pentru Max Imob, parolele sunt protejate prin hashing, folosind biblioteca bcryptjs.
+
+Hashing-ul transforma parola intr-o valoare derivata care nu trebuie sa poata fi inversata usor. La autentificare, parola introdusa de utilizator este comparata cu hash-ul salvat, fara a fi necesara pastrarea parolei originale. bcrypt este potrivit pentru parole deoarece este conceput sa fie computational mai costisitor decat algoritmii generali de hashing, ceea ce ingreuneaza atacurile prin incercari repetate.
+
+Biblioteca bcryptjs este o implementare JavaScript a algoritmului bcrypt. Aceasta poate fi folosita in mediul Node.js si se integreaza usor in proiect. La crearea unui agent, parola primita trebuie transformata intr-un hash inainte de salvare. La login, parola introdusa trebuie verificata fata de hash-ul existent.
+
+In baza de date, campul folosit pentru parola este password_hash, ceea ce exprima clar faptul ca nu este stocata parola originala. Aceasta denumire este importanta pentru claritatea proiectului si pentru evitarea confuziilor. In plus, codul care gestioneaza autentificarea trebuie sa trateze parola ca informatie sensibila si sa nu o includa in raspunsurile API.
+
+Folosirea bcryptjs raspunde unei cerinte de securitate fundamentale a aplicatiei. Chiar daca proiectul este academic, tratarea corecta a parolelor demonstreaza intelegerea unor principii reale de securitate web si contribuie la calitatea generala a sistemului.
+
+3.14. Variabile de mediu si configurare
+
+Aplicatiile web folosesc frecvent date de configurare care nu trebuie incluse direct in codul sursa. Exemplele tipice sunt adresa bazei de date, parolele, porturile, secretul pentru semnarea tokenurilor JWT si alte valori specifice mediului de rulare. In Max Imob, aceste valori sunt gestionate prin variabile de mediu, definite local in fisierul .env.
+
+Separarea configurarii de cod are mai multe avantaje. In primul rand, acelasi cod poate rula in medii diferite, precum dezvoltare locala, testare sau productie, doar prin schimbarea variabilelor. In al doilea rand, informatiile sensibile nu trebuie publicate in repository. In al treilea rand, configurarea devine mai clara si mai usor de modificat fara schimbari in fisierele sursa.
+
+Secretul JWT este un exemplu important de valoare care trebuie pastrata in afara codului. Acesta este folosit pentru semnarea si verificarea tokenurilor. Daca secretul ar fi expus, securitatea autentificarii ar fi afectata. De asemenea, datele de conectare la PostgreSQL trebuie protejate, deoarece permit accesul la baza de date.
+
+In proiectele reale, fisierul .env nu trebuie incarcat in sisteme publice de versionare. De obicei, se include doar un fisier exemplu, precum .env.example, care arata ce variabile sunt necesare, fara valorile reale. Aceasta practica contribuie la securitatea si portabilitatea proiectului.
+
+3.15. ESLint si calitatea codului
+
+ESLint este un instrument folosit pentru analiza statica a codului. Acesta poate identifica erori, stiluri neconforme si posibile probleme inainte ca aplicatia sa fie rulata. In proiectul Max Imob, comanda lint este definita in package.json si foloseste configuratia specifica pentru Next.js.
+
+Folosirea ESLint este importanta pentru mentinerea calitatii codului. Intr-o aplicatie full-stack, erorile pot aparea atat in componentele de interfata, cat si in logica server-side. Un instrument de linting ajuta la detectarea problemelor precum importuri nefolosite, reguli incalcate, variabile declarate gresit sau structuri care nu respecta conventiile proiectului.
+
+Pentru o lucrare de licenta, calitatea codului este relevanta nu doar din punct de vedere functional, ci si din punct de vedere al prezentarii. Codul trebuie sa fie usor de citit, sa aiba denumiri clare si sa evite duplicarea. ESLint contribuie la acest obiectiv prin aplicarea unor reguli consecvente.
+
+ESLint nu inlocuieste testarea manuala sau testarea functionala, dar completeaza procesul de dezvoltare. El poate detecta probleme structurale, in timp ce testarea verifica daca aplicatia se comporta corect in scenarii reale. Impreuna, aceste practici ajuta la obtinerea unei aplicatii mai stabile.
+
+3.16. Git si organizarea evolutiei proiectului
+
+Desi nu este o tehnologie de rulare a aplicatiei, Git este important in procesul de dezvoltare. Un sistem de control al versiunilor permite urmarirea modificarilor, revenirea la versiuni anterioare si organizarea lucrului pe etape. Pentru un proiect de licenta, Git este util deoarece documenteaza evolutia aplicatiei si ofera siguranta in timpul dezvoltarii.
+
+Prin commit-uri succesive, pot fi separate etapele importante ale proiectului: configurarea initiala, crearea bazei de date, implementarea autentificarii, dezvoltarea zonei publice, realizarea panoului agentului si implementarea zonei administratorului. Aceasta organizare ajuta si la prezentarea contributiei personale, deoarece se poate observa progresul aplicatiei.
+
+Git este util si pentru protejarea impotriva pierderii modificarilor. In timpul dezvoltarii unei aplicatii, pot aparea erori sau schimbari care trebuie corectate. Avand istoricul modificarilor, dezvoltatorul poate compara versiuni si poate identifica mai usor cauza unei probleme.
+
+In contextul lucrarii, Git completeaza partea tehnica printr-o practica standard de dezvoltare software. Chiar daca utilizatorul final nu interactioneaza cu Git, folosirea sa arata o abordare organizata si profesionala a procesului de implementare.
+
+3.17. Comparatie intre tehnologii posibile
+
+Pentru realizarea aplicatiei existau mai multe variante tehnologice posibile. Alegerea finala a fost facuta tinand cont de obiectivele proiectului, de simplitate, de compatibilitatea intre componente si de usurinta prezentarii in lucrare.
+
+Pentru frontend, o alternativa la React si Next.js ar fi fost o aplicatie React simpla folosind Vite. Aceasta ar fi fost rapida si usor de configurat pentru interfata, dar ar fi necesitat un backend separat pentru rutele API si autentificare. Next.js a fost preferat deoarece ofera intr-un singur proiect atat pagini, cat si logica server-side.
+
+O alta alternativa ar fi fost folosirea Angular sau Vue. Angular ofera o structura puternica si completa, dar poate fi mai complex pentru un proiect cu dimensiune controlata. Vue este flexibil si usor de invatat, dar in acest proiect React si Next.js au fost considerate mai potrivite datorita integrarii bune cu TypeScript si ecosistemului larg.
+
+Pentru stilizare, o alternativa la Bootstrap ar fi fost Tailwind CSS. Tailwind ofera control foarte bun asupra designului, dar presupune folosirea unui numar mare de clase utilitare si o abordare diferita a stilizarii. Bootstrap a fost ales deoarece permite construirea rapida a unei interfete simple si consecvente, potrivita pentru cerintele proiectului.
+
+Pentru baza de date, o alternativa ar fi fost MySQL sau SQLite. SQLite este simplu si util pentru prototipuri, dar nu este la fel de potrivit pentru simularea unei aplicatii web multi-utilizator. MySQL este o solutie relationala populara, insa PostgreSQL ofera tipuri avansate, constrangeri puternice si suport bun pentru proiecte moderne. De aceea, PostgreSQL a fost ales ca solutie principala.
+
+Pentru accesul la baza de date, o alternativa ar fi fost folosirea unui ORM. Un ORM poate reduce cantitatea de SQL scrisa manual, dar introduce propriile concepte si poate ascunde detaliile interogarilor. In Max Imob, biblioteca pg ofera o legatura directa cu PostgreSQL si permite explicarea clara a operatiilor asupra datelor.
+
+[PLACEHOLDER TABEL 3.1 - Comparatie intre Next.js, React simplu cu Vite, Angular si Vue pentru scopul proiectului.]
+
+3.18. Avantajele stivei tehnologice alese
+
+Stiva tehnologica aleasa pentru Max Imob are mai multe avantaje. Primul avantaj este coerenta. Next.js, React si TypeScript functioneaza foarte bine impreuna, iar Node.js permite rularea partii de server in acelasi ecosistem de limbaj. Aceasta coerenta reduce complexitatea proiectului.
+
+Al doilea avantaj este simplitatea arhitecturii. Prin folosirea Next.js, proiectul poate include atat pagini, cat si rute API. Nu este necesara mentinerea a doua aplicatii complet separate pentru frontend si backend. Pentru o lucrare de licenta, aceasta decizie ajuta la pastrarea claritatii si la reducerea efortului de configurare.
+
+Al treilea avantaj este siguranta datelor si a autentificarii. PostgreSQL ofera constrangeri relationale, JWT permite autentificarea utilizatorilor interni, iar bcryptjs protejeaza parolele. Impreuna, aceste tehnologii sustin cerintele de securitate definite in analiza cerintelor.
+
+Al patrulea avantaj este usurinta dezvoltarii interfetei. Bootstrap ofera componente si clase responsive, iar React permite structurarea UI-ului in componente reutilizabile. Aceasta combinatie permite realizarea unei interfete curate, fara a investi prea mult timp in stilizare manuala.
+
+Al cincilea avantaj este mentenabilitatea. TypeScript, ESLint si organizarea modulara a proiectului ajuta la pastrarea unui cod mai usor de citit si verificat. Acest lucru este important atat pentru dezvoltarea curenta, cat si pentru eventuale extinderi viitoare.
+
+3.19. Limitari ale tehnologiilor alese
+
+Orice alegere tehnologica presupune si anumite limitari. In cazul Next.js, una dintre limitarile posibile este faptul ca framework-ul are multe concepte proprii: Server Components, Client Components, rute API, layout-uri si mecanisme de randare. Pentru un dezvoltator incepator, aceste concepte pot necesita timp de invatare. Totusi, pentru proiectul Max Imob, beneficiile organizarii integrate depasesc aceasta dificultate.
+
+React ofera flexibilitate mare, dar nu impune singur o arhitectura stricta. Din acest motiv, proiectul trebuie organizat cu atentie, astfel incat componentele sa nu devina prea mari si logica sa nu fie amestecata inutil cu prezentarea. Regulile proiectului privind componentele mici si reutilizabile ajuta la reducerea acestui risc.
+
+Bootstrap simplifica stilizarea, dar poate conduce la interfete asemanatoare daca nu este personalizat deloc. In Max Imob, acest lucru nu este o problema majora, deoarece scopul este o interfata curata si functionala, nu un design complex. Totusi, CSS-ul propriu poate fi folosit pentru ajustari unde este necesar.
+
+Folosirea directa a bibliotecii pg inseamna ca interogarile SQL trebuie scrise manual. Aceasta ofera control, dar cere atentie la parametri, validare si consistenta. Un ORM ar putea automatiza unele operatii, insa ar introduce complexitate suplimentara. Pentru proiectul curent, pg ramane o alegere potrivita.
+
+JWT este util pentru autentificare, dar trebuie folosit corect. Tokenurile trebuie semnate cu un secret protejat, trebuie sa aiba o durata de viata adecvata si trebuie stocate in mod sigur. Stocarea in cookie HTTP-only reduce riscurile, dar nu elimina complet nevoia de verificare atenta a rutelor private.
+
+3.20. Concluzii
+
+Tehnologiile folosite in aplicatia Max Imob au fost alese pentru a sustine dezvoltarea unei platforme web complete, dar simple si usor de explicat. Next.js ofera cadrul principal pentru organizarea paginilor si a logicii server-side, React permite construirea interfetei prin componente, iar TypeScript contribuie la siguranta si claritatea codului.
+
+Bootstrap, HTML si CSS sustin realizarea unei interfete responsive si usor de utilizat. Node.js asigura mediul de executie pentru partea de server, iar PostgreSQL ofera o baza de date relationala potrivita pentru entitatile aplicatiei. Biblioteca pg permite comunicarea directa cu baza de date, in timp ce JWT si bcryptjs raspund cerintelor de autentificare si protectie a parolelor.
+
+Stiva tehnologica aleasa respecta principiul simplitatii si evita introducerea unor solutii prea complexe pentru scopul proiectului. In acelasi timp, tehnologiile sunt suficient de moderne si relevante pentru a demonstra competente importante in dezvoltarea aplicatiilor web: interfete responsive, componente reutilizabile, tipare statica, persistenta relationala, autentificare securizata si organizare clara a codului.
+
+Prin urmare, capitolul de fata stabileste fundamentul tehnologic pentru proiectarea si implementarea descrise in capitolele urmatoare. In capitolul urmator, aceste tehnologii vor fi puse in legatura cu arhitectura concreta a sistemului, structura bazei de date, rutele aplicatiei si fluxurile principale dintre utilizator, server si baza de date.

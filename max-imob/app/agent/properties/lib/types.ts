@@ -13,6 +13,7 @@ export type Property = {
   title: string;
   description: string;
   price: number;
+  cityId: string;
   city: string;
   address: string;
   propertyType: PropertyType;
@@ -25,11 +26,25 @@ export type Property = {
   images: PropertyImage[];
 };
 
+export type City = {
+  id: string;
+  name: string;
+  countyCode: string;
+};
+
 export type PropertiesResponse = {
   success: boolean;
   data: {
     properties?: Property[];
     property?: Property;
+  } | null;
+  error: string | null;
+};
+
+export type CitiesResponse = {
+  success: boolean;
+  data: {
+    cities?: City[];
   } | null;
   error: string | null;
 };

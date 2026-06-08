@@ -1,0 +1,384 @@
+CAPITOLUL 6
+TESTARE
+
+6.1. Introducere
+
+Testarea aplicatiei reprezinta etapa prin care se verifica daca sistemul implementat respecta cerintele stabilite in analiza initiala si daca functioneaza corect in scenarii apropiate de utilizarea reala. Pentru aplicatia Max Imob, testarea a urmarit validarea celor trei zone principale: zona publica, zona agentului si zona administratorului. De asemenea, au fost verificate autentificarea, autorizarea, validarea formularelor, interactiunea cu baza de date si raspunsurile API.
+
+Aplicatia dezvoltata este o platforma web full-stack, ceea ce inseamna ca testarea nu se limiteaza la verificarea interfetei. Fiecare flux important implica mai multe componente: pagina React, ruta API, serviciul server-side si baza de date PostgreSQL. Din acest motiv, testarea a fost realizata atat din perspectiva utilizatorului, cat si din perspectiva comportamentului intern al sistemului.
+
+Scopul testarii nu a fost doar identificarea erorilor, ci si confirmarea faptului ca regulile de business sunt respectate. De exemplu, un utilizator public trebuie sa poata vedea proprietatile publicate, dar nu trebuie sa aiba acces la panoul agentului. Un agent trebuie sa isi poata administra propriile proprietati, dar nu trebuie sa poata modifica proprietatile altui agent. Administratorul trebuie sa poata gestiona agentii, dar nu proprietatile.
+
+In acest capitol sunt prezentate strategia de testare, mediul de testare, scenariile functionale, testarea validarilor, testarea securitatii, testarea bazei de date, testarea interfetei si concluziile obtinute. Pentru fiecare zona sunt descrise actiunile efectuate, rezultatele asteptate si rezultatele observate.
+
+[PLACEHOLDER FIGURA 6.1 - Captura din aplicatie in timpul testarii listei de proprietati.]
+
+6.2. Strategia de testare
+
+Strategia de testare a fost aleasa tinand cont de dimensiunea proiectului si de scopul lucrarii de licenta. Aplicatia nu este un produs comercial complex, ci un sistem academic functional, construit pentru a demonstra analiza, proiectarea si implementarea unei platforme imobiliare. Prin urmare, testarea s-a concentrat pe scenarii relevante si pe verificarea fluxurilor principale.
+
+Au fost folosite mai multe tipuri de testare. Primul tip este testarea functionala, prin care s-a verificat daca fiecare functionalitate se comporta conform cerintelor. Al doilea tip este testarea de validare, prin care s-a verificat daca sistemul respinge datele invalide. Al treilea tip este testarea de securitate, prin care s-a verificat accesul pe baza de rol. Al patrulea tip este testarea interfetei, prin care s-a verificat daca paginile sunt clare si utilizabile.
+
+Testarea a fost realizata manual, prin rularea aplicatiei si parcurgerea scenariilor principale. Aceasta metoda este potrivita pentru un proiect de licenta, deoarece permite verificarea directa a fluxurilor si pregatirea pentru demonstrarea aplicatiei in fata comisiei. In plus, au fost folosite verificari tehnice precum rularea linting-ului si construirea aplicatiei.
+
+Scenariile de testare au fost construite pornind de la cerintele definite in capitolul 2. Pentru fiecare rol au fost identificate actiunile principale. Pentru utilizatorul public: vizualizare proprietati, filtrare, detalii si trimitere mesaj. Pentru agent: login, creare proprietate, editare, activare/dezactivare si vizualizare mesaje. Pentru administrator: login, creare agent, editare si dezactivare.
+
+Un principiu important al testarii a fost verificarea cazurilor pozitive si negative. Cazurile pozitive confirma ca sistemul functioneaza cand datele sunt corecte. Cazurile negative confirma ca sistemul respinge actiunile gresite sau neautorizate. Ambele categorii sunt necesare pentru validarea unui sistem web.
+
+6.3. Mediul de testare
+
+Testarea aplicatiei Max Imob a fost realizata intr-un mediu local de dezvoltare. Aplicatia ruleaza folosind Node.js si Next.js, iar baza de date este PostgreSQL. Dependentele sunt instalate prin npm, iar scripturile principale sunt definite in package.json.
+
+Pentru rularea aplicatiei in mod dezvoltare se foloseste comanda npm run dev. Aceasta porneste serverul Next.js si permite accesarea aplicatiei in browser. Pentru verificarea codului se foloseste comanda npm run lint, iar pentru verificarea construirii aplicatiei se poate folosi npm run build.
+
+Baza de date este pregatita prin aplicarea migratiilor SQL din directorul db/migrations. Aceste migratii creeaza tabelele users, properties, property_images si messages, impreuna cu tipurile enumerate si indecsii necesari. Datele de conectare sunt configurate prin variabile de mediu.
+
+Pentru testare au fost folosite conturi cu roluri diferite. Administratorul initial este creat prin migrarea bazei de date. Agentii pot fi creati din panoul administratorului. Pentru testarea zonei publice nu este necesar niciun cont, deoarece utilizatorii publici nu se autentifica.
+
+Browserul a fost folosit pentru verificarea interfetei si a fluxurilor de utilizare. In plus, raspunsurile API pot fi verificate prin instrumentele de dezvoltare ale browserului, in special in sectiunea Network, unde se pot observa cererile, statusurile HTTP si raspunsurile JSON.
+
+[PLACEHOLDER TABEL 6.1 - Configurarea mediului de testare: sistem local, Node.js, Next.js, PostgreSQL, browser, comenzi npm.]
+
+6.4. Testarea pornirii aplicatiei
+
+Primul pas al testarii a fost verificarea pornirii aplicatiei. Aceasta verificare este importanta deoarece orice scenariu functional depinde de capacitatea sistemului de a porni corect si de a se conecta la baza de date.
+
+Pentru pornirea in modul dezvoltare se ruleaza npm run dev. Rezultatul asteptat este pornirea serverului Next.js fara erori critice si afisarea adresei locale la care poate fi accesata aplicatia. Dupa pornire, pagina principala trebuie sa fie disponibila in browser.
+
+Au fost verificate si dependentele proiectului. package.json include Next.js, React, TypeScript, Bootstrap, pg, bcryptjs si jsonwebtoken. Aceste dependente sunt necesare pentru functionarea interfetei, a bazei de date si a autentificarii.
+
+Un alt pas a fost verificarea existentei variabilelor de mediu. Daca lipseste JWT_SECRET, autentificarea nu poate genera tokenul. Daca lipsesc datele de conectare la PostgreSQL, serviciile care interogheaza baza de date nu pot functiona. Prin urmare, configurarea .env este o conditie importanta pentru testare.
+
+Rezultatul asteptat al acestui test este ca aplicatia se incarca fara erori, pagina principala este afisata, iar rutele publice pot fi accesate. Daca apar erori de configurare, acestea trebuie rezolvate inainte de testarea functionalitatilor.
+
+6.5. Testarea migratiilor bazei de date
+
+Testarea bazei de date incepe cu verificarea aplicarii migratiilor SQL. Fisierele din db/migrations trebuie rulate in ordinea numerotarii. Aceasta ordine este importanta deoarece unele migratii depind de structuri create anterior.
+
+Prima verificare este existenta tabelei users si a tipului user_role. Tabela trebuie sa contina campurile necesare pentru autentificare si roluri. De asemenea, trebuie verificat ca emailul este unic si ca exista campul is_active.
+
+A doua verificare este existenta tabelei properties. Aceasta trebuie sa contina relatia cu users prin agent_id, campurile pentru datele proprietatii si constrangerile pentru valori numerice. Pretul nu trebuie sa accepte valori negative, iar suprafata trebuie sa fie mai mare decat zero.
+
+A treia verificare este existenta tabelei property_images. Aceasta trebuie sa fie legata de properties si sa permita mai multe imagini pentru aceeasi proprietate. Relatia ON DELETE CASCADE trebuie sa elimine imaginile asociate atunci cand proprietatea este stearsa.
+
+A patra verificare este existenta tabelei messages. Aceasta trebuie sa fie legata de properties si users, pentru ca fiecare mesaj sa poata fi asociat unei proprietati si unui agent. Campul status trebuie sa aiba valoarea initiala unread.
+
+A cincea verificare este existenta campului offer_type in tabela properties. Acest camp este adaugat printr-o migrare separata si permite diferentierea intre vanzare si inchiriere.
+
+Rezultatul asteptat este ca toate tabelele si relatiile exista, iar baza de date poate sustine fluxurile aplicatiei. Daca o migrare lipseste sau este aplicata in ordine gresita, aplicatia poate genera erori la interogari.
+
+6.6. Testarea autentificarii
+
+Autentificarea a fost testata pentru cele doua roluri interne: administrator si agent. Scopul testului este confirmarea faptului ca utilizatorii validi pot intra in sistem, iar datele gresite sunt respinse.
+
+Primul scenariu este autentificarea administratorului cu email si parola corecte. Utilizatorul acceseaza pagina /login, introduce datele si trimite formularul. Rezultatul asteptat este crearea cookie-ului auth_token si redirectionarea catre zona /admin.
+
+Al doilea scenariu este autentificarea agentului cu date corecte. Agentul introduce emailul si parola create de administrator. Rezultatul asteptat este autentificarea cu succes si redirectionarea catre /agent.
+
+Al treilea scenariu este autentificarea cu parola gresita. Sistemul trebuie sa respinga cererea si sa afiseze mesaj de eroare. Nu trebuie creat cookie de autentificare, iar utilizatorul nu trebuie redirectionat catre zone private.
+
+Al patrulea scenariu este autentificarea cu email inexistent. Rezultatul asteptat este acelasi tip de eroare ca la parola gresita. Aceasta abordare este mai sigura deoarece nu indica explicit daca emailul exista sau nu in baza de date.
+
+Al cincilea scenariu este autentificarea unui agent dezactivat. Administratorul dezactiveaza agentul, apoi agentul incearca login. Rezultatul asteptat este respingerea autentificarii, deoarece serviciul loginUser verifica isActive.
+
+Testarea autentificarii confirma ca bcryptjs verifica parolele, JWT este generat doar pentru utilizatori validi, iar cookie-ul HTTP-only este setat dupa login reusit.
+
+[PLACEHOLDER FIGURA 6.2 - Captura cu login reusit si redirectionare catre panoul potrivit.]
+
+6.7. Testarea autorizarii
+
+Autorizarea a fost testata pentru a verifica daca utilizatorii pot accesa doar zonele corespunzatoare rolului lor. Aceasta testare este importanta deoarece aplicatia contine date si actiuni private.
+
+Primul scenariu este accesarea unei rute de administrator fara autentificare. Utilizatorul neautentificat incearca sa apeleze API-ul /api/agents. Rezultatul asteptat este raspuns 401, deoarece autentificarea este necesara.
+
+Al doilea scenariu este accesarea unei rute de administrator de catre un agent. Agentul autentificat incearca sa apeleze /api/agents. Rezultatul asteptat este raspuns 403, deoarece rolul agent nu are drept de administrare a agentilor.
+
+Al treilea scenariu este accesarea unei rute de agent fara autentificare. Un utilizator public incearca sa creeze o proprietate prin /api/properties cu metoda POST. Rezultatul asteptat este respingerea cererii, deoarece requireAgent cere sesiune valida.
+
+Al patrulea scenariu este incercarea unui agent de a modifica proprietatea altui agent. Cererea trimisa catre /api/properties/[id] trebuie respinsa daca agent_id din baza de date nu corespunde cu userId din token. Rezultatul asteptat este 404 sau mesaj ca proprietatea nu a fost gasita.
+
+Al cincilea scenariu este accesarea listei de mesaje a altui agent. API-ul /api/agent/messages foloseste agentId din sesiune, nu din parametri trimisi de client. Rezultatul asteptat este ca agentul vede doar mesajele proprii.
+
+Aceste teste confirma ca autorizarea nu se bazeaza doar pe interfata, ci este aplicata la nivel de API si servicii.
+
+6.8. Testarea zonei publice
+
+Zona publica a fost testata din perspectiva unui utilizator fara cont. Scopul este verificarea accesului la informatiile despre proprietati si a experientei de navigare.
+
+Primul scenariu este accesarea paginii principale. Rezultatul asteptat este afisarea paginii Max Imob, cu navigatie catre proprietati si continut introductiv. Pagina trebuie sa se incarce fara autentificare.
+
+Al doilea scenariu este accesarea listei de proprietati la ruta /properties. Rezultatul asteptat este afisarea proprietatilor publicate si active. Proprietatile in ciorna sau inactive nu trebuie sa fie afisate.
+
+Al treilea scenariu este afisarea unei liste goale. Daca nu exista proprietati publicate, aplicatia trebuie sa afiseze un mesaj clar sau o stare goala, nu sa produca eroare. Aceasta situatie este importanta la inceputul utilizarii aplicatiei.
+
+Al patrulea scenariu este deschiderea paginii de detalii pentru o proprietate. Utilizatorul selecteaza o proprietate din lista. Rezultatul asteptat este afisarea informatiilor complete, a imaginilor si a optiunii de contactare a agentului.
+
+Al cincilea scenariu este accesarea unei proprietati inexistente. Rezultatul asteptat este afisarea unei stari de eroare sau returnarea unui raspuns 404. Sistemul nu trebuie sa afiseze date incorecte.
+
+Testarea zonei publice confirma ca utilizatorii pot consulta ofertele fara autentificare, conform regulii principale a proiectului.
+
+[PLACEHOLDER FIGURA 6.3 - Captura cu lista publica de proprietati.]
+
+6.9. Testarea filtrarii proprietatilor
+
+Filtrarea proprietatilor a fost testata pentru a verifica daca utilizatorul poate restrange lista de rezultate. Filtrele principale sunt orasul, tipul proprietatii, tipul ofertei si numarul de dormitoare.
+
+Primul scenariu este filtrarea dupa oras. Utilizatorul introduce un oras existent si trimite formularul. Rezultatul asteptat este afisarea proprietatilor din acel oras sau a celor care contin textul introdus, deoarece interogarea foloseste ILIKE.
+
+Al doilea scenariu este filtrarea dupa tipul proprietatii. Utilizatorul selecteaza apartament, casa, teren sau comercial. Rezultatul asteptat este afisarea doar a proprietatilor cu tipul selectat.
+
+Al treilea scenariu este filtrarea dupa tipul ofertei. Utilizatorul selecteaza vanzare sau inchiriere. Rezultatul asteptat este afisarea ofertelor corespunzatoare.
+
+Al patrulea scenariu este filtrarea dupa numarul de dormitoare. Utilizatorul selecteaza sau introduce o valoare acceptata. Rezultatul asteptat este afisarea proprietatilor care au acel numar de dormitoare.
+
+Al cincilea scenariu este resetarea filtrelor. Utilizatorul apasa reset, iar aplicatia trebuie sa goleasca filtrele si sa reincarce lista publica. Rezultatul asteptat este revenirea la toate proprietatile publicate si active.
+
+Aceste teste confirma ca filtrele sunt transmise corect catre API, validate si aplicate in interogarile SQL.
+
+6.10. Testarea formularului de contact
+
+Formularul de contact este un flux important deoarece transforma interesul utilizatorului public intr-un mesaj pentru agent. Testarea acestui formular a urmarit atat cazurile valide, cat si cele invalide.
+
+Primul scenariu este trimiterea unui mesaj valid. Utilizatorul completeaza numele, emailul, telefonul si mesajul pentru o proprietate publicata. Rezultatul asteptat este salvarea mesajului in tabela messages si afisarea unui mesaj de succes in interfata.
+
+Al doilea scenariu este trimiterea formularului cu nume gol. Sistemul trebuie sa respinga cererea si sa afiseze eroare de validare. Mesajul nu trebuie salvat in baza de date.
+
+Al treilea scenariu este trimiterea unui email invalid. Sistemul trebuie sa respinga cererea, deoarece agentul are nevoie de date de contact corecte.
+
+Al patrulea scenariu este trimiterea unui mesaj gol. Sistemul trebuie sa refuze cererea deoarece un lead fara continut nu este util.
+
+Al cincilea scenariu este trimiterea unui mesaj pentru o proprietate inexistenta. API-ul trebuie sa returneze 404. Mesajul nu trebuie salvat.
+
+Al saselea scenariu este trimiterea unui mesaj pentru o proprietate care nu este publicata. API-ul trebuie sa returneze eroare, deoarece proprietatea nu este disponibila public.
+
+Testarea confirma ca formularul public este protejat prin validare server-side si ca mesajele sunt asociate corect cu proprietatea si agentul.
+
+[PLACEHOLDER FIGURA 6.4 - Captura cu formularul de contact si mesaj de succes.]
+
+6.11. Testarea panoului administratorului
+
+Panoul administratorului a fost testat pentru verificarea gestionarii agentilor. Aceasta zona trebuie sa fie accesibila doar administratorului.
+
+Primul scenariu este afisarea listei de agenti. Administratorul autentificat acceseaza /admin/agents. Rezultatul asteptat este incarcarea listei de agenti din baza de date, fara afisarea parolelor sau hash-urilor.
+
+Al doilea scenariu este crearea unui agent nou. Administratorul completeaza numele, emailul, telefonul si parola. Rezultatul asteptat este salvarea agentului in tabela users cu rol agent si is_active true. Lista trebuie sa fie actualizata dupa creare.
+
+Al treilea scenariu este crearea unui agent cu email deja existent. Sistemul trebuie sa respinga cererea si sa afiseze eroare. Aceasta verifica functionarea constrangerii UNIQUE si tratarea erorii de tip unique violation.
+
+Al patrulea scenariu este editarea unui agent. Administratorul modifica numele, telefonul sau statusul. Rezultatul asteptat este actualizarea in baza de date si reincarcarea listei.
+
+Al cincilea scenariu este dezactivarea unui agent. Administratorul apasa actiunea de dezactivare. Rezultatul asteptat este setarea campului is_active la false. Agentul dezactivat nu trebuie sa se mai poata autentifica.
+
+Al saselea scenariu este reactivarea unui agent. Administratorul reactiveaza contul, iar agentul trebuie sa poata intra din nou in sistem cu datele corecte.
+
+Testarea panoului administratorului confirma ca rolul admin poate controla accesul agentilor fara a gestiona proprietati.
+
+6.12. Testarea panoului agentului
+
+Panoul agentului a fost testat pentru verificarea administrarii proprietatilor. Aceasta zona este accesibila doar utilizatorilor cu rol agent.
+
+Primul scenariu este afisarea proprietatilor agentului. Agentul autentificat acceseaza /agent/properties. Rezultatul asteptat este afisarea doar a proprietatilor unde agent_id corespunde agentului curent.
+
+Al doilea scenariu este crearea unei proprietati valide. Agentul completeaza toate campurile obligatorii, adauga imagini si trimite formularul. Rezultatul asteptat este salvarea proprietatii si aparitia ei in lista agentului.
+
+Al treilea scenariu este crearea unei proprietati cu date invalide. De exemplu, pret negativ, suprafata goala sau titlu lipsa. Sistemul trebuie sa respinga cererea si sa nu salveze proprietatea.
+
+Al patrulea scenariu este editarea unei proprietati proprii. Agentul selecteaza proprietatea, modifica datele si salveaza. Rezultatul asteptat este actualizarea informatiilor si reincarcarea listei.
+
+Al cincilea scenariu este dezactivarea unei proprietati. Agentul trimite actiunea de dezactivare, iar sistemul seteaza is_active la false. Proprietatea ramane in panoul agentului, dar nu mai apare public.
+
+Al saselea scenariu este reactivarea unei proprietati. Agentul reactiveaza proprietatea. Daca statusul este publicata, proprietatea poate aparea din nou in zona publica.
+
+Aceste teste confirma ca agentul isi poate administra proprietatile, dar doar in limitele rolului sau.
+
+[PLACEHOLDER FIGURA 6.5 - Captura cu formularul de proprietate in panoul agentului.]
+
+6.13. Testarea imaginilor proprietatilor
+
+Imaginile proprietatilor au fost testate deoarece acestea implica folosirea FormData, validare de fisiere si salvarea datelor in tabela property_images.
+
+Primul scenariu este crearea unei proprietati cu imagini valide. Agentul selecteaza una sau mai multe imagini si trimite formularul. Rezultatul asteptat este salvarea proprietatii si a inregistrarilor din property_images.
+
+Al doilea scenariu este crearea unei proprietati fara imagini, atunci cand imaginile sunt obligatorii. Sistemul trebuie sa returneze eroare de validare si sa nu salveze proprietatea.
+
+Al treilea scenariu este actualizarea unei proprietati fara imagini noi. Deoarece imaginile pot fi optionale la actualizare, sistemul trebuie sa permita modificarea datelor proprietatii fara obligarea agentului sa incarce din nou imaginile.
+
+Al patrulea scenariu este verificarea afisarii imaginilor in pagina publica. Proprietatea publicata trebuie sa afiseze galeria corespunzatoare. Daca exista mai multe imagini, acestea trebuie prezentate in ordinea stabilita.
+
+Al cincilea scenariu este stergerea sau dezactivarea unei proprietati. Daca proprietatea este stearsa fizic, imaginile trebuie eliminate prin ON DELETE CASCADE. Daca este doar dezactivata logic, imaginile raman asociate proprietatii.
+
+Testarea imaginilor confirma ca datele vizuale sunt legate corect de proprietati si ca formularul poate transmite fisiere catre server.
+
+6.14. Testarea mesajelor agentului
+
+Mesajele agentului au fost testate pentru a confirma ca lead-urile trimise de utilizatorii publici ajung in panoul agentului corect.
+
+Primul scenariu este trimiterea unui mesaj pentru o proprietate a agentului A. Dupa trimitere, agentul A acceseaza /agent/messages. Rezultatul asteptat este afisarea mesajului in lista sa.
+
+Al doilea scenariu este autentificarea unui alt agent, agentul B. Acesta acceseaza /agent/messages. Rezultatul asteptat este ca mesajul agentului A sa nu fie afisat. Aceasta verifica filtrarea dupa agent_id.
+
+Al treilea scenariu este verificarea informatiilor mesajului. Lista trebuie sa afiseze numele persoanei, emailul, telefonul, continutul mesajului, statusul si titlul proprietatii asociate.
+
+Al patrulea scenariu este verificarea ordinii mesajelor. Mesajele trebuie afisate descrescator dupa data crearii, astfel incat cele mai noi sa fie vizibile primele.
+
+Al cincilea scenariu este verificarea statusului initial. Mesajele nou create trebuie sa aiba status unread. Aceasta permite identificarea mesajelor noi si pregateste sistemul pentru functionalitati viitoare de marcare ca citit.
+
+Testarea mesajelor confirma fluxul complet dintre utilizatorul public si agent.
+
+6.15. Testarea validarilor server-side
+
+Validarile server-side au fost testate pentru toate formularele importante. Aceasta testare este necesara deoarece validarile din frontend pot fi ocolite prin cereri manuale catre API.
+
+Pentru login, au fost testate email gol, email invalid si parola goala. Rezultatul asteptat este respingerea autentificarii si returnarea unui mesaj de eroare.
+
+Pentru agenti, au fost testate nume gol, email invalid, parola prea scurta si email duplicat. Sistemul trebuie sa respinga datele invalide si sa creeze agentul doar cand toate conditiile sunt indeplinite.
+
+Pentru proprietati, au fost testate titlu gol, descriere goala, pret negativ, suprafata zero, tip de proprietate invalid, status invalid si tip oferta invalid. Sistemul trebuie sa returneze status 400 si sa nu modifice baza de date.
+
+Pentru filtrele publice, au fost testate valori nepermise pentru propertyType si offerType. Sistemul trebuie sa respinga valorile invalide inainte de interogarea bazei de date.
+
+Pentru mesaje, au fost testate nume gol, email invalid, telefon gol si mesaj gol. Sistemul trebuie sa respinga cererea si sa nu creeze lead-ul.
+
+Aceste teste confirma ca validarea este aplicata la nivel de server si ca baza de date nu primeste date care incalca regulile aplicatiei.
+
+6.16. Testarea raspunsurilor API
+
+Raspunsurile API au fost testate pentru a verifica structura standardizata. Fiecare raspuns trebuie sa contina campurile success, data si error.
+
+Pentru cereri reusite, success trebuie sa fie true, data trebuie sa contina rezultatul, iar error trebuie sa fie null. Exemple de cereri reusite sunt listarea proprietatilor publice, login reusit, crearea unui agent si salvarea unui mesaj.
+
+Pentru cereri nereusite, success trebuie sa fie false, data trebuie sa fie null, iar error trebuie sa contina mesajul de eroare. Exemple sunt login invalid, acces neautorizat, date invalide si proprietate inexistenta.
+
+Au fost verificate si statusurile HTTP. Datele invalide trebuie sa returneze 400, lipsa autentificarii 401, accesul interzis 403, resursele inexistente 404, iar erorile interne 500. Aceasta diferentiere este importanta pentru frontend si pentru intelegerea problemelor.
+
+Testarea raspunsurilor API confirma ca interfata poate trata uniform rezultatele si ca mesajele de eroare sunt coerente.
+
+6.17. Testarea interfetei
+
+Interfata a fost testata prin parcurgerea paginilor principale in browser. Scopul a fost verificarea claritatii, responsive design-ului si feedback-ului oferit utilizatorului.
+
+Pagina principala trebuie sa fie usor de inteles si sa ofere acces la lista proprietatilor. Elementele de navigatie trebuie sa fie vizibile, iar continutul nu trebuie sa fie aglomerat.
+
+Lista proprietatilor trebuie sa afiseze cardurile intr-un mod lizibil. Pe ecrane mari, cardurile pot fi asezate pe mai multe coloane. Pe ecrane mici, acestea trebuie sa ramana usor de citit si sa nu depaseasca latimea ecranului.
+
+Formularele trebuie sa aiba etichete clare si campuri usor de completat. Butoanele trebuie sa indice actiunea pe care o realizeaza. In timpul salvarii, utilizatorul trebuie sa primeasca feedback prin stari de incarcare sau mesaje.
+
+Panoul administratorului trebuie sa separe clar formularul de creare/editare de lista agentilor. Panoul agentului trebuie sa permita identificarea proprietatilor si mesajelor fara confuzie.
+
+Mesajele de eroare si succes trebuie sa fie vizibile. De exemplu, dupa crearea unei proprietati, agentul trebuie sa vada un mesaj de confirmare. Daca formularul contine date invalide, eroarea trebuie afisata intr-un loc usor de observat.
+
+[PLACEHOLDER FIGURA 6.6 - Capturi comparative desktop si mobil pentru lista proprietatilor.]
+
+6.18. Testarea responsive
+
+Testarea responsive a verificat comportamentul aplicatiei pe dimensiuni diferite de ecran. Deoarece utilizatorii pot accesa platforma de pe telefon, interfata trebuie sa ramana functionala si pe dispozitive mobile.
+
+Pentru pagina publica de proprietati, s-a verificat ca filtrele si cardurile se aseaza corect pe ecrane mici. Campurile formularului trebuie sa fie usor de completat, iar cardurile nu trebuie sa produca scroll orizontal.
+
+Pentru pagina de detalii, s-a verificat ca imaginile, informatiile proprietatii si formularul de contact sunt afisate coerent. Continutul trebuie sa ramana lizibil, iar butoanele accesibile.
+
+Pentru panoul agentului, s-a verificat ca formularul si lista proprietatilor pot fi folosite pe ecrane mai mici. Deoarece panourile administrative contin mai multe date, este important ca elementele sa se aseze vertical atunci cand nu exista suficient spatiu.
+
+Pentru panoul administratorului, s-a verificat ca formularul de creare/editare si tabelul agentilor raman utilizabile. Daca tabelul are multe coloane, acesta trebuie sa fie prezentat intr-un mod care nu rupe layout-ul paginii.
+
+Rezultatul asteptat al testarii responsive este ca toate fluxurile principale pot fi folosite fara suprapuneri vizuale sau elemente inaccesibile.
+
+6.19. Testarea securitatii de baza
+
+Testarea securitatii de baza a urmarit verificarea masurilor implementate pentru protectia conturilor si a datelor.
+
+Primul test a fost verificarea parolelor. In baza de date, parolele trebuie sa fie salvate in campul password_hash, nu in text clar. La login, aplicatia foloseste bcrypt.compare pentru verificare.
+
+Al doilea test a fost verificarea cookie-ului de autentificare. Dupa login, cookie-ul auth_token trebuie sa fie setat si marcat HTTP-only. Aceasta setare il face inaccesibil prin JavaScript din browser.
+
+Al treilea test a fost verificarea accesului fara token. Cererile catre rute private trebuie sa fie respinse daca tokenul lipseste. Acest lucru se verifica prin stergerea cookie-ului sau prin accesarea API-ului fara autentificare.
+
+Al patrulea test a fost verificarea rolurilor. Agentul nu trebuie sa poata accesa API-ul administratorului. Administratorul nu trebuie sa fie tratat ca agent pentru operatii asupra proprietatilor.
+
+Al cincilea test a fost verificarea apartenentei datelor. Agentul nu trebuie sa poata modifica proprietatile altui agent. Aceasta verificare este realizata prin interogari care includ atat id-ul proprietatii, cat si agent_id.
+
+Al saselea test a fost verificarea inputului. Datele venite din formulare trebuie validate pe server, iar interogarile SQL trebuie sa foloseasca parametri. Aceasta reduce riscurile asociate inputului necontrolat.
+
+6.20. Testarea comenzilor tehnice
+
+Pe langa testarea manuala in browser, aplicatia poate fi verificata prin comenzi tehnice. Aceste comenzi ajuta la identificarea problemelor de cod sau configurare.
+
+Comanda npm run lint verifica regulile ESLint. Rezultatul asteptat este ca aplicatia sa nu contina erori de linting. Daca apar erori, acestea trebuie corectate deoarece pot indica importuri gresite, variabile nefolosite sau probleme de stil.
+
+Comanda npm run build verifica daca aplicatia poate fi construita pentru productie. Rezultatul asteptat este finalizarea build-ului fara erori. Aceasta comanda este importanta deoarece unele probleme apar doar la build, nu in timpul dezvoltarii.
+
+Comanda npm run dev porneste aplicatia in modul dezvoltare. Aceasta este folosita pentru testarea manuala in browser. Rezultatul asteptat este pornirea serverului si accesarea paginilor.
+
+Aceste comenzi nu inlocuiesc testarea functionala, dar ofera o verificare tehnica suplimentara. Ele confirma ca proiectul este coerent din punct de vedere al codului si al configurarii.
+
+[PLACEHOLDER TABEL 6.2 - Comenzi tehnice testate: npm run dev, npm run lint, npm run build.]
+
+6.21. Tabel de scenarii de testare
+
+Pentru organizarea testarii, scenariile principale pot fi sintetizate intr-un tabel. Acest tabel este util in lucrarea finala deoarece arata clar ce a fost verificat si care este rezultatul asteptat.
+
+Scenariul 1: autentificare administrator. Date de intrare: email si parola corecte. Rezultat asteptat: acces in /admin.
+
+Scenariul 2: autentificare agent. Date de intrare: email si parola corecte. Rezultat asteptat: acces in /agent.
+
+Scenariul 3: login invalid. Date de intrare: parola gresita. Rezultat asteptat: eroare si lipsa cookie-ului de autentificare.
+
+Scenariul 4: creare agent. Date de intrare: nume, email, telefon, parola. Rezultat asteptat: agent salvat si afisat in lista.
+
+Scenariul 5: creare agent cu email duplicat. Date de intrare: email existent. Rezultat asteptat: eroare de validare sau unicitate.
+
+Scenariul 6: creare proprietate. Date de intrare: formular complet valid. Rezultat asteptat: proprietate salvata si asociata agentului.
+
+Scenariul 7: creare proprietate invalida. Date de intrare: pret negativ sau titlu gol. Rezultat asteptat: cerere respinsa.
+
+Scenariul 8: filtrare proprietati. Date de intrare: oras sau tip oferta. Rezultat asteptat: lista filtrata.
+
+Scenariul 9: trimitere mesaj contact. Date de intrare: nume, email, telefon, mesaj. Rezultat asteptat: mesaj salvat cu status unread.
+
+Scenariul 10: acces neautorizat la API admin. Date de intrare: agent autentificat. Rezultat asteptat: status 403.
+
+Scenariul 11: mesaj agent. Date de intrare: agent autentificat. Rezultat asteptat: afisarea doar a mesajelor agentului.
+
+Scenariul 12: dezactivare proprietate. Date de intrare: actiune DELETE. Rezultat asteptat: is_active false si proprietatea nu mai apare public.
+
+[PLACEHOLDER TABEL 6.3 - Tabel complet cu scenarii, pasi, rezultat asteptat si rezultat obtinut.]
+
+6.22. Rezultatele testarii
+
+In urma testarii, fluxurile principale ale aplicatiei au fost validate. Utilizatorul public poate accesa lista proprietatilor, poate folosi filtrele, poate deschide pagina de detalii si poate trimite un mesaj catre agent. Acest flux confirma functionalitatea principala a platformei.
+
+Agentul poate sa se autentifice, sa isi vizualizeze proprietatile, sa creeze proprietati, sa le editeze, sa le activeze sau dezactiveze si sa vada mesajele primite. Testele au confirmat ca agentul vede doar datele proprii.
+
+Administratorul poate sa se autentifice, sa creeze agenti, sa editeze informatiile acestora si sa activeze sau dezactiveze conturi. Testele au confirmat ca agentii dezactivati nu se pot autentifica.
+
+Validarile server-side au functionat conform asteptarilor pentru datele invalide. Formularele nu salveaza date incomplete sau incorecte, iar API-ul returneaza mesaje de eroare. Raspunsurile API respecta structura standard cu success, data si error.
+
+Testele de securitate de baza au confirmat ca rutele private sunt protejate prin JWT si roluri. Cookie-ul de autentificare este HTTP-only, iar parolele sunt salvate sub forma de hash.
+
+Testarea interfetei a confirmat ca paginile sunt utilizabile si responsive. Totusi, ca in orice proiect software, pot exista imbunatatiri viitoare, precum adaugarea de teste automate, rafinarea mesajelor de eroare si extinderea testarii pe mai multe browsere.
+
+6.23. Limitari ale testarii
+
+Testarea realizata a fost in principal manuala. Aceasta este potrivita pentru validarea fluxurilor principale si pentru pregatirea demonstratiei aplicatiei, dar nu ofera aceeasi acoperire ca un set complet de teste automate.
+
+Nu au fost implementate teste unitare automate pentru fiecare functie de validare sau serviciu. Astfel de teste ar putea verifica rapid cazuri precum validarea emailurilor, conversia campurilor numerice sau raspunsurile serviciilor.
+
+Nu au fost implementate teste end-to-end automate. Un instrument precum Playwright sau Cypress ar putea automatiza fluxuri precum login, creare proprietate si trimitere mesaj. Aceste teste ar fi utile pentru regresie, mai ales daca proiectul ar fi extins.
+
+Testarea performantei a fost limitata la utilizarea normala a aplicatiei. Nu au fost realizate teste de incarcare cu multi utilizatori simultani, deoarece proiectul are scop academic si dimensiune controlata.
+
+Testarea securitatii a acoperit aspectele de baza, dar nu a inclus audituri avansate. Pentru o versiune comerciala, ar fi necesare verificari suplimentare privind atacurile XSS, CSRF, injectii, configurari de productie si gestionarea sesiunilor.
+
+Aceste limitari nu invalideaza rezultatele testarii, dar indica directii de imbunatatire pentru o versiune viitoare a aplicatiei.
+
+6.24. Concluzii
+
+Testarea aplicatiei Max Imob a confirmat functionarea fluxurilor principale definite in cerinte. Zona publica permite consultarea proprietatilor si trimiterea mesajelor, zona agentului permite administrarea proprietatilor si vizualizarea lead-urilor, iar zona administratorului permite gestionarea agentilor.
+
+Validarea datelor si autorizarea au fost puncte importante ale testarii. Sistemul respinge datele invalide si limiteaza accesul in functie de rol. Agentii nu pot gestiona datele altor agenti, iar utilizatorii publici nu pot accesa functionalitati private.
+
+Raspunsurile API, structura bazei de date si interfata au fost verificate prin scenarii concrete. Rezultatele arata ca aplicatia este stabila pentru fluxurile principale si poate fi demonstrata intr-un context academic.
+
+Desi testarea manuala a acoperit functionalitatile esentiale, o directie viitoare importanta este introducerea testelor automate. Acestea ar putea creste increderea in aplicatie si ar reduce riscul de regresii la modificari ulterioare.
+
+Prin testarea realizata, s-a confirmat ca implementarea respecta analiza cerintelor si proiectarea sistemului, pregatind astfel concluziile finale ale lucrarii.

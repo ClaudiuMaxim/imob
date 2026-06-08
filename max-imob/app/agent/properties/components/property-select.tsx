@@ -8,6 +8,7 @@ type PropertySelectProps = {
   name: string;
   onChange: (value: string) => void;
   options: PropertySelectOption[];
+  required?: boolean;
   value: string;
 };
 
@@ -16,6 +17,7 @@ export default function PropertySelect({
   name,
   onChange,
   options,
+  required = false,
   value,
 }: PropertySelectProps) {
   return (
@@ -28,6 +30,7 @@ export default function PropertySelect({
         id={name}
         name={name}
         onChange={(event) => onChange(event.target.value)}
+        required={required}
         value={value}
       >
         {options.map((option) => (

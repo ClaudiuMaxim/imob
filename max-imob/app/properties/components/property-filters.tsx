@@ -1,12 +1,14 @@
 import type { FormEvent } from "react";
+import type { City } from "../lib/types";
 
 type PropertyFiltersProps = {
   bedrooms: string;
-  city: string;
+  cities: City[];
+  cityId: string;
   offerType: string;
   isLoading: boolean;
   onBedroomsChange: (value: string) => void;
-  onCityChange: (value: string) => void;
+  onCityIdChange: (value: string) => void;
   onOfferTypeChange: (value: string) => void;
   onPropertyTypeChange: (value: string) => void;
   onReset: () => void;
@@ -24,10 +26,11 @@ const propertyTypeOptions = [
 
 export default function PropertyFilters({
   bedrooms,
-  city,
+  cities,
+  cityId,
   isLoading,
   onBedroomsChange,
-  onCityChange,
+  onCityIdChange,
   onOfferTypeChange,
   onPropertyTypeChange,
   onReset,
@@ -38,16 +41,22 @@ export default function PropertyFilters({
   return (
     <form className="row g-3 align-items-end" onSubmit={onSubmit}>
       <div className="col-md-4">
-        <label className="form-label" htmlFor="city">
+        <label className="form-label" htmlFor="cityId">
           Oras
         </label>
-        <input
-          className="form-control"
-          id="city"
-          onChange={(event) => onCityChange(event.target.value)}
-          placeholder="Ex: Bucuresti"
-          value={city}
-        />
+        <select
+          className="form-select"
+          id="cityId"
+          onChange={(event) => onCityIdChange(event.target.value)}
+          value={cityId}
+        >
+          <option value="">Toate orasele</option>
+          {cities.map((city) => (
+            <option key={city.id} value={city.id}>
+              {city.name} ({city.countyCode})
+            </option>
+          ))}
+        </select>
       </div>
       <div className="col-md-3">
         <label className="form-label" htmlFor="property-type">

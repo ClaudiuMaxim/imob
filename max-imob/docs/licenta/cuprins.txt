@@ -1,0 +1,165 @@
+CUPRINS
+
+CAPITOLUL 1. INTRODUCERE ........................................ pagina ___
+1.1. Contextul lucrarii .......................................... pagina ___
+1.2. Motivatia alegerii temei .................................... pagina ___
+1.3. Studiu comparativ cu aplicatii existente .................... pagina ___
+1.4. Prezentarea generala a aplicatiei ........................... pagina ___
+1.5. Obiectivele lucrarii ........................................ pagina ___
+1.6. Contributii personale ....................................... pagina ___
+1.7. Organizarea lucrarii ........................................ pagina ___
+
+CAPITOLUL 2. ANALIZA CERINTELOR ................................. pagina ___
+2.1. Rolul analizei cerintelor in dezvoltarea aplicatiei ......... pagina ___
+2.2. Descrierea generala a domeniului ............................ pagina ___
+2.3. Actorii sistemului .......................................... pagina ___
+2.4. Cerinte functionale pentru zona publica ..................... pagina ___
+2.5. Cerinte functionale pentru agent ............................ pagina ___
+2.6. Cerinte functionale pentru administrator .................... pagina ___
+2.7. Cerinte legate de autentificare si autorizare ............... pagina ___
+2.8. Cerinte de date si model conceptual ......................... pagina ___
+2.9. Reguli de business .......................................... pagina ___
+2.10. Cerinte nefunctionale ...................................... pagina ___
+2.11. Cerinte de interfata ....................................... pagina ___
+2.12. Scenarii principale de utilizare ........................... pagina ___
+2.13. Constrangeri si limitari ................................... pagina ___
+2.14. Riscuri si situatii limita ................................. pagina ___
+2.15. Criterii de acceptare ...................................... pagina ___
+2.16. Concluzii ale analizei cerintelor ......................... pagina ___
+
+CAPITOLUL 3. TEHNOLOGII UTILIZATE ............................... pagina ___
+3.1. Introducere ................................................. pagina ___
+3.2. Arhitectura tehnologica generala ............................ pagina ___
+3.3. Next.js ..................................................... pagina ___
+3.4. React ....................................................... pagina ___
+3.5. TypeScript .................................................. pagina ___
+3.6. HTML si CSS ................................................. pagina ___
+3.7. Bootstrap ................................................... pagina ___
+3.8. Node.js ..................................................... pagina ___
+3.9. PostgreSQL .................................................. pagina ___
+3.10. Biblioteca pg .............................................. pagina ___
+3.11. JSON si API REST ........................................... pagina ___
+3.12. Autentificare cu JWT ....................................... pagina ___
+3.13. bcryptjs si protectia parolelor ............................ pagina ___
+3.14. Variabile de mediu si configurare ......................... pagina ___
+3.15. ESLint si calitatea codului ............................... pagina ___
+3.16. Git si organizarea evolutiei proiectului .................. pagina ___
+3.17. Comparatie intre tehnologii posibile ....................... pagina ___
+3.18. Avantajele stivei tehnologice alese ....................... pagina ___
+3.19. Limitari ale tehnologiilor alese .......................... pagina ___
+3.20. Concluzii .................................................. pagina ___
+
+CAPITOLUL 4. PROIECTAREA SISTEMULUI ............................. pagina ___
+4.1. Introducere ................................................. pagina ___
+4.2. Principii generale de proiectare ............................ pagina ___
+4.3. Arhitectura generala a aplicatiei ........................... pagina ___
+4.4. Organizarea proiectului ..................................... pagina ___
+4.5. Proiectarea rutelor publice ................................. pagina ___
+4.6. Proiectarea zonei de autentificare ......................... pagina ___
+4.7. Proiectarea zonei administratorului ........................ pagina ___
+4.8. Proiectarea zonei agentului ................................ pagina ___
+4.9. Proiectarea rutelor API ..................................... pagina ___
+4.10. Proiectarea serviciilor .................................... pagina ___
+4.11. Proiectarea bazei de date ................................. pagina ___
+4.12. Relatii si cardinalitati ................................... pagina ___
+4.13. Proiectarea fluxului public de vizualizare a proprietatilor  pagina ___
+4.14. Proiectarea fluxului de trimitere a unui mesaj ............ pagina ___
+4.15. Proiectarea fluxului de administrare a proprietatilor ...... pagina ___
+4.16. Proiectarea fluxului de administrare a agentilor .......... pagina ___
+4.17. Proiectarea fluxului de vizualizare a mesajelor de catre agent pagina ___
+4.18. Proiectarea validarii datelor ............................. pagina ___
+4.19. Proiectarea securitatii .................................... pagina ___
+4.20. Proiectarea raspunsurilor API ............................. pagina ___
+4.21. Proiectarea interfetei ..................................... pagina ___
+4.22. Proiectarea componentelor frontend ........................ pagina ___
+4.23. Proiectarea gestionarii imaginilor ........................ pagina ___
+4.24. Proiectarea starilor proprietatilor ....................... pagina ___
+4.25. Proiectarea tipurilor de proprietati si oferte ............ pagina ___
+4.26. Proiectarea navigatiei ..................................... pagina ___
+4.27. Proiectarea tratarii erorilor ............................. pagina ___
+4.28. Proiectarea mentenabilitatii .............................. pagina ___
+4.29. Proiectarea posibilitatilor de extindere .................. pagina ___
+4.30. Concluzii .................................................. pagina ___
+
+CAPITOLUL 5. IMPLEMENTAREA APLICATIEI ........................... pagina ___
+5.1. Introducere ................................................. pagina ___
+5.2. Structura generala a proiectului ............................ pagina ___
+5.3. Configurarea aplicatiei Next.js ............................. pagina ___
+5.4. Implementarea bazei de date ................................. pagina ___
+5.5. Conectarea la PostgreSQL .................................... pagina ___
+5.6. Implementarea autentificarii ................................ pagina ___
+5.7. Implementarea sesiunii si autorizarii ....................... pagina ___
+5.8. Implementarea administrarii agentilor ....................... pagina ___
+5.9. Implementarea rutelor API pentru agenti ..................... pagina ___
+5.10. Implementarea administrarii proprietatilor ................. pagina ___
+5.11. Implementarea serviciului pentru proprietati ............... pagina ___
+5.12. Implementarea rutelor API pentru proprietati ............... pagina ___
+5.13. Implementarea imaginilor pentru proprietati ................ pagina ___
+5.14. Implementarea zonei publice ................................ pagina ___
+5.15. Implementarea paginii de detalii a proprietatii ............ pagina ___
+5.16. Implementarea formularului de contact ...................... pagina ___
+5.17. Implementarea serviciului pentru mesaje .................... pagina ___
+5.18. Implementarea panoului de mesaje pentru agent .............. pagina ___
+5.19. Implementarea validarii datelor ............................ pagina ___
+5.20. Implementarea raspunsurilor API ............................ pagina ___
+5.21. Implementarea interfetei cu Bootstrap ...................... pagina ___
+5.22. Implementarea componentelor client si server ............... pagina ___
+5.23. Implementarea filtrarii proprietatilor ..................... pagina ___
+5.24. Implementarea statusurilor si activarii proprietatilor ..... pagina ___
+5.25. Implementarea maparii datelor .............................. pagina ___
+5.26. Implementarea tratarii erorilor in frontend ................ pagina ___
+5.27. Implementarea tratarii erorilor in backend ................. pagina ___
+5.28. Implementarea securitatii .................................. pagina ___
+5.29. Implementarea paginilor protejate .......................... pagina ___
+5.30. Implementarea experientei mobile ........................... pagina ___
+5.31. Implementarea tipurilor TypeScript ......................... pagina ___
+5.32. Implementarea migratiilor si evolutia schemei .............. pagina ___
+5.33. Implementarea fluxului complet public-agent ................ pagina ___
+5.34. Implementarea fluxului administrator-agent ................. pagina ___
+5.35. Implementarea operatiilor asincrone ........................ pagina ___
+5.36. Implementarea reutilizarii codului ......................... pagina ___
+5.37. Probleme intampinate si solutii adoptate ................... pagina ___
+5.38. Concluzii .................................................. pagina ___
+
+CAPITOLUL 6. TESTARE ............................................ pagina ___
+6.1. Introducere ................................................. pagina ___
+6.2. Strategia de testare ........................................ pagina ___
+6.3. Mediul de testare ........................................... pagina ___
+6.4. Testarea pornirii aplicatiei ................................ pagina ___
+6.5. Testarea migratiilor bazei de date .......................... pagina ___
+6.6. Testarea autentificarii ..................................... pagina ___
+6.7. Testarea autorizarii ........................................ pagina ___
+6.8. Testarea zonei publice ...................................... pagina ___
+6.9. Testarea filtrarii proprietatilor ........................... pagina ___
+6.10. Testarea formularului de contact ........................... pagina ___
+6.11. Testarea panoului administratorului ........................ pagina ___
+6.12. Testarea panoului agentului ................................ pagina ___
+6.13. Testarea imaginilor proprietatilor ......................... pagina ___
+6.14. Testarea mesajelor agentului ............................... pagina ___
+6.15. Testarea validarilor server-side ........................... pagina ___
+6.16. Testarea raspunsurilor API ................................. pagina ___
+6.17. Testarea interfetei ........................................ pagina ___
+6.18. Testarea responsive ........................................ pagina ___
+6.19. Testarea securitatii de baza ............................... pagina ___
+6.20. Testarea comenzilor tehnice ................................ pagina ___
+6.21. Tabel de scenarii de testare ............................... pagina ___
+6.22. Rezultatele testarii ....................................... pagina ___
+6.23. Limitari ale testarii ...................................... pagina ___
+6.24. Concluzii .................................................. pagina ___
+
+CAPITOLUL 7. CONCLUZII .......................................... pagina ___
+7.1. Sinteza lucrarii ............................................ pagina ___
+7.2. Rezultatele obtinute ........................................ pagina ___
+7.3. Contributii personale ....................................... pagina ___
+7.4. Limitari ale aplicatiei ..................................... pagina ___
+7.5. Directii viitoare de dezvoltare ............................. pagina ___
+7.6. Concluzie finala ............................................ pagina ___
+
+BIBLIOGRAFIE .................................................... pagina ___
+
+ANEXE ........................................................... pagina ___
+Anexa 1. Structura proiectului ................................... pagina ___
+Anexa 2. Exemple de migratii SQL ................................. pagina ___
+Anexa 3. Exemple de rute API ..................................... pagina ___
+Anexa 4. Capturi de ecran ale aplicatiei ......................... pagina ___
+Anexa 5. Scenarii de testare ..................................... pagina ___
