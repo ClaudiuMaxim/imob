@@ -1,0 +1,36 @@
+TABEL 3.1 - Tabelele principale, câmpurile importante și relațiile dintre ele
+
+Tabela: users
+Câmpuri importante: id, email, password_hash, role, is_active, created_at, updated_at
+Rol în sistem: Stochează utilizatorii interni ai aplicației, adică administratorii și agenții.
+Relații: Un utilizator cu rol agent poate avea mai multe proprietăți prin relația users.id -> properties.agent_id. Un agent poate avea mai multe mesaje asociate prin relația users.id -> messages.agent_id.
+
+Tabela: cities
+Câmpuri importante: id, name, county_code, is_active, created_at, updated_at
+Rol în sistem: Stochează lista controlată de orașe folosită pentru localizarea proprietăților.
+Relații: Un oraș poate fi asociat mai multor proprietăți prin relația cities.id -> properties.city_id.
+
+Tabela: properties
+Câmpuri importante: id, agent_id, city_id, title, description, price, address, property_type, offer_type, status, bedrooms, bathrooms, area, is_active, created_at, updated_at
+Rol în sistem: Stochează anunțurile imobiliare create și administrate de agenți.
+Relații: Fiecare proprietate aparține unui agent prin properties.agent_id -> users.id. Fiecare proprietate este asociată unui oraș prin properties.city_id -> cities.id. O proprietate poate avea mai multe imagini prin properties.id -> property_images.property_id. O proprietate poate avea mai multe mesaje prin properties.id -> messages.property_id.
+
+Tabela: property_images
+Câmpuri importante: id, property_id, image_url, file_name, sort_order, created_at
+Rol în sistem: Stochează imaginile asociate proprietăților.
+Relații: Fiecare imagine aparține unei proprietăți prin property_images.property_id -> properties.id.
+
+Tabela: messages
+Câmpuri importante: id, property_id, agent_id, contact_name, contact_email, contact_phone, message_content, status, created_at, updated_at
+Rol în sistem: Stochează mesajele trimise de utilizatorii publici prin formularul de contact.
+Relații: Fiecare mesaj aparține unei proprietăți prin messages.property_id -> properties.id. Fiecare mesaj este asociat agentului responsabil prin messages.agent_id -> users.id.
+
+Variantă tabelară pentru Word:
+
+| Tabelă | Câmpuri importante | Rol în sistem | Relații principale |
+| --- | --- | --- | --- |
+| users | id, email, password_hash, role, is_active, created_at, updated_at | Stochează administratorii și agenții. | users.id -> properties.agent_id; users.id -> messages.agent_id |
+| cities | id, name, county_code, is_active, created_at, updated_at | Stochează lista controlată de orașe. | cities.id -> properties.city_id |
+| properties | id, agent_id, city_id, title, description, price, address, property_type, offer_type, status, bedrooms, bathrooms, area, is_active, created_at, updated_at | Stochează anunțurile imobiliare. | properties.agent_id -> users.id; properties.city_id -> cities.id; properties.id -> property_images.property_id; properties.id -> messages.property_id |
+| property_images | id, property_id, image_url, file_name, sort_order, created_at | Stochează imaginile proprietăților. | property_images.property_id -> properties.id |
+| messages | id, property_id, agent_id, contact_name, contact_email, contact_phone, message_content, status, created_at, updated_at | Stochează mesajele trimise de utilizatorii publici. | messages.property_id -> properties.id; messages.agent_id -> users.id |

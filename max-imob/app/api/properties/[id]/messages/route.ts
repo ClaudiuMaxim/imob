@@ -4,11 +4,12 @@ import { validateCreateMessageInput } from "@/lib/properties/messages-validation
 
 export async function POST(
   request: NextRequest,
-  context: { params?: { id?: string } },
+  context: { params: Promise<{ id: string }> },
 ) {
   try {
     const body = await request.json();
-    const propertyId = context.params?.id ?? body?.propertyId;
+    const { id } = await context.params;
+    const propertyId = id || body?.propertyId;
 
     if (!propertyId || typeof propertyId !== "string") {
       return jsonError("ID-ul proprietății lipsește din cerere.", 400);
