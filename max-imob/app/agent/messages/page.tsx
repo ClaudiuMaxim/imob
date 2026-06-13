@@ -13,7 +13,7 @@ export default function AgentMessagesPage() {
       <nav className="navbar bg-white border-bottom">
         <div className="container py-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
           <div>
-            <BrandLogo context="Agent" />
+            <BrandLogo role="Agent" />
           </div>
           <div className="d-flex gap-2">
             <Link className="btn btn-outline-secondary" href="/agent/properties">
