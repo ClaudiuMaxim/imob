@@ -15,9 +15,12 @@ export default function AgentPropertiesPage() {
           <div>
             <BrandLogo role="Agent" />
           </div>
-          <div className="d-flex gap-2">
-            <Link className="btn btn-outline-primary btn-sm" href="/agent/messages">
+          <div className="d-flex gap-2 flex-wrap">
+            <Link className="btn btn-outline-secondary btn-sm" href="/agent/messages">
               Mesaje
+            </Link>
+            <Link className="btn btn-outline-secondary btn-sm" href="/agent/average-prices">
+              Analiza pietei
             </Link>
             <Link className="btn btn-outline-secondary btn-sm" href="/">
               Înapoi la site

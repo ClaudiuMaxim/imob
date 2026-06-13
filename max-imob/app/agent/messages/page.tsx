@@ -15,11 +15,14 @@ export default function AgentMessagesPage() {
           <div>
             <BrandLogo role="Agent" />
           </div>
-          <div className="d-flex gap-2">
-            <Link className="btn btn-outline-secondary" href="/agent/properties">
+          <div className="d-flex gap-2 flex-wrap">
+            <Link className="btn btn-outline-secondary btn-sm" href="/agent/properties">
               Proprietăți
             </Link>
-            <Link className="btn btn-outline-secondary" href="/">
+            <Link className="btn btn-outline-secondary btn-sm" href="/agent/average-prices">
+              Analiza pietei
+            </Link>
+            <Link className="btn btn-outline-secondary btn-sm" href="/">
               Înapoi la site
             </Link>
           </div>

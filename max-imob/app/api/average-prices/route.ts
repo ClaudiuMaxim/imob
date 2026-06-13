@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listAveragePrices } from "@/lib/average-prices/average-price-service";
-import { AuthError, requireAdmin } from "@/lib/auth/session";
+import { AuthError, getAuthSession } from "@/lib/auth/session";
 
 export async function GET(request: NextRequest) {
   try {
-    requireAdmin(request);
+    requireAveragePricesAccess(request);
 
     const averagePrices = await listAveragePrices();
 
@@ -12,6 +12,20 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     return handleRouteError(error);
   }
+}
+
+function requireAveragePricesAccess(request: NextRequest) {
+  const session = getAuthSession(request);
+
+  if (!session) {
+    throw new AuthError("Autentificare necesara.", 401);
+  }
+
+  if (session.role !== "admin" && session.role !== "agent") {
+    throw new AuthError("Acces interzis.", 403);
+  }
+
+  return session;
 }
 
 function handleRouteError(error: unknown) {

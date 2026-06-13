@@ -144,6 +144,7 @@ export async function getLastProperties(){
       SELECT properties.*, cities.name AS city
       FROM properties
       JOIN cities ON cities.id = properties.city_id
+      WHERE properties.status = 'publicata'
       ORDER BY properties.created_at DESC LIMIT 3
     `
   );
