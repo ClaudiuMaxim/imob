@@ -18,6 +18,10 @@ export type PropertyImage = {
   sortOrder: number;
 };
 
+export type AveragePrice = {
+  price: number;
+};
+
 export type Property = {
   id: string;
   agentId: string;
@@ -35,6 +39,7 @@ export type Property = {
   area: number;
   isActive: boolean;
   images: PropertyImage[];
+  averagePrice: AveragePrice | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -60,6 +65,7 @@ type PropertyRow = {
   bathrooms: number;
   area: string;
   is_active: boolean;
+  average_price?: string | null;
   created_at: Date;
   updated_at: Date;
 };
@@ -226,9 +232,13 @@ export async function getAgentPropertyById(agentId: string, propertyId: string) 
 export async function getPublicPropertyById(propertyId: string) {
   const result = await getPool().query<PropertyRow>(
     `
-      SELECT properties.*, cities.name AS city
+      SELECT properties.*, cities.name AS city, average_prices.price AS average_price
       FROM properties
       JOIN cities ON cities.id = properties.city_id
+      LEFT JOIN average_prices
+        ON average_prices."type" = properties.property_type
+        AND average_prices.city_id = properties.city_id
+        AND average_prices.offer_type = properties.offer_type
       WHERE properties.id = $1 AND properties.status = 'publicata' AND properties.is_active = true
       LIMIT 1
     `,
@@ -523,6 +533,7 @@ function mapPropertyRow(row: PropertyRow, images: PropertyImage[]): Property {
     area: Number(row.area),
     isActive: row.is_active,
     images,
+    averagePrice: row.average_price ? { price: Number(row.average_price) } : null,
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
   };

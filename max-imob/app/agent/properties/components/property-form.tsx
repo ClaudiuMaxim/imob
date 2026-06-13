@@ -53,6 +53,8 @@ const propertyTypeOptions = [
 const statusOptions = [
   { label: "Ciorna", value: "ciorna" },
   { label: "Publicata", value: "publicata" },
+  { label: "Vanduta", value: "vanduta" },
+  { label: "Inchiriata", value: "inchiriata" },
 ];
 
 export default function PropertyForm({
@@ -166,6 +168,7 @@ export default function PropertyForm({
             options={[
               { label: "Vanzare", value: "vanzare" },
               { label: "Inchiriere", value: "inchiriere" },
+           
             ]}
             value={offerType}
           />
@@ -209,7 +212,11 @@ export default function PropertyForm({
             </div>
           </div>
           <div className="d-flex gap-2">
-            <button className="btn btn-primary" disabled={isSaving} type="submit">
+            <button
+              className="btn btn-primary"
+              disabled={isSaving}
+              type="submit"
+            >
               {isEditing ? "Salveaza" : "Creeaza"}
             </button>
             {isEditing ? (

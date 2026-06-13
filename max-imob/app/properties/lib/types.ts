@@ -8,6 +8,10 @@ export type PropertyImage = {
   sortOrder: number;
 };
 
+export type AveragePrice = {
+  price: number;
+};
+
 export type Property = {
   id: string;
   title: string;
@@ -24,6 +28,7 @@ export type Property = {
   area: number;
   isActive: boolean;
   images: PropertyImage[];
+  averagePrice: AveragePrice | null;
 };
 
 export type City = {

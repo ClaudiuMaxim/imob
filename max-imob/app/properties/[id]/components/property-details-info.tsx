@@ -3,6 +3,7 @@
 import type { Property } from "../../lib/types";
 import ContactAgentModal from "./contact-agent-modal";
 import PropertyMap from "./property-map";
+import PropertyMarketPriceIndicator from "./property-market-price-indicator";
 
 type PropertyDetailsInfoProps = {
   property: Property;
@@ -24,6 +25,7 @@ export default function PropertyDetailsInfo({ property }: PropertyDetailsInfoPro
               {property.price.toLocaleString("ro-RO")}
               <sup style={{ fontSize: "0.575em" }}>EUR</sup>
             </div>
+            <PropertyMarketPriceIndicator property={property} />
           </div>
         </div>
 
