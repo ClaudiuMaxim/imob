@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BrandLogo from "@/app/components/BrandLogo";
 import MessagesList from "./components/messages-list";
 
 export const metadata = {
@@ -10,11 +11,9 @@ export default function AgentMessagesPage() {
   return (
     <main className="bg-light min-vh-100">
       <nav className="navbar bg-white border-bottom">
-        <div className="container py-2 d-flex justify-content-between align-items-center">
+        <div className="container py-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
           <div>
-            <Link className="navbar-brand fw-bold text-primary" href="/">
-              Max Imob Agent
-            </Link>
+            <BrandLogo context="Agent" />
           </div>
           <div className="d-flex gap-2">
             <Link className="btn btn-outline-secondary" href="/agent/properties">
@@ -29,9 +28,13 @@ export default function AgentMessagesPage() {
 
       <section className="container py-5">
         <div className="mb-4">
-          <p className="text-uppercase text-primary fw-semibold small mb-2">Mesaje</p>
+          <p className="text-uppercase text-primary fw-semibold small mb-2">
+            Mesaje
+          </p>
           <h1 className="fw-bold mb-2">Mesaje primite</h1>
-          <p className="text-secondary mb-0">Vezi mesajele trimise prin formularul de contact pentru proprietățile tale.</p>
+          <p className="text-secondary mb-0">
+            Vezi mesajele trimise prin formularul de contact pentru proprietățile tale.
+          </p>
         </div>
         <MessagesList />
       </section>

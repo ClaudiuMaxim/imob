@@ -39,12 +39,12 @@ export default function PropertyGallery({ images, title }: PropertyGalleryProps)
         <div className="carousel-indicators mb-3">
           {images.map((image, index) => (
             <button
-              key={image.id}
-              type="button"
-              className={index === activeIndex ? "active" : ""}
               aria-current={index === activeIndex ? "true" : undefined}
               aria-label={`Slide ${index + 1}`}
+              className={index === activeIndex ? "active" : ""}
+              key={image.id}
               onClick={() => setActiveIndex(index)}
+              type="button"
             />
           ))}
         </div>
@@ -53,8 +53,8 @@ export default function PropertyGallery({ images, title }: PropertyGalleryProps)
       <div className="carousel-inner rounded overflow-hidden bg-light" style={{ minHeight: 360 }}>
         {images.map((image, index) => (
           <div
-            key={image.id}
             className={`carousel-item ${index === activeIndex ? "active" : ""}`}
+            key={image.id}
           >
             <div className="ratio ratio-16x9 bg-light">
               <Image
@@ -72,15 +72,22 @@ export default function PropertyGallery({ images, title }: PropertyGalleryProps)
 
       {images.length > 1 ? (
         <div className="d-flex justify-content-between mt-3">
-          <button className="btn btn-outline-primary btn-sm" type="button" onClick={goPrevious}>
+          <button
+            className="btn btn-outline-primary btn-sm"
+            onClick={goPrevious}
+            type="button"
+          >
             Poza anterioară
           </button>
-          <button className="btn btn-outline-primary btn-sm" type="button" onClick={goNext}>
-            Următoarea poza
+          <button
+            className="btn btn-outline-primary btn-sm"
+            onClick={goNext}
+            type="button"
+          >
+            Următoarea poză
           </button>
         </div>
       ) : null}
-        
     </div>
   );
 }

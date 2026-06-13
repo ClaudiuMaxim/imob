@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BrandLogo from "@/app/components/BrandLogo";
 import AgentProperties from "./properties";
 
 export const metadata = {
@@ -10,11 +11,9 @@ export default function AgentPropertiesPage() {
   return (
     <main className="bg-light min-vh-100">
       <nav className="navbar bg-white border-bottom">
-        <div className="container py-2 d-flex justify-content-between align-items-center">
+        <div className="container py-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
           <div>
-            <Link className="navbar-brand fw-bold text-primary" href="/">
-              Max Imob Agent
-            </Link>
+            <BrandLogo context="Agent" />
           </div>
           <div className="d-flex gap-2">
             <Link className="btn btn-outline-primary btn-sm" href="/agent/messages">

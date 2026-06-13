@@ -1,9 +1,10 @@
 import type { FormEvent } from "react";
 import PropertyDescription from "./property-description";
+import PropertyExistingImages from "./property-existing-images";
 import PropertyImagesInput from "./property-images-input";
 import PropertySelect from "./property-select";
 import PropertyTextInput from "./property-text-input";
-import type { City } from "../lib/types";
+import type { City, PropertyImage } from "../lib/types";
 
 type PropertyFormProps = {
   address: string;
@@ -14,6 +15,7 @@ type PropertyFormProps = {
   cityId: string;
   description: string;
   imageInputKey: number;
+  existingImages: PropertyImage[];
   isEditing: boolean;
   isSaving: boolean;
   onAddressChange: (value: string) => void;
@@ -24,6 +26,9 @@ type PropertyFormProps = {
   onCityIdChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onImagesChange: (files: File[]) => void;
+  onExistingImageMoveDown: (imageId: string) => void;
+  onExistingImageMoveUp: (imageId: string) => void;
+  onExistingImageRemove: (imageId: string) => void;
   onPriceChange: (value: string) => void;
   onPropertyTypeChange: (value: string) => void;
   onStatusChange: (value: string) => void;
@@ -48,8 +53,6 @@ const propertyTypeOptions = [
 const statusOptions = [
   { label: "Ciorna", value: "ciorna" },
   { label: "Publicata", value: "publicata" },
-  { label: "Vanduta", value: "vanduta" },
-  { label: "Inchiriata", value: "inchiriata" },
 ];
 
 export default function PropertyForm({
@@ -61,6 +64,7 @@ export default function PropertyForm({
   cityId,
   description,
   imageInputKey,
+  existingImages,
   isEditing,
   isSaving,
   onAddressChange,
@@ -71,6 +75,9 @@ export default function PropertyForm({
   onCityIdChange,
   onDescriptionChange,
   onImagesChange,
+  onExistingImageMoveDown,
+  onExistingImageMoveUp,
+  onExistingImageRemove,
   onPriceChange,
   onPropertyTypeChange,
   onStatusChange,
@@ -131,6 +138,14 @@ export default function PropertyForm({
             required
             value={address}
           />
+          {isEditing ? (
+            <PropertyExistingImages
+              images={existingImages}
+              onMoveDown={onExistingImageMoveDown}
+              onMoveUp={onExistingImageMoveUp}
+              onRemove={onExistingImageRemove}
+            />
+          ) : null}
           <PropertyImagesInput
             inputKey={imageInputKey}
             isEditing={isEditing}
@@ -164,7 +179,7 @@ export default function PropertyForm({
           <div className="row">
             <div className="col-md-4">
               <PropertyTextInput
-                label="Dormitoare"
+                label="Camere"
                 name="bedrooms"
                 onChange={onBedroomsChange}
                 required

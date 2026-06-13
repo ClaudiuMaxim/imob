@@ -37,17 +37,17 @@ export default function PropertyDetails({ propertyId }: PropertyDetailsProps) {
   }, [propertyId]);
 
   if (isLoading) {
-    return <div className="container py-5 text-secondary">Se incarca proprietatea...</div>;
+    return <div className="container py-5 text-secondary">Se încarcă proprietatea...</div>;
   }
 
   if (error || !property) {
     return (
       <div className="container py-5">
         <div className="alert alert-danger">
-          {error || "Proprietatea nu a fost gasita."}
+          {error || "Proprietatea nu a fost găsită."}
         </div>
         <Link className="btn btn-outline-primary" href="/properties">
-          Inapoi la proprietati
+          Înapoi la proprietăți
         </Link>
       </div>
     );
@@ -57,7 +57,7 @@ export default function PropertyDetails({ propertyId }: PropertyDetailsProps) {
     <div className="container py-5">
       <div className="mb-4">
         <Link className="btn btn-outline-secondary btn-sm" href="/properties">
-          Inapoi la lista
+          Înapoi la listă
         </Link>
       </div>
       <div className="row g-4">

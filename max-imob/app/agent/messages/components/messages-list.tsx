@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { requestMessages, getErrorMessage } from "../lib/api";
+import { getErrorMessage, requestMessages } from "../lib/api";
 import type { Message } from "../lib/types";
 
 export default function MessagesList() {
@@ -34,9 +34,15 @@ export default function MessagesList() {
         <div className="d-flex justify-content-between align-items-center mb-3">
           <div>
             <h2 className="h5 fw-bold mb-0">Mesaje primite</h2>
-            <p className="text-secondary mb-0">Mesajele primite din formularul de contact.</p>
+            <p className="text-secondary mb-0">
+              Mesajele primite din formularul de contact.
+            </p>
           </div>
-          <button className="btn btn-outline-primary btn-sm" type="button" onClick={loadMessages}>
+          <button
+            className="btn btn-outline-primary btn-sm"
+            onClick={loadMessages}
+            type="button"
+          >
             Reîncarcă
           </button>
         </div>
@@ -46,7 +52,9 @@ export default function MessagesList() {
         {isLoading ? (
           <p className="text-secondary mb-0">Se încarcă mesajele...</p>
         ) : messages.length === 0 ? (
-          <div className="alert alert-info">Nu există mesaje primite în acest moment.</div>
+          <div className="alert alert-info">
+            Nu există mesaje primite în acest moment.
+          </div>
         ) : (
           <div className="table-responsive">
             <table className="table table-hover align-middle">
@@ -65,7 +73,10 @@ export default function MessagesList() {
                   <tr key={message.id}>
                     <td>{new Date(message.createdAt).toLocaleString("ro-RO")}</td>
                     <td>
-                      <Link href={`/properties/${message.propertyId}`} className="text-decoration-none">
+                      <Link
+                        className="text-decoration-none"
+                        href={`/properties/${message.propertyId}`}
+                      >
                         {message.propertyTitle}
                       </Link>
                     </td>

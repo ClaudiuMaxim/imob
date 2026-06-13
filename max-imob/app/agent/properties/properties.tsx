@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import PropertyForm from "./components/property-form";
 import PropertiesListPanel from "./components/properties-list-panel";
 import { getErrorMessage, requestCities, requestProperties } from "./lib/api";
-import type { City, Property } from "./lib/types";
+import type { City, Property, PropertyImage } from "./lib/types";
 
 export default function AgentProperties() {
   const [properties, setProperties] = useState<Property[]>([]);
@@ -17,6 +17,7 @@ export default function AgentProperties() {
   const [cityId, setCityId] = useState("");
   const [address, setAddress] = useState("");
   const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<PropertyImage[]>([]);
   const [imageInputKey, setImageInputKey] = useState(0);
   const [propertyType, setPropertyType] = useState("apartament");
   const [status, setStatus] = useState("ciorna");
@@ -147,6 +148,7 @@ export default function AgentProperties() {
     setCityId(property.cityId);
     setAddress(property.address);
     setImageFiles([]);
+    setExistingImages(property.images);
     setImageInputKey((currentKey) => currentKey + 1);
     setPropertyType(property.propertyType);
     setOfferType(property.offerType);
@@ -164,6 +166,7 @@ export default function AgentProperties() {
     setCityId("");
     setAddress("");
     setImageFiles([]);
+    setExistingImages([]);
     setImageInputKey((currentKey) => currentKey + 1);
     setPropertyType("apartament");
     setOfferType("vanzare");
@@ -188,11 +191,31 @@ export default function AgentProperties() {
     formData.append("bathrooms", bathrooms);
     formData.append("area", area);
 
+    if (editPropertyId) {
+      const imageIds = existingImages.map((image) => image.id);
+      formData.append("keptImageIds", JSON.stringify(imageIds));
+      formData.append("imageOrder", JSON.stringify(imageIds));
+    }
+
     for (const imageFile of imageFiles) {
       formData.append("images", imageFile);
     }
 
     return formData;
+  }
+
+  function moveExistingImageUp(imageId: string) {
+    setExistingImages((currentImages) => moveImage(currentImages, imageId, -1));
+  }
+
+  function moveExistingImageDown(imageId: string) {
+    setExistingImages((currentImages) => moveImage(currentImages, imageId, 1));
+  }
+
+  function removeExistingImage(imageId: string) {
+    setExistingImages((currentImages) =>
+      currentImages.filter((image) => image.id !== imageId),
+    );
   }
 
   return (
@@ -206,6 +229,7 @@ export default function AgentProperties() {
           cities={cities}
           cityId={cityId}
           description={description}
+          existingImages={existingImages}
           imageInputKey={imageInputKey}
           isEditing={Boolean(editPropertyId)}
           isSaving={isSaving}
@@ -216,6 +240,9 @@ export default function AgentProperties() {
           onCancel={resetForm}
           onCityIdChange={setCityId}
           onDescriptionChange={setDescription}
+          onExistingImageMoveDown={moveExistingImageDown}
+          onExistingImageMoveUp={moveExistingImageUp}
+          onExistingImageRemove={removeExistingImage}
           onImagesChange={setImageFiles}
           onOfferTypeChange={setOfferType}
           onPriceChange={setPrice}
@@ -246,4 +273,30 @@ export default function AgentProperties() {
       </div>
     </div>
   );
+}
+
+function moveImage(images: PropertyImage[], imageId: string, direction: -1 | 1) {
+  const currentIndex = images.findIndex((image) => image.id === imageId);
+  const nextIndex = currentIndex + direction;
+
+  if (
+    currentIndex === -1 ||
+    nextIndex < 0 ||
+    nextIndex >= images.length
+  ) {
+    return images;
+  }
+
+  const nextImages = [...images];
+  const selectedImage = nextImages[currentIndex];
+  const targetImage = nextImages[nextIndex];
+
+  if (!selectedImage || !targetImage) {
+    return images;
+  }
+
+  nextImages[currentIndex] = targetImage;
+  nextImages[nextIndex] = selectedImage;
+
+  return nextImages;
 }

@@ -8,7 +8,7 @@ export default async function Home() {
     <main>
       <Header />
       <Hero />
-      <section className="container py-5">
+      <section className="container py-2">
         <div className="mb-4">
           <p className="text-uppercase text-primary fw-semibold small mb-2">Ultimele anunțuri</p>
      

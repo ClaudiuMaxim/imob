@@ -15,11 +15,15 @@ export default function PropertyDetailsInfo({ property }: PropertyDetailsInfoPro
         <div className="d-flex justify-content-between gap-2 mb-3">
           <div>
             <h1 className="h2 fw-bold mb-2">{property.title}</h1>
-            <p className="text-secondary mb-0">{property.city}  <span className="badge text-bg-success">{property.status}</span></p>
+            <p className="text-secondary mb-0">
+              {property.city} <span className="badge text-bg-success">{property.status}</span>
+            </p>
           </div>
           <div className="text-end">
-            <div className="h4 fw-bold text-primary mb-0">{property.price}<sup style={{fontSize: '0.575em'}}>EUR</sup></div>
-           
+            <div className="h4 fw-bold text-primary mb-0">
+              {property.price.toLocaleString("ro-RO")}
+              <sup style={{ fontSize: "0.575em" }}>EUR</sup>
+            </div>
           </div>
         </div>
 
@@ -29,10 +33,10 @@ export default function PropertyDetailsInfo({ property }: PropertyDetailsInfoPro
 
         <div className="row g-3 mb-3">
           <InfoItem label="Tip" value={property.propertyType} />
-          <InfoItem label="Oferta" value={property.offerType} />
+          <InfoItem label="Ofertă" value={property.offerType} />
           <InfoItem label="Dormitoare" value={String(property.bedrooms)} />
-          <InfoItem label="Bai" value={String(property.bathrooms)} />
-          <InfoItem label="Suprafata" value={`${property.area} mp`} />
+          <InfoItem label="Băi" value={String(property.bathrooms)} />
+          <InfoItem label="Suprafață" value={`${property.area} mp`} />
         </div>
 
         <div className="border-top pt-3">

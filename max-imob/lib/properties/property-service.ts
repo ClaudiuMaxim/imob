@@ -39,6 +39,11 @@ export type Property = {
   updatedAt: string;
 };
 
+export type PropertyImageUpdate = {
+  keptImageIds: string[];
+  imageOrder: string[];
+};
+
 type PropertyRow = {
   id: string;
   agent_id: string;
@@ -119,9 +124,22 @@ export async function listPublicProperties(filters: PublicPropertyFilters = {}) 
       JOIN cities ON cities.id = properties.city_id
       WHERE ${queryParts.join(" AND ")}
       ORDER BY properties.created_at DESC
-      LIMIT 6
+      
     `,
     queryValues,
+  );
+
+  return mapPropertyRows(result.rows);
+}
+
+export async function getLastProperties(){
+    const result = await getPool().query<PropertyRow>(
+    `
+      SELECT properties.*, cities.name AS city
+      FROM properties
+      JOIN cities ON cities.id = properties.city_id
+      ORDER BY properties.created_at DESC LIMIT 3
+    `
   );
 
   return mapPropertyRows(result.rows);
@@ -225,6 +243,7 @@ export async function updateProperty(
   propertyId: string,
   input: UpdatePropertyInput,
   images: SavedPropertyImage[],
+  imageUpdate?: PropertyImageUpdate,
 ) {
   const currentProperty = await getAgentPropertyById(agentId, propertyId);
 
@@ -290,8 +309,14 @@ export async function updateProperty(
       ],
     );
 
-    const currentImageCount = currentProperty.images.length;
-    await insertPropertyImages(client, propertyId, images, currentImageCount);
+    const imageStartIndex = await applyPropertyImageUpdate(
+      client,
+      propertyId,
+      currentProperty.images,
+      imageUpdate,
+      images.length,
+    );
+    await insertPropertyImages(client, propertyId, images, imageStartIndex);
     await client.query("COMMIT");
   } catch (error) {
     await client.query("ROLLBACK");
@@ -301,6 +326,72 @@ export async function updateProperty(
   }
 
   return getAgentPropertyById(agentId, propertyId);
+}
+
+async function applyPropertyImageUpdate(
+  client: PoolClient,
+  propertyId: string,
+  currentImages: PropertyImage[],
+  imageUpdate: PropertyImageUpdate | undefined,
+  newImageCount: number,
+) {
+  if (!imageUpdate) {
+    return currentImages.length;
+  }
+
+  validatePropertyImageUpdate(currentImages, imageUpdate, newImageCount);
+
+  const keptImageIds = new Set(imageUpdate.keptImageIds);
+
+  for (const image of currentImages) {
+    if (!keptImageIds.has(image.id)) {
+      await client.query(
+        `
+          DELETE FROM property_images
+          WHERE id = $1 AND property_id = $2
+        `,
+        [image.id, propertyId],
+      );
+    }
+  }
+
+  for (const [index, imageId] of imageUpdate.imageOrder.entries()) {
+    await client.query(
+      `
+        UPDATE property_images
+        SET sort_order = $3
+        WHERE id = $1 AND property_id = $2
+      `,
+      [imageId, propertyId, index],
+    );
+  }
+
+  return imageUpdate.imageOrder.length;
+}
+
+function validatePropertyImageUpdate(
+  currentImages: PropertyImage[],
+  imageUpdate: PropertyImageUpdate,
+  newImageCount: number,
+) {
+  const currentImageIds = new Set(currentImages.map((image) => image.id));
+  const keptImageIds = new Set(imageUpdate.keptImageIds);
+
+  for (const imageId of imageUpdate.keptImageIds) {
+    if (!currentImageIds.has(imageId)) {
+      throw new PropertyInputError("Imaginea selectata nu apartine proprietatii.");
+    }
+  }
+
+  for (const imageId of imageUpdate.imageOrder) {
+    if (!keptImageIds.has(imageId)) {
+      throw new PropertyInputError("Ordinea imaginilor este invalida.");
+    }
+  }
+
+  if (imageUpdate.keptImageIds.length + newImageCount === 0) {
+    throw new PropertyInputError("Proprietatea trebuie sa aiba cel putin o poza.");
+  }
 }
 
 export async function deactivateProperty(agentId: string, propertyId: string) {

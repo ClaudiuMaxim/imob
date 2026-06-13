@@ -17,7 +17,7 @@ export default function PropertiesTable({
   properties,
 }: PropertiesTableProps) {
   if (properties.length === 0) {
-    return <p className="text-secondary mb-0">Nu exista proprietati.</p>;
+    return <p className="text-secondary mb-0">Nu există proprietăți.</p>;
   }
 
   return (
@@ -25,14 +25,14 @@ export default function PropertiesTable({
       <table className="table align-middle">
         <thead>
           <tr>
-            <th>Poza</th>
+            <th>Poză</th>
             <th>Titlu</th>
-            <th>Oras</th>
-            <th>Oferta</th>
-            <th>Pret</th>
+            <th>Oraș</th>
+            <th>Ofertă</th>
+            <th>Preț</th>
             <th>Status</th>
-            <th>Activa</th>
-            <th className="text-end">Actiuni</th>
+            <th>Activă</th>
+            <th className="text-end">Acțiuni</th>
           </tr>
         </thead>
         <tbody>
@@ -55,7 +55,7 @@ export default function PropertiesTable({
                     onClick={() => onEdit(property)}
                     type="button"
                   >
-                    Editeaza
+                    Editează
                   </button>
                   {property.isActive ? (
                     <button
@@ -64,7 +64,7 @@ export default function PropertiesTable({
                       onClick={() => onDeactivate(property)}
                       type="button"
                     >
-                      Dezactiveaza
+                      Dezactivează
                     </button>
                   ) : (
                     <button
@@ -73,7 +73,7 @@ export default function PropertiesTable({
                       onClick={() => onActivate(property)}
                       type="button"
                     >
-                      Activeaza
+                      Activează
                     </button>
                   )}
                 </div>

@@ -79,8 +79,20 @@ async function handleUpdateProperty(
       return jsonError(validation.error, 400);
     }
 
+    const imageUpdate = getImageUpdateFromFormData(formData);
+
+    if (!imageUpdate.success) {
+      return jsonError(imageUpdate.error, 400);
+    }
+
     const images = await savePropertyImages(imageFiles);
-    const property = await updateProperty(session.userId, id, validation.data, images);
+    const property = await updateProperty(
+      session.userId,
+      id,
+      validation.data,
+      images,
+      imageUpdate.data,
+    );
 
     if (!property) {
       return jsonError("Proprietatea nu a fost gasita.", 404);
@@ -144,6 +156,101 @@ function getPropertyInputFromFormData(formData: FormData) {
     bathrooms: formData.get("bathrooms"),
     area: formData.get("area"),
   };
+}
+
+function getImageUpdateFromFormData(formData: FormData) {
+  const keptImageIds = parseStringArray(formData.get("keptImageIds"));
+  const imageOrder = parseStringArray(formData.get("imageOrder"));
+
+  if (!keptImageIds.success) {
+    return keptImageIds;
+  }
+
+  if (!imageOrder.success) {
+    return imageOrder;
+  }
+
+  const validationError = validateImageUpdateIds(
+    keptImageIds.data,
+    imageOrder.data,
+  );
+
+  if (validationError) {
+    return {
+      success: false as const,
+      error: validationError,
+    };
+  }
+
+  return {
+    success: true as const,
+    data: {
+      keptImageIds: keptImageIds.data,
+      imageOrder: imageOrder.data,
+    },
+  };
+}
+
+function parseStringArray(value: FormDataEntryValue | null) {
+  if (typeof value !== "string") {
+    return {
+      success: false as const,
+      error: "Datele imaginilor sunt invalide.",
+    };
+  }
+
+  let parsedValue: unknown;
+
+  try {
+    parsedValue = JSON.parse(value);
+  } catch {
+    return {
+      success: false as const,
+      error: "Datele imaginilor sunt invalide.",
+    };
+  }
+
+  if (
+    !Array.isArray(parsedValue) ||
+    !parsedValue.every((item) => typeof item === "string")
+  ) {
+    return {
+      success: false as const,
+      error: "Datele imaginilor sunt invalide.",
+    };
+  }
+
+  return {
+    success: true as const,
+    data: parsedValue as string[],
+  };
+}
+
+function validateImageUpdateIds(
+  keptImageIds: string[],
+  imageOrder: string[],
+) {
+  if (hasDuplicates(keptImageIds) || hasDuplicates(imageOrder)) {
+    return "Lista imaginilor contine duplicate.";
+  }
+
+  if (keptImageIds.length !== imageOrder.length) {
+    return "Ordinea imaginilor este invalida.";
+  }
+
+  const keptImageSet = new Set(keptImageIds);
+
+  for (const imageId of imageOrder) {
+    if (!keptImageSet.has(imageId)) {
+      return "Ordinea imaginilor este invalida.";
+    }
+  }
+
+  return null;
+}
+
+function hasDuplicates(values: string[]) {
+  return new Set(values).size !== values.length;
 }
 
 function handleRouteError(error: unknown) {

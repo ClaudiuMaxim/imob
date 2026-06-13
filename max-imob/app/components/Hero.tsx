@@ -4,7 +4,7 @@ export default function Hero() {
   return (
     <section className="bg-light overflow-hidden">
       <div className="container">
-        <div className="row align-items-center py-5">
+        <div className="row align-items-center pt-3 pb-2">
           <div className="col-lg-6 py-4">
             <h1 className="display-5 fw-bold text-dark mb-3">
               Găsește proprietatea potrivită
@@ -23,11 +23,11 @@ export default function Hero() {
               style={{
                 minHeight: "320px",
                 backgroundImage:
-                  "linear-gradient(90deg, #f8f9fa 0%, rgba(248, 249, 250, 0.75) 10%, rgba(248, 249, 250, 0) 28%), url('/hero.webp')",
+                  "linear-gradient(90deg, #f8f9fa 0%, rgba(248, 249, 250, 0.75) 10%, rgba(248, 249, 250, 0) 28%), url('/hero.png')",
                 backgroundPosition: "center",
                 backgroundSize: "cover",
               }}
-              aria-label="Cladire moderna de apartamente"
+              aria-label="Clădire modernă de apartamente"
             />
           </div>
         </div>

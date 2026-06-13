@@ -17,7 +17,7 @@ export default function LatestProperties() {
       setError("");
 
       try {
-        const payload = await requestPublicProperties("/api/properties?publicata=1");
+        const payload = await requestPublicProperties("/api/last-properties");
         setLatest(payload.data?.properties ?? []);
       } catch (requestError) {
         setError(getErrorMessage(requestError));

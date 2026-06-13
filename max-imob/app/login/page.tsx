@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BrandLogo from "@/app/components/BrandLogo";
 import LoginForm from "./login-form";
 
 export const metadata = {
@@ -10,10 +11,8 @@ export default function LoginPage() {
   return (
     <main className="bg-light min-vh-100">
       <nav className="navbar bg-white border-bottom">
-        <div className="container py-2">
-          <Link className="navbar-brand fw-bold text-primary" href="/">
-            Max Imob
-          </Link>
+        <div className="container py-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <BrandLogo />
           <Link className="btn btn-outline-secondary" href="/">
             Înapoi la site
           </Link>

@@ -1,17 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 
 type ContactAgentFormProps = {
-  propertyId: string;
-  onSuccess: () => void;
   onError: (error: string) => void;
+  onSuccess: () => void;
+  propertyId: string;
 };
 
 export default function ContactAgentForm({
-  propertyId,
-  onSuccess,
   onError,
+  onSuccess,
+  propertyId,
 }: ContactAgentFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -19,8 +19,8 @@ export default function ContactAgentForm({
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setIsLoading(true);
 
     try {
@@ -41,10 +41,9 @@ export default function ContactAgentForm({
       const data = (await response.json()) as { success: boolean; error?: string };
 
       if (!response.ok) {
-        throw new Error(data.error || "Eroare la trimiterea mesajului");
+        throw new Error(data.error || "Eroare la trimiterea mesajului.");
       }
 
-      // Reset form
       setName("");
       setEmail("");
       setPhone("");
@@ -52,86 +51,83 @@ export default function ContactAgentForm({
 
       onSuccess();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Eroare necunoscută";
+      const errorMessage =
+        error instanceof Error ? error.message : "Eroare necunoscută.";
       onError(errorMessage);
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="row g-3">
+    <form className="row g-3" onSubmit={handleSubmit}>
       <div className="col-12">
-        <label htmlFor="contactName" className="form-label">
+        <label className="form-label" htmlFor="contactName">
           Nume
         </label>
         <input
-          type="text"
           className="form-control"
           id="contactName"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          minLength={2}
           maxLength={100}
-          placeholder="Introdu-ți numele"
+          minLength={2}
+          onChange={(event) => setName(event.target.value)}
+          placeholder="Introdu numele"
+          required
+          type="text"
+          value={name}
         />
       </div>
 
       <div className="col-12">
-        <label htmlFor="contactEmail" className="form-label">
+        <label className="form-label" htmlFor="contactEmail">
           Email
         </label>
         <input
-          type="email"
           className="form-control"
           id="contactEmail"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(event) => setEmail(event.target.value)}
+          placeholder="Introdu email-ul"
           required
-          placeholder="Introdu-ți email-ul"
+          type="email"
+          value={email}
         />
       </div>
 
       <div className="col-12">
-        <label htmlFor="contactPhone" className="form-label">
+        <label className="form-label" htmlFor="contactPhone">
           Telefon
         </label>
         <input
-          type="tel"
           className="form-control"
           id="contactPhone"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          onChange={(event) => setPhone(event.target.value)}
+          placeholder="Introdu telefonul"
           required
-          placeholder="Introdu-ți telefonul"
+          type="tel"
+          value={phone}
         />
       </div>
 
       <div className="col-12">
-        <label htmlFor="messageContent" className="form-label">
+        <label className="form-label" htmlFor="messageContent">
           Mesaj
         </label>
         <textarea
           className="form-control"
           id="messageContent"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          required
-          minLength={10}
           maxLength={5000}
-          rows={4}
+          minLength={10}
+          onChange={(event) => setMessage(event.target.value)}
           placeholder="Introdu mesajul tău (minim 10 caractere)"
+          required
+          rows={4}
+          value={message}
         />
       </div>
 
       <div className="col-12">
-        <button
-          type="submit"
-          className="btn btn-primary w-100"
-          disabled={isLoading}
-        >
-          {isLoading ? "Se trimite..." : "Trimite Mesaj"}
+        <button className="btn btn-primary w-100" disabled={isLoading} type="submit">
+          {isLoading ? "Se trimite..." : "Trimite mesaj"}
         </button>
       </div>
     </form>
