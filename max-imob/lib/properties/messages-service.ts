@@ -20,7 +20,7 @@ function mapMessageRow(row: MessageRow): Message {
   return {
     id: row.id,
     propertyId: row.property_id,
-    propertyTitle: row.property_title,
+    // propertyTitle: row.property_title,
     agentId: row.agent_id,
     contactName: row.contact_name,
     contactEmail: row.contact_email,
