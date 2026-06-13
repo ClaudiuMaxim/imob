@@ -13,9 +13,14 @@ export default function AdminAgentsPage() {
       <nav className="navbar bg-white border-bottom">
         <div className="container py-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
           <BrandLogo role="Admin" />
+                <div className="d-flex gap-2 flex-wrap">
+          <Link className="btn btn-outline-primary" href="/admin/average-prices">
+            Pret mediu
+          </Link>
           <Link className="btn btn-outline-secondary" href="/">
             Înapoi la site
           </Link>
+          </div>
         </div>
       </nav>
 
